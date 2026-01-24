@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "email": "admin@pcstore.ru",
+    "password": "$2a$10$.hjWNjOWvwJnbmi3i1b1kOEE/EMnQB0fVMPwS0gm3325s0GQr3SgS",
+    "role": "admin",
+    "is_banned": false,
+    "created_at": "2026-01-24T12:37:18.348Z"
+  },
+  {
+    "id": 2,
+    "username": "user1",
+    "email": "user1@example.com",
+    "password": "$2a$10$9orGdjKpqiHdRXlTml612OsgZMyqjfC1QVY9Y1j5Eli5H6z9qYUyG",
+    "role": "user",
+    "is_banned": false,
+    "created_at": "2026-01-24T12:37:18.454Z"
+  }
+]

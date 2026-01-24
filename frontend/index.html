@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC Store - Интернет-магазин компьютерных комплектующих</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="home-page">
+    <!-- Навигация -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <a href="index.html" class="logo">
+                        <i class="fas fa-desktop"></i>
+                        <span>PC<span class="logo-highlight">Store</span></span>
+                    </a>
+                </div>
+
+                <ul class="nav-menu">
+                    <li class="nav-item active"><a href="index.html"><i class="fas fa-home"></i> Главная</a></li>
+                    <li class="nav-item"><a href="catalog.html"><i class="fas fa-th-large"></i> Каталог</a></li>
+                    <li class="nav-item"><a href="cart.html"><i class="fas fa-shopping-cart"></i> Корзина</a></li>
+                    <!-- Добавляем ссылку на админ-панель -->
+                    <li class="nav-item" id="adminLink" style="display: none;">
+                        <a href="admin.html"><i class="fas fa-crown"></i> Админ-панель</a>
+                    </li>
+                </ul>
+
+                <div class="nav-actions">
+                    <a href="cart.html" class="cart-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-badge" id="cartCount">0</span>
+                    </a>
+                    <div class="user-dropdown">
+                        <button class="user-btn" id="userMenuBtn">
+                            <i class="fas fa-user"></i>
+                            <span id="userName">Войти</span>
+                        </button>
+                        <div class="dropdown-menu" id="userMenu">
+                            <a href="login.html" class="dropdown-item" id="loginLink"><i class="fas fa-sign-in-alt"></i> Войти</a>
+                            <a href="register.html" class="dropdown-item" id="registerLink"><i class="fas fa-user-plus"></i> Регистрация</a>
+                            <div class="dropdown-divider" id="authDivider"></div>
+                            <a href="#" class="dropdown-item" id="logoutLink" style="display: none;"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Герой-секция -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Собери свой идеальный ПК</h1>
+                <p class="hero-description">
+                    Более 1000 комплектующих от ведущих производителей. 
+                    Гарантия качества и лучшие цены на рынке.
+                </p>
+                <div class="hero-actions">
+                    <a href="catalog.html" class="btn btn-primary btn-lg">
+                        <i class="fas fa-shopping-cart"></i> Перейти в каталог
+                    </a>
+                    <!-- Убрана кнопка "Посмотреть категории" -->
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="hero-icon">
+                    <i class="fas fa-microchip"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Категории -->
+    <section class="categories" id="categories">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Популярные категории</h2>
+                <p class="section-description">
+                    Выберите нужную категорию комплектующих
+                </p>
+            </div>
+            <div class="categories-grid">
+                <a href="catalog.html?category=processors" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <h3 class="category-title">Процессоры</h3>
+                    <p class="category-description">
+                        Intel Core и AMD Ryzen для любых задач
+                    </p>
+                </a>
+                <a href="catalog.html?category=video-cards" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3 class="category-title">Видеокарты</h3>
+                    <p class="category-description">
+                        NVIDIA RTX и AMD Radeon для игр и работы
+                    </p>
+                </a>
+                <a href="catalog.html?category=motherboards" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <h3 class="category-title">Материнские платы</h3>
+                    <p class="category-description">
+                        Основы для вашей сборки
+                    </p>
+                </a>
+                <a href="catalog.html?category=ram" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-memory"></i>
+                    </div>
+                    <h3 class="category-title">Оперативная память</h3>
+                    <p class="category-description">
+                        DDR4 и DDR5 от ведущих брендов
+                    </p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Преимущества -->
+    <section class="features">
+        <div class="container">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <h3 class="feature-title">Быстрая доставка</h3>
+                    <p class="feature-description">
+                        Доставка по всей России от 1 дня
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Гарантия 3 года</h3>
+                    <p class="feature-description">
+                        Официальная гарантия на все товары
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3 class="feature-title">Поддержка 24/7</h3>
+                    <p class="feature-description">
+                        Круглосуточная техническая поддержка
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <h3 class="feature-title">Лучшие цены</h3>
+                    <p class="feature-description">
+                        Цены ниже рыночных на 5-15%
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-logo">
+                        <i class="fas fa-desktop"></i>
+                        <span>PC<span class="logo-highlight">Store</span></span>
+                    </div>
+                    <p class="footer-description">
+                        Интернет-магазин компьютерных комплектующих и периферии
+                    </p>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-title">Контакты</h4>
+                    <ul class="footer-contacts">
+                        <li><i class="fas fa-phone"></i> 8 (800) 555-35-35</li>
+                        <li><i class="fas fa-envelope"></i> info@pcstore.ru</li>
+                        <li><i class="fas fa-clock"></i> Пн-Пт: 9:00-21:00</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 PC Store. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initUser();
+            updateCartCount();
+            setupEventListeners();
+        });
+        
+        function initUser() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const userName = document.getElementById('userName');
+            const loginLink = document.getElementById('loginLink');
+            const registerLink = document.getElementById('registerLink');
+            const logoutLink = document.getElementById('logoutLink');
+            const authDivider = document.getElementById('authDivider');
+            const adminLink = document.getElementById('adminLink');
+            
+            if (user) {
+                userName.textContent = user.username;
+                loginLink.style.display = 'none';
+                registerLink.style.display = 'none';
+                logoutLink.style.display = 'block';
+                authDivider.style.display = 'block';
+                
+                // Показываем админ-панель если пользователь админ
+                if (user.role === 'admin') {
+                    adminLink.style.display = 'block';
+                }
+                
+                logoutLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.reload();
+                });
+            }
+        }
+        
+        function updateCartCount() {
+            const cartCount = document.getElementById('cartCount');
+            if (cartCount) {
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const total = cart.reduce((sum, item) => sum + item.quantity, 0);
+                cartCount.textContent = total;
+            }
+        }
+        
+        function setupEventListeners() {
+            // Мобильное меню
+            document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
+                const menu = document.querySelector('.nav-menu');
+                menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+            });
+            
+            // Плавная прокрутка
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

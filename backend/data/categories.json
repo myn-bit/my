@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "name": "Процессоры",
+    "slug": "processors",
+    "description": "Процессоры Intel Core и AMD Ryzen",
+    "is_active": true
+  },
+  {
+    "id": 2,
+    "name": "Видеокарты",
+    "slug": "video-cards",
+    "description": "Видеокарты NVIDIA и AMD",
+    "is_active": true
+  },
+  {
+    "id": 3,
+    "name": "Материнские платы",
+    "slug": "motherboards",
+    "description": "Материнские платы",
+    "is_active": true
+  },
+  {
+    "id": 4,
+    "name": "Оперативная память",
+    "slug": "ram",
+    "description": "Оперативная память DDR4/DDR5",
+    "is_active": true
+  },
+  {
+    "id": 5,
+    "name": "Накопители",
+    "slug": "storage",
+    "description": "SSD и HDD накопители",
+    "is_active": true
+  },
+  {
+    "id": 6,
+    "name": "Блоки питания",
+    "slug": "power-supplies",
+    "description": "Блоки питания",
+    "is_active": true
+  },
+  {
+    "id": 7,
+    "name": "Корпуса",
+    "slug": "cases",
+    "description": "Корпуса для ПК",
+    "is_active": true
+  },
+  {
+    "id": 8,
+    "name": "Охлаждение",
+    "slug": "cooling",
+    "description": "Системы охлаждения",
+    "is_active": true
+  }
+]

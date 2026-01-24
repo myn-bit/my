@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "name": "Intel Core i7-14700K",
+    "slug": "intel-core-i7-14700k",
+    "description": "Процессор Intel Core i7-14700K 20 ядер (8P+12E), до 5.6 GHz, LGA1700",
+    "price": 39990,
+    "category_id": 1,
+    "category_name": "Процессоры",
+    "stock": 15,
+    "is_active": true,
+    "created_at": "2026-01-24T12:37:18.456Z"
+  },
+  {
+    "id": 2,
+    "name": "AMD Ryzen 7 7800X3D",
+    "slug": "amd-ryzen-7-7800x3d",
+    "description": "Процессор AMD Ryzen 7 7800X3D 8 ядер, до 5.0 GHz, AM5",
+    "price": 44990,
+    "category_id": 1,
+    "category_name": "Процессоры",
+    "stock": 12,
+    "is_active": true,
+    "created_at": "2026-01-24T12:37:18.456Z"
+  },
+  {
+    "id": 3,
+    "name": "NVIDIA RTX 4090",
+    "slug": "nvidia-rtx-4090",
+    "description": "Видеокарта NVIDIA GeForce RTX 4090 24GB GDDR6X",
+    "price": 189990,
+    "category_id": 2,
+    "category_name": "Видеокарты",
+    "stock": 8,
+    "is_active": true,
+    "created_at": "2026-01-24T12:37:18.456Z"
+  },
+  {
+    "id": 4,
+    "name": "AMD Radeon RX 7900 XTX",
+    "slug": "amd-radeon-rx-7900-xtx",
+    "description": "Видеокарта AMD Radeon RX 7900 XTX 24GB GDDR6",
+    "price": 119990,
+    "category_id": 2,
+    "category_name": "Видеокарты",
+    "stock": 10,
+    "is_active": true,
+    "created_at": "2026-01-24T12:37:18.456Z"
+  },
+  {
+    "id": 5,
+    "name": "ASUS ROG Strix Z790",
+    "slug": "asus-rog-strix-z790",
+    "description": "Материнская плата ASUS ROG Strix Z790-F Gaming WiFi",
+    "price": 34990,
+    "category_id": 3,
+    "category_name": "Материнские платы",
+    "stock": 20,
+    "is_active": true,
+    "created_at": "2026-01-24T12:37:18.456Z"
+  },
+  {
+    "id": 6,
+    "name": "G.Skill Trident Z5 RGB",
+    "slug": "gskill-trident-z5-rgb",
+    "description": "Оперативная память G.Skill Trident Z5 RGB 32GB (2x16GB) DDR5 6000MHz",
+    "price": 12990,
+    "category_id": 4,
+    "category_name": "Оперативная память",
+    "stock": 25,
+    "is_active": true,
+    "created_at": "2026-01-24T12:37:18.456Z"
+  }
+]

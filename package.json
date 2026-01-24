@@ -1,0 +1,12 @@
+{
+  "name": "pc-store",
+  "version": "1.0.0",
+  "description": "PC Store - Интернет магазин",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3"
+  }
+}
