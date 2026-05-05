@@ -67,26 +67,6 @@
             border-color: var(--color-primary-light);
         }
         
-        .product-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: var(--radius-sm);
-            font-size: 0.75rem;
-            font-weight: 600;
-            z-index: 2;
-        }
-        
-        .badge-sale {
-            background: var(--color-success);
-        }
-        
-        .badge-hot {
-            background: var(--color-error);
-        }
-        
         .product-image-container {
             position: relative;
             width: 100%;
@@ -161,30 +141,6 @@
             font-size: 0.75rem;
         }
         
-        .product-stock {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.875rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: var(--radius-sm);
-        }
-        
-        .stock-available {
-            background: var(--color-success-light);
-            color: var(--color-success);
-        }
-        
-        .stock-low {
-            background: var(--color-warning-light);
-            color: var(--color-warning);
-        }
-        
-        .stock-out {
-            background: var(--color-error-light);
-            color: var(--color-error);
-        }
-        
         .product-price {
             display: flex;
             align-items: center;
@@ -204,12 +160,6 @@
         .cart-icon-price {
             color: var(--color-success);
             font-size: 1rem;
-        }
-        
-        .old-price {
-            font-size: 1rem;
-            color: var(--color-text-tertiary);
-            text-decoration: line-through;
         }
         
         .product-actions {
@@ -263,6 +213,10 @@
         .btn-favorite.active {
             background: var(--color-error-light);
             border-color: var(--color-error);
+            color: var(--color-error);
+        }
+        
+        .btn-favorite.active i {
             color: var(--color-error);
         }
         
@@ -551,7 +505,6 @@
     const API_BASE_URL = 'http://localhost:3001/api';
     
     // База данных УНИКАЛЬНЫХ фотографий для каждого конкретного товара
-    // Используем сервис Unsplash с разными ID для каждого товара
     const productImages = {
         // === ПРОЦЕССОРЫ INTEL ===
         'Intel Core i9-14900K': 'https://images.unsplash.com/photo-1555618254-6c0e1b84b3b5?w=600&h=600&fit=crop&crop=center',
@@ -900,32 +853,6 @@
                     const reviews = getProductReviews(product.id);
                     const { averageRating, reviewCount } = calculateRatingStats(reviews);
                     
-                    // Определяем статус наличия
-                    let stockClass = 'stock-available';
-                    let stockIcon = 'check';
-                    let stockText = 'В наличии';
-                    
-                    if (product.stock <= 0) {
-                        stockClass = 'stock-out';
-                        stockIcon = 'times';
-                        stockText = 'Нет в наличии';
-                    } else if (product.stock < 5) {
-                        stockClass = 'stock-low';
-                        stockIcon = 'exclamation';
-                        stockText = `Осталось ${product.stock}`;
-                    }
-                    
-                    // Бейдж скидки или хита
-                    let badgeHTML = '';
-                    if (product.old_price) {
-                        const discount = Math.round((1 - product.price / product.old_price) * 100);
-                        if (discount >= 15) {
-                            badgeHTML = `<span class="product-badge badge-sale">-${discount}%</span>`;
-                        }
-                    } else if (averageRating >= 4.5 && reviewCount >= 10) {
-                        badgeHTML = '<span class="product-badge badge-hot">Хит</span>';
-                    }
-                    
                     // Генерируем звезды рейтинга
                     const ratingHTML = generateRatingStars(averageRating);
                     
@@ -942,7 +869,6 @@
                     productCard.className = 'product-card';
                     productCard.setAttribute('onclick', `window.location.href='catalog.html?product=${product.id}'`);
                     productCard.innerHTML = `
-                        ${badgeHTML}
                         <div class="product-image-container">
                             <img src="${productImage}" 
                                  alt="${product.name}" 
@@ -962,10 +888,6 @@
                                     </div>
                                     <div class="rating-count">(${reviewCount})</div>
                                 </div>
-                                <div class="product-stock ${stockClass}">
-                                    <i class="fas fa-${stockIcon}"></i>
-                                    ${stockText}
-                                </div>
                             </div>
                             
                             <div class="product-price">
@@ -973,8 +895,6 @@
                                     <i class="fas fa-shopping-cart cart-icon-price"></i>
                                     ${product.price?.toLocaleString('ru-RU') || '0'} ₽
                                 </span>
-                                ${product.old_price ? 
-                                    `<span class="old-price">${product.old_price.toLocaleString('ru-RU')} ₽</span>` : ''}
                             </div>
                             
                             <div class="product-actions">
