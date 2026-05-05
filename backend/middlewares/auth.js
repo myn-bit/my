@@ -1,56 +1,68 @@
+// middleware/auth.js
 const jwt = require('jsonwebtoken');
-const db = require('../config/database');
 
-const authMiddleware = async (req, res, next) => {
-    try {
-        const token = req.headers.authorization?.split(' ')[1];
-        
-        if (!token) {
-            return res.status(401).json({
-                success: false,
-                message: 'Токен отсутствует'
-            });
-        }
-        
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-this');
-        
-        const user = await db.get(
-            'SELECT id, username, email, role, is_banned FROM users WHERE id = ?',
-            [decoded.userId]
-        );
-        
-        if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: 'Пользователь не найден'
-            });
-        }
-        
-        if (user.is_banned) {
-            return res.status(403).json({
-                success: false,
-                message: 'Аккаунт заблокирован'
-            });
-        }
-        
-        req.user = user;
-        next();
-    } catch (error) {
-        res.status(401).json({
-            success: false,
-            message: 'Неверный токен'
+const JWT_SECRET = 'your-secret-key-change-in-production';
+
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ 
+            success: false, 
+            message: 'Требуется авторизация. Токен отсутствует.' 
         });
     }
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Неверный или просроченный токен' 
+            });
+        }
+        req.user = user;
+        next();
+    });
 };
 
-const adminMiddleware = async (req, res, next) => {
-    if (!req.user || req.user.role !== 'admin') {
-        return res.status(403).json({
-            success: false,
-            message: 'Доступ запрещен. Требуются права администратора'
+const requireAdmin = (req, res, next) => {
+    if (!req.user) {
+        return res.status(401).json({ 
+            success: false, 
+            message: 'Требуется авторизация' 
+        });
+    }
+    
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ 
+            success: false, 
+            message: 'Требуются права администратора' 
         });
     }
     next();
 };
 
-module.exports = { authMiddleware, adminMiddleware };
+const requireModerator = (req, res, next) => {
+    if (!req.user) {
+        return res.status(401).json({ 
+            success: false, 
+            message: 'Требуется авторизация' 
+        });
+    }
+    
+    const allowedRoles = ['admin', 'moderator'];
+    if (!allowedRoles.includes(req.user.role)) {
+        return res.status(403).json({ 
+            success: false, 
+            message: 'Недостаточно прав' 
+        });
+    }
+    next();
+};
+
+module.exports = {
+    authenticateToken,
+    requireAdmin,
+    requireModerator
+};

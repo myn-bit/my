@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои заказы - PC Store</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Стили для страницы заказов */
+        .orders-page {
+            padding: 2rem 0;
+            min-height: 80vh;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            color: var(--color-text);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .page-title i {
+            color: var(--color-primary);
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .breadcrumb a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            color: var(--color-primary);
+        }
+        
+        /* Статистика заказов */
+        .orders-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform var(--transition-fast);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .stat-icon.all { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-icon.pending { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
+        .stat-icon.processing { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .stat-icon.delivered { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Список заказов */
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .order-card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: all var(--transition-fast);
+        }
+        
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            background: var(--color-bg-secondary);
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .order-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .order-number {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .order-date {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .order-status {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-pending {
+            background: var(--color-warning-light);
+            color: var(--color-warning);
+        }
+        
+        .status-processing {
+            background: var(--color-info-light);
+            color: var(--color-info);
+        }
+        
+        .status-shipped {
+            background: var(--color-primary-light);
+            color: var(--color-primary);
+        }
+        
+        .status-delivered {
+            background: var(--color-success-light);
+            color: var(--color-success);
+        }
+        
+        .status-cancelled {
+            background: var(--color-error-light);
+            color: var(--color-error);
+        }
+        
+        .order-content {
+            padding: 1.5rem;
+        }
+        
+        .order-items {
+            margin-bottom: 1.5rem;
+        }
+        
+        .order-item {
+            display: grid;
+            grid-template-columns: 60px 1fr auto;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--color-border-light);
+            align-items: center;
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-image {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: var(--color-bg-secondary);
+        }
+        
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .item-details h4 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+            color: var(--color-text);
+        }
+        
+        .item-price {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+        
+        .item-quantity {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .item-total {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+        
+        .order-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 2px solid var(--color-border);
+        }
+        
+        .order-total {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        /* Состояние пустого списка */
+        .orders-empty {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--color-text-tertiary);
+            opacity: 0.3;
+            margin-bottom: 1.5rem;
+        }
+        
+        .orders-empty h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+        }
+        
+        .orders-empty p {
+            color: var(--color-text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        /* Уведомления */
+        .notifications-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
+        }
+        
+        .notification {
+            background: var(--color-bg-card);
+            border-left: 4px solid var(--color-primary);
+            border-radius: var(--radius-md);
+            padding: 15px 20px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification.success {
+            border-left-color: var(--color-success);
+        }
+        
+        .notification.error {
+            border-left-color: var(--color-error);
+        }
+        
+        .notification.info {
+            border-left-color: var(--color-info);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <!-- Логотип -->
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <span class="logo-text">PCStore</span>
+            </a>
+
+            <!-- Кнопка мобильного меню -->
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Основное меню -->
+            <ul class="navbar-nav" id="navbarNav">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Главная</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="catalog.html" class="nav-link">
+                        <i class="fas fa-store"></i>
+                        <span>Каталог</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="cart.html" class="nav-link">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Корзина</span>
+                        <span class="cart-badge" id="cartCount">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="orders.html" class="nav-link active">
+                        <i class="fas fa-history"></i>
+                        <span>Мои заказы</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i>
+                        <span>Профиль</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin.html" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Админ-панель</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Панель действий -->
+            <div class="nav-actions">
+                <!-- Избранное -->
+                <a href="favorites.html" class="action-btn" id="favoritesBtn">
+                    <i class="fas fa-heart"></i>
+                    <span class="cart-badge" id="favoritesCount">0</span>
+                </a>
+                
+                <!-- Аккаунт пользователя -->
+                <div class="user-dropdown">
+                    <div class="user-avatar" id="userAvatar">
+                        <div class="avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">Гость</span>
+                            <span class="user-role">Войти в аккаунт</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    
+                    <!-- Выпадающее меню -->
+                    <div class="dropdown-menu" id="userDropdown">
+                        <a href="login.html" class="dropdown-item" id="loginBtn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Войти</span>
+                        </a>
+                        <a href="register.html" class="dropdown-item">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Регистрация</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="settings.html" class="dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Настройки</span>
+                        </a>
+                        <a href="orders.html" class="dropdown-item">
+                            <i class="fas fa-history"></i>
+                            <span>Мои заказы</span>
+                        </a>
+                        <a href="favorites.html" class="dropdown-item">
+                            <i class="fas fa-heart"></i>
+                            <span>Избранное</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" id="logoutBtn" style="display: none;">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Выйти</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Страница заказов -->
+            <div class="orders-page">
+                <!-- Хлебные крошки -->
+                <div class="breadcrumb">
+                    <a href="index.html">Главная</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Мои заказы</span>
+                </div>
+
+                <h1 class="page-title">
+                    <i class="fas fa-history"></i>
+                    Мои заказы
+                </h1>
+
+                <!-- Статистика заказов -->
+                <div class="orders-stats" id="ordersStats">
+                    <!-- Статистика будет загружена здесь -->
+                </div>
+
+                <!-- Список заказов -->
+                <div class="orders-list" id="ordersList">
+                    <!-- Заказы будут загружены здесь -->
+                </div>
+
+                <!-- Пустой список -->
+                <div class="orders-empty" id="ordersEmpty" style="display: none;">
+                    <div class="empty-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <h3>У вас пока нет заказов</h3>
+                    <p>Совершите первую покупку и здесь появятся ваши заказы</p>
+                    <a href="catalog.html" class="btn btn-primary">
+                        <i class="fas fa-store"></i> Перейти в каталог
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>PC Store</h3>
+                <p>Ваш надежный партнер в мире компьютерных технологий</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Поддержка</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Статус заказа</a></li>
+                    <li><a href="#">Возврат товара</a></li>
+                    <li><a href="#">Консультация</a></li>
+                </ul>
+            </div>
+            
+            <!-- Таблица заказов -->
+            <div class="table-responsive">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Номер заказа</th>
+                            <th>Дата</th>
+                            <th>Товары</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersList">
+                        <!-- Заказы загружаются через JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Контакты</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-phone"></i> 8 (800) 555 35 35</li>
+                    <li><i class="fas fa-envelope"></i> orders@pcstore.ru</li>
+                    <li><i class="fas fa-clock"></i> Пн-Пт: 9:00-20:00</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 PC Store. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <!-- Кнопка темы -->
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-sun"></i>
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <!-- Уведомления -->
+    <div class="notifications-container"></div>
+
+    <script>
+    // Глобальные переменные
+    let userOrders = [];
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', function() {
+        initAuth();
+        initMobileMenu();
+        initUserDropdown();
+        loadUserOrders();
+        updateCartCount();
+        updateFavoritesCount();
+        setupThemeToggle();
+    });
+
+    // Инициализация авторизации
+    function initAuth() {
+        try {
+            const userJson = localStorage.getItem('user');
+            
+            const userName = document.querySelector('.user-name');
+            const userRole = document.querySelector('.user-role');
+            const avatar = document.querySelector('.avatar');
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const adminLink = document.querySelector('a[href="admin.html"]');
+            
+            if (userJson) {
+                const user = JSON.parse(userJson);
+                
+                if (user && user.token) {
+                    if (userName) userName.textContent = user.username || 'Пользователь';
+                    if (userRole) userRole.textContent = user.role === 'admin' ? 'Администратор' : 'Пользователь';
+                    
+                    if (loginBtn) loginBtn.style.display = 'none';
+                    if (logoutBtn) logoutBtn.style.display = 'block';
+                    
+                    if (adminLink) {
+                        if (user.role !== 'admin') {
+                            adminLink.parentElement.style.display = 'none';
+                        } else {
+                            adminLink.parentElement.style.display = 'block';
+                        }
+                    }
+                    
+                    loadUserAvatar(user);
+                    return;
+                }
+            }
+            
+            if (userName) userName.textContent = 'Гость';
+            if (userRole) userRole.textContent = 'Войти в аккаунт';
+            if (loginBtn) loginBtn.style.display = 'block';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+            
+            if (avatar) {
+                avatar.innerHTML = '<i class="fas fa-user"></i>';
+                avatar.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+                avatar.style.backgroundImage = 'none';
+            }
+            
+            if (adminLink) {
+                adminLink.parentElement.style.display = 'none';
+            }
+            
+        } catch (error) {
+            console.error('❌ Ошибка в initAuth:', error);
+        }
+    }
+
+    // Функция для загрузки аватара пользователя
+    function loadUserAvatar(user) {
+        if (!user || !user.id) return;
+        
+        const avatar = document.querySelector('.avatar');
+        if (!avatar) return;
+        
+        try {
+            const savedAvatar = localStorage.getItem(`userAvatar_${user.id}`);
+            
+            if (savedAvatar) {
+                const avatarData = JSON.parse(savedAvatar);
+                if (avatarData.type === 'image') {
+                    avatar.innerHTML = '';
+                    avatar.style.background = `url('${avatarData.value}') center/cover no-repeat`;
+                    avatar.style.backgroundColor = 'transparent';
+                    avatar.style.backgroundImage = `url('${avatarData.value}')`;
+                } else {
+                    avatar.innerHTML = avatarData.value;
+                    avatar.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+                    avatar.style.backgroundImage = 'none';
+                }
+            } else {
+                const initials = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+                avatar.innerHTML = initials;
+                avatar.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+                avatar.style.backgroundImage = 'none';
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки аватара:', error);
+        }
+    }
+
+    // Функция для обновления аватара из данных
+    function updateAvatarFromData(avatarElement, avatarData) {
+        if (!avatarElement) return;
+        
+        try {
+            if (avatarData.type === 'image') {
+                avatarElement.innerHTML = '';
+                avatarElement.style.background = `url('${avatarData.value}') center/cover no-repeat`;
+                avatarElement.style.backgroundColor = 'transparent';
+                avatarElement.style.backgroundImage = `url('${avatarData.value}')`;
+            } else {
+                avatarElement.innerHTML = avatarData.value;
+                avatarElement.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+                avatarElement.style.backgroundImage = 'none';
+            }
+        } catch (e) {
+            console.error('Ошибка при установке аватара:', e);
+            avatarElement.innerHTML = '<i class="fas fa-user"></i>';
+            avatarElement.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+        }
+    }
+
+    // Инициализация мобильного меню
+    function initMobileMenu() {
+        const menuToggle = document.getElementById('menuToggle');
+        const navbarNav = document.getElementById('navbarNav');
+        
+        if (menuToggle && navbarNav) {
+            menuToggle.addEventListener('click', function() {
+                navbarNav.classList.toggle('active');
+            });
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    navbarNav.classList.remove('active');
+                });
+            });
+        }
+    }
+
+    // Инициализация выпадающего меню пользователя
+    function initUserDropdown() {
+        const userAvatar = document.getElementById('userAvatar');
+        const userDropdown = document.getElementById('userDropdown');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        if (userAvatar && userDropdown) {
+            userAvatar.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userDropdown.classList.toggle('active');
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!userAvatar.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.remove('active');
+                }
+            });
+        }
+        
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+        }
+    }
+
+    // Функция выхода из системы
+    function logout() {
+        if (confirm('Вы уверены, что хотите выйти?')) {
+            localStorage.removeItem('user');
+            localStorage.removeItem('cart');
+            localStorage.removeItem('favorites');
+            window.location.href = 'login.html';
+        }
+    }
+
+    // Загрузка заказов пользователя
+    async function loadUserOrders() {
+        try {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || !user.token) {
+                throw new Error('Требуется авторизация');
+            }
+            
+            const response = await fetch('http://localhost:3001/api/orders/my', {
+                headers: {
+                    'Authorization': `Bearer ${user.token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                userOrders = data.orders || [];
+                updateOrdersStats();
+                renderOrdersList();
+                
+                if (userOrders.length === 0) {
+                    document.getElementById('ordersEmpty').style.display = 'block';
+                    document.getElementById('ordersList').style.display = 'none';
+                    document.getElementById('ordersStats').style.display = 'none';
+                } else {
+                    document.getElementById('ordersEmpty').style.display = 'none';
+                    document.getElementById('ordersList').style.display = 'flex';
+                    document.getElementById('ordersStats').style.display = 'grid';
+                }
+                
+            } else {
+                throw new Error(data.message || 'Ошибка загрузки заказов');
+            }
+            
+        } catch (error) {
+            console.error('Ошибка загрузки заказов:', error);
+            
+            if (error.message.includes('Failed to fetch') || error.message.includes('401')) {
+                loadDemoOrders();
+            } else {
+                showNotification('Ошибка загрузки заказов', 'error');
+            }
+        }
+    }
+
+    // Загрузка демо-заказов
+    function loadDemoOrders() {
+        userOrders = [
+            {
+                id: 1001,
+                order_number: 'ORD-001001',
+                total_amount: 92998,
+                status: 'pending',
+                shipping_address: 'Москва, ул. Примерная, д. 1, кв. 5',
+                delivery_method: 'courier',
+                payment_method: 'Карта онлайн',
+                created_at: '2024-01-10T09:00:00Z',
+                items_count: 2,
+                items: [
+                    { 
+                        product_id: 1, 
+                        quantity: 1, 
+                        price: 89999, 
+                        product_name: 'Ноутбук ASUS TUF Gaming' 
+                    },
+                    { 
+                        product_id: 2, 
+                        quantity: 1, 
+                        price: 2999, 
+                        product_name: 'Мышь игровая Razer DeathAdder' 
+                    }
+                ]
+            },
+            {
+                id: 1002,
+                order_number: 'ORD-001002',
+                total_amount: 64999,
+                status: 'delivered',
+                shipping_address: 'Самовывоз',
+                delivery_method: 'pickup',
+                payment_method: 'Наличными',
+                created_at: '2024-01-05T14:30:00Z',
+                items_count: 1,
+                items: [
+                    { 
+                        product_id: 3, 
+                        quantity: 1, 
+                        price: 64999, 
+                        product_name: 'Процессор Intel Core i9-12900K' 
+                    }
+                ]
+            },
+            {
+                id: 1003,
+                order_number: 'ORD-001003',
+                total_amount: 55299,
+                status: 'processing',
+                shipping_address: 'Санкт-Петербург, Невский пр., 100',
+                delivery_method: 'post',
+                payment_method: 'СБП',
+                created_at: '2024-01-15T11:20:00Z',
+                items_count: 1,
+                items: [
+                    { 
+                        product_id: 4, 
+                        quantity: 1, 
+                        price: 54999, 
+                        product_name: 'Видеокарта NVIDIA RTX 3060 Ti' 
+                    }
+                ]
+            }
+        ];
+        
+        updateOrdersStats();
+        renderOrdersList();
+        
+        document.getElementById('ordersEmpty').style.display = 'none';
+        document.getElementById('ordersList').style.display = 'flex';
+        document.getElementById('ordersStats').style.display = 'grid';
+        
+        showNotification('Загружены демо-данные заказов', 'info');
+    }
+
+    // Обновление статистики заказов
+    function updateOrdersStats() {
+        const statsContainer = document.getElementById('ordersStats');
+        
+        const stats = {
+            all: userOrders.length,
+            pending: userOrders.filter(o => o.status === 'pending').length,
+            processing: userOrders.filter(o => o.status === 'processing').length,
+            delivered: userOrders.filter(o => o.status === 'delivered').length,
+            totalAmount: userOrders.reduce((sum, order) => sum + order.total_amount, 0)
+        };
+        
+        statsContainer.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon all">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="stat-value">${stats.all}</div>
+                <div class="stat-label">Всего заказов</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon pending">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-value">${stats.pending}</div>
+                <div class="stat-label">Ожидают обработки</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon processing">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="stat-value">${stats.processing}</div>
+                <div class="stat-label">В обработке</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon delivered">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value">${stats.delivered}</div>
+                <div class="stat-label">Доставлено</div>
+            </div>
+        `;
+    }
+
+    // Отображение списка заказов
+    function renderOrdersList() {
+        const container = document.getElementById('ordersList');
+        container.innerHTML = '';
+        
+        if (userOrders.length === 0) {
+            return;
+        }
+        
+        const sortedOrders = [...userOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        sortedOrders.forEach((order, index) => {
+            const orderElement = document.createElement('div');
+            orderElement.className = 'order-card';
+            
+            const orderDate = new Date(order.created_at);
+            const formattedDate = orderDate.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const statusClass = getStatusClass(order.status);
+            const statusText = getStatusText(order.status);
+            
+            const orderNumber = userOrders.length - index;
+            
+            orderElement.innerHTML = `
+                <div class="order-header">
+                    <div class="order-info">
+                        <div class="order-number">
+                            <i class="fas fa-receipt"></i>
+                            Заказ №${orderNumber}
+                            <span style="font-size: 0.9rem; color: var(--color-text-secondary); font-weight: normal;">
+                                (${order.order_number})
+                            </span>
+                        </div>
+                        <div class="order-date">
+                            <i class="far fa-calendar"></i>
+                            ${formattedDate}
+                        </div>
+                    </div>
+                    <div class="order-status ${statusClass}">
+                        <i class="fas fa-circle" style="font-size: 0.6rem;"></i>
+                        ${statusText}
+                    </div>
+                </div>
+                
+                <div class="order-content">
+                    <div class="order-items" id="items-${order.id}">
+                    </div>
+                    
+                    <div class="order-summary">
+                        <div class="order-total">
+                            Итого: ${formatPrice(order.total_amount)} ₽
+                        </div>
+                        <div class="order-actions">
+                            <button class="btn btn-info btn-sm" onclick="viewOrderDetails(${order.id})" title="Подробнее">
+                                <i class="fas fa-eye"></i> Подробнее
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(orderElement);
+            renderOrderItems(order.id, order.items || []);
+        });
+    }
+
+    // Отображение товаров в заказе
+    function renderOrderItems(orderId, items) {
+        const container = document.getElementById(`items-${orderId}`);
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        items.forEach(item => {
+            const productName = item.product_name || `Товар #${item.product_id}`;
+            
+            const itemElement = document.createElement('div');
+            itemElement.className = 'order-item';
+            
+            itemElement.innerHTML = `
+                <div class="item-image">
+                    <i class="fas fa-box" style="font-size: 1.5rem; color: var(--color-text-tertiary);"></i>
+                </div>
+                <div class="item-details">
+                    <h4>${productName}</h4>
+                    <div class="item-price">${formatPrice(item.price)} ₽</div>
+                    <div class="item-quantity">Количество: ${item.quantity} шт.</div>
+                </div>
+                <div class="item-total">${formatPrice(item.price * item.quantity)} ₽</div>
+            `;
+            
+            container.appendChild(itemElement);
+        });
+    }
+
+    // Просмотр деталей заказа
+    async function viewOrderDetails(orderId) {
+        try {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || !user.token) {
+                showNotification('Требуется авторизация', 'error');
+                return;
+            }
+            
+            const response = await fetch(`http://localhost:3001/api/orders/${orderId}`, {
+                headers: {
+                    'Authorization': `Bearer ${user.token}`
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showOrderDetailsModal(data.order);
+            } else {
+                throw new Error(data.message || 'Ошибка загрузки заказа');
+            }
+            
+        } catch (error) {
+            console.error('Ошибка загрузки деталей заказа:', error);
+            
+            const order = userOrders.find(o => o.id === orderId);
+            if (order) {
+                showOrderDetailsModal(order);
+            } else {
+                showNotification('Ошибка загрузки деталей заказа', 'error');
+            }
+        }
+    }
+
+    // Функция для получения правильного адреса доставки
+    function getDeliveryAddress(order) {
+        if (order.delivery_method === 'pickup') {
+            return 'Самовывоз';
+        } else if (order.delivery_method === 'courier' && order.shipping_address) {
+            return order.shipping_address;
+        } else if (order.delivery_method === 'post' && order.shipping_address) {
+            return `Почта России: ${order.shipping_address}`;
+        } else {
+            return order.shipping_address || 'Самовывоз';
+        }
+    }
+
+    // Показать модальное окно с деталями заказа
+    function showOrderDetailsModal(order) {
+        const createdAt = new Date(order.created_at).toLocaleString('ru-RU');
+        
+        const statusClass = getStatusClass(order.status);
+        const statusText = getStatusText(order.status);
+        
+        const sortedOrders = [...userOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const orderIndex = sortedOrders.findIndex(o => o.id === order.id);
+        const orderNumber = orderIndex !== -1 ? userOrders.length - orderIndex : 1;
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        `;
+        
+        modal.innerHTML = `
+            <div style="
+                background: var(--color-bg);
+                border-radius: 12px;
+                width: 100%;
+                max-width: 800px;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: var(--shadow-2xl);
+            ">
+                <div style="
+                    padding: 24px;
+                    border-bottom: 1px solid var(--color-border);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                ">
+                    <h2 style="margin: 0; font-size: 1.5rem; color: var(--color-text);">
+                        <i class="fas fa-file-invoice"></i>
+                        Заказ №${orderNumber}
+                    </h2>
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                            style="
+                                background: none;
+                                border: none;
+                                font-size: 1.5rem;
+                                color: var(--color-text-secondary);
+                                cursor: pointer;
+                                padding: 8px;
+                                border-radius: 6px;
+                            ">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div style="padding: 24px;">
+                    <div style="margin-bottom: 24px;">
+                        <h3 style="margin-bottom: 16px; color: var(--color-text);">
+                            <i class="fas fa-info-circle"></i> Основная информация
+                        </h3>
+                        <div style="
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                            gap: 16px;
+                            background: var(--color-bg-secondary);
+                            padding: 20px;
+                            border-radius: 8px;
+                        ">
+                            <div>
+                                <div style="font-weight: 500; color: #64748b; font-size: 0.9rem;">Номер заказа</div>
+                                <div style="font-weight: 600; font-size: 1.1rem; color: var(--color-primary);">
+                                    №${orderNumber}
+                                    <span style="font-size: 0.9rem; color: var(--color-text-secondary); font-weight: normal;">
+                                        (${order.order_number})
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-weight: 500; color: #64748b; font-size: 0.9rem;">Статус</div>
+                                <div>
+                                    <span class="${statusClass}" style="
+                                        padding: 4px 12px;
+                                        border-radius: 20px;
+                                        font-size: 0.875rem;
+                                        font-weight: 600;
+                                        display: inline-flex;
+                                        align-items: center;
+                                        gap: 6px;
+                                    ">
+                                        <i class="fas fa-circle" style="font-size: 0.6rem;"></i>
+                                        ${statusText}
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-weight: 500; color: #64748b; font-size: 0.9rem;">Дата создания</div>
+                                <div>${createdAt}</div>
+                            </div>
+                            <div>
+                                <div style="font-weight: 500; color: #64748b; font-size: 0.9rem;">Сумма</div>
+                                <div style="font-weight: 600; font-size: 1.1rem; color: var(--color-primary);">
+                                    ${formatPrice(order.total_amount)} ₽
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 24px;">
+                        <h3 style="margin-bottom: 16px; color: var(--color-text);">
+                            <i class="fas fa-truck"></i> Доставка и оплата
+                        </h3>
+                        <div style="
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 16px;
+                        ">
+                            <div style="background: var(--color-bg-secondary); padding: 20px; border-radius: 8px;">
+                                <div style="font-weight: 500; color: #64748b; font-size: 0.9rem; margin-bottom: 8px;">Способ оплаты</div>
+                                <div style="font-weight: 600;">${order.payment_method || 'Не указан'}</div>
+                            </div>
+                            <div style="background: var(--color-bg-secondary); padding: 20px; border-radius: 8px;">
+                                <div style="font-weight: 500; color: #64748b; font-size: 0.9rem; margin-bottom: 8px;">Способ доставки</div>
+                                <div style="font-weight: 600;">${getDeliveryMethodText(order.delivery_method)}</div>
+                            </div>
+                            <div style="background: var(--color-bg-secondary); padding: 20px; border-radius: 8px; grid-column: 1 / -1;">
+                                <div style="font-weight: 500; color: #64748b; font-size: 0.9rem; margin-bottom: 8px;">Адрес доставки</div>
+                                <div>${getDeliveryAddress(order)}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 24px;">
+                        <h3 style="margin-bottom: 16px; color: var(--color-text);">
+                            <i class="fas fa-box"></i> Товары в заказе (${order.items_count || 0})
+                        </h3>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: var(--color-bg-secondary);">
+                                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #64748b; border-bottom: 1px solid var(--color-border);">Товар</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #64748b; border-bottom: 1px solid var(--color-border);">Цена</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #64748b; border-bottom: 1px solid var(--color-border);">Кол-во</th>
+                                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #64748b; border-bottom: 1px solid var(--color-border);">Сумма</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modal-items-${order.id}">
+                                </tbody>
+                                <tfoot>
+                                    <tr style="background: var(--color-bg-secondary);">
+                                        <td colspan="3" style="padding: 12px; text-align: right; font-weight: 600;">Итого:</td>
+                                        <td style="padding: 12px; font-weight: 700; color: var(--color-primary);">
+                                            ${formatPrice(order.total_amount)} ₽
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="
+                    padding: 20px 24px;
+                    border-top: 1px solid var(--color-border);
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 12px;
+                ">
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                            style="
+                                padding: 10px 20px;
+                                background: var(--color-bg);
+                                border: 1px solid var(--color-border);
+                                border-radius: 6px;
+                                color: var(--color-text);
+                                cursor: pointer;
+                                font-weight: 500;
+                            ">
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const itemsContainer = document.getElementById(`modal-items-${order.id}`);
+        if (itemsContainer && order.items) {
+            order.items.forEach(item => {
+                const productName = item.product_name || `Товар #${item.product_id}`;
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid var(--color-border-light)';
+                
+                row.innerHTML = `
+                    <td style="padding: 12px;">
+                        <div style="font-weight: 600;">${productName}</div>
+                    </td>
+                    <td style="padding: 12px;">${formatPrice(item.price)} ₽</td>
+                    <td style="padding: 12px;">${item.quantity} шт.</td>
+                    <td style="padding: 12px; font-weight: 600;">${formatPrice(item.price * item.quantity)} ₽</td>
+                `;
+                
+                itemsContainer.appendChild(row);
+            });
+        }
+        
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.remove();
+            }
+        });
+    }
+
+    // Вспомогательные функции
+    function getStatusClass(status) {
+        const classes = {
+            'pending': 'status-pending',
+            'processing': 'status-processing',
+            'shipped': 'status-shipped',
+            'delivered': 'status-delivered',
+            'cancelled': 'status-cancelled'
+        };
+        return classes[status] || 'status-pending';
+    }
+
+    function getStatusText(status) {
+        const texts = {
+            'pending': 'Ожидает обработки',
+            'processing': 'В обработке',
+            'shipped': 'Отправлен',
+            'delivered': 'Доставлен',
+            'cancelled': 'Отменен'
+        };
+        return texts[status] || status;
+    }
+
+    function getDeliveryMethodText(method) {
+        const methods = {
+            'pickup': 'Самовывоз',
+            'courier': 'Курьерская доставка',
+            'post': 'Почта России'
+        };
+        return methods[method] || method || 'Не указано';
+    }
+
+    function formatPrice(price) {
+        return new Intl.NumberFormat('ru-RU').format(Math.round(price));
+    }
+
+    function setupThemeToggle() {
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme');
+        
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+        
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    }
+
+    function showNotification(message, type = 'info') {
+        const container = document.querySelector('.notifications-container');
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" style="background: none; border: none; cursor: pointer; padding: 0.5rem; color: var(--color-text-tertiary);">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        container.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+
+    // Обновление счетчиков корзины и избранного
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const total = cart.reduce((sum, item) => sum + item.quantity, 0);
+        
+        const countElement = document.getElementById('cartCount');
+        if (countElement) countElement.textContent = total;
+    }
+
+    function updateFavoritesCount() {
+        const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        const favoritesCount = document.getElementById('favoritesCount');
+        if (favoritesCount) {
+            favoritesCount.textContent = favorites.length;
+        }
+    }
+
+    // Слушаем изменения localStorage для синхронизации между вкладками
+    window.addEventListener('storage', function(e) {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        if (user && user.id) {
+            const avatarKey = `userAvatar_${user.id}`;
+            if (e.key === avatarKey) {
+                const avatar = document.querySelector('.avatar');
+                if (avatar && e.newValue) {
+                    try {
+                        const avatarData = JSON.parse(e.newValue);
+                        if (avatarData.type === 'image') {
+                            avatar.innerHTML = '';
+                            avatar.style.background = `url('${avatarData.value}') center/cover no-repeat`;
+                            avatar.style.backgroundColor = 'transparent';
+                            avatar.style.backgroundImage = `url('${avatarData.value}')`;
+                        } else {
+                            avatar.innerHTML = avatarData.value;
+                            avatar.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+                            avatar.style.backgroundImage = 'none';
+                        }
+                    } catch (error) {
+                        console.error('Ошибка обновления аватара:', error);
+                    }
+                }
+            }
+        }
+        
+        if (e.key === 'user') {
+            location.reload();
+        }
+    });
+
+    // Переопределяем стандартный localStorage.setItem для немедленного обновления
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = function(key, value) {
+        originalSetItem.apply(this, arguments);
+        
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user && user.id) {
+            const avatarKey = `userAvatar_${user.id}`;
+            if (key === avatarKey || key === 'user') {
+                const event = new Event('storage');
+                event.key = key;
+                window.dispatchEvent(event);
+            }
+        }
+    };
+
+    // Делаем функции глобальными
+    window.viewOrderDetails = viewOrderDetails;
+    window.logout = logout;
+</script>
+</body>
+</html>

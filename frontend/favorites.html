@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Избранное - PC Store</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Стили для страницы избранного */
+        .favorites-page {
+            padding: 2rem 0;
+            min-height: 70vh;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            color: var(--color-text);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .page-title i {
+            color: var(--color-error);
+        }
+        
+        .favorites-stats {
+            color: var(--color-text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .breadcrumb a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            color: var(--color-primary);
+        }
+        
+        .breadcrumb .fas {
+            font-size: 0.7rem;
+        }
+        
+        /* Контейнер избранного */
+        .favorites-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        /* Пустое избранное */
+        .favorites-empty {
+            padding: 4rem 2rem;
+            text-align: center;
+            background: var(--color-bg-card);
+            border-radius: var(--radius-xl);
+            border: 2px dashed var(--color-border);
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--color-error);
+            opacity: 0.3;
+            margin-bottom: 1.5rem;
+        }
+        
+        .favorites-empty h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+        }
+        
+        .favorites-empty p {
+            color: var(--color-text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        /* Сетка товаров */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .product-card {
+            position: relative;
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: all var(--transition-base);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--color-primary-light);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: var(--color-bg-secondary);
+        }
+        
+        .product-content {
+            padding: 1.5rem;
+        }
+        
+        .product-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+        }
+        
+        .product-description {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        
+        .product-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+        }
+        
+        .product-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .remove-favorite {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 36px;
+            height: 36px;
+            background: var(--color-error-light);
+            color: var(--color-error);
+            border: none;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            z-index: 1;
+        }
+        
+        .remove-favorite:hover {
+            background: var(--color-error);
+            color: white;
+        }
+        
+        /* Уведомления */
+        .notifications-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
+        }
+        
+        .notification {
+            background: var(--color-bg-card);
+            border-left: 4px solid var(--color-primary);
+            border-radius: var(--radius-md);
+            padding: 15px 20px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification.success {
+            border-left-color: var(--color-success);
+        }
+        
+        .notification.error {
+            border-left-color: var(--color-error);
+        }
+        
+        .notification.info {
+            border-left-color: var(--color-info);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <!-- Логотип -->
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <span class="logo-text">PCStore</span>
+            </a>
+
+            <!-- Кнопка мобильного меню -->
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Основное меню -->
+            <ul class="navbar-nav" id="navbarNav">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Главная</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="catalog.html" class="nav-link">
+                        <i class="fas fa-store"></i>
+                        <span>Каталог</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="cart.html" class="nav-link">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Корзина</span>
+                        <span class="cart-badge" id="cartCount">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="orders.html" class="nav-link active">
+                        <i class="fas fa-history"></i>
+                        <span>Мои заказы</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i>
+                        <span>Профиль</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin.html" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Админ-панель</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Панель действий -->
+            <div class="nav-actions">
+                <!-- Избранное -->
+                <a href="favorites.html" class="action-btn" id="favoritesBtn">
+                    <i class="fas fa-heart"></i>
+                    <span class="cart-badge" id="favoritesCount">0</span>
+                </a>
+                
+                <!-- Аккаунт пользователя -->
+                <div class="user-dropdown">
+                    <div class="user-avatar" id="userAvatar">
+                        <div class="avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">Гость</span>
+                            <span class="user-role">Войти в аккаунт</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    
+                    <!-- Выпадающее меню -->
+                    <div class="dropdown-menu" id="userDropdown">
+                        <a href="login.html" class="dropdown-item" id="loginBtn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Войти</span>
+                        </a>
+                        <a href="register.html" class="dropdown-item">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Регистрация</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="settings.html" class="dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Настройки</span>
+                        </a>
+                        <a href="orders.html" class="dropdown-item">
+                            <i class="fas fa-history"></i>
+                            <span>Мои заказы</span>
+                        </a>
+                        <a href="favorites.html" class="dropdown-item">
+                            <i class="fas fa-heart"></i>
+                            <span>Избранное</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" id="logoutBtn" style="display: none;">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Выйти</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="main-content">
+        <div class="container">
+            <div class="favorites-page">
+                <!-- Хлебные крошки -->
+                <div class="breadcrumb">
+                    <a href="index.html">Главная</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Избранное</span>
+                </div>
+
+                <h1 class="page-title">
+                    <i class="fas fa-heart"></i>
+                    Избранное
+                </h1>
+                <div class="favorites-stats">
+                    <span id="itemCount">0 товаров</span>
+                </div>
+
+                <div class="favorites-container">
+                    <!-- Пустое избранное -->
+                    <div class="favorites-empty" id="favoritesEmpty">
+                        <div class="empty-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3>Ваше избранное пусто</h3>
+                        <p>Добавляйте товары в избранное, чтобы вернуться к ним позже</p>
+                        <a href="catalog.html" class="btn btn-primary">
+                            <i class="fas fa-store"></i> Перейти в каталог
+                        </a>
+                    </div>
+
+                    <!-- Избранное с товарами -->
+                    <div id="favoritesWithItems" style="display: none;">
+                        <div class="products-grid" id="favoritesGrid">
+                            <!-- Товары будут загружены здесь -->
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 2rem;">
+                            <a href="catalog.html" class="btn btn-outline">
+                                <i class="fas fa-arrow-left"></i> Продолжить покупки
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>PC Store</h3>
+                <p>Лучшие комплектующие для вашего ПК</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Контакты</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-phone"></i> 8 (800) 123-45-67</li>
+                    <li><i class="fas fa-envelope"></i> info@pcstore.ru</li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Помощь</h3>
+                <ul class="footer-links">
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="favorites.html">Избранное</a></li>
+                    <li><a href="login.html">Войти в аккаунт</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 PC Store. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <!-- Кнопка темы -->
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-sun"></i>
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <!-- Уведомления -->
+    <div class="notifications-container"></div>
+
+    <script>
+    // Конфигурация API
+    const API_BASE_URL = 'http://localhost:3001/api';
+    
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', function() {
+        initAuth();
+        initMobileMenu();
+        loadFavorites();
+        updateCartCount();
+        updateFavoritesCount();
+        setupThemeToggle();
+    });
+
+    // Инициализация авторизации
+    function initAuth() {
+        try {
+            const userJson = localStorage.getItem('user');
+            
+            const userName = document.querySelector('.user-name');
+            const userRole = document.querySelector('.user-role');
+            const avatar = document.querySelector('.avatar');
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const adminLink = document.querySelector('a[href="admin.html"]');
+            
+            if (userJson) {
+                const user = JSON.parse(userJson);
+                
+                if (user && user.token) {
+                    if (userName) userName.textContent = user.username || 'Пользователь';
+                    if (userRole) userRole.textContent = user.role === 'admin' ? 'Администратор' : 'Пользователь';
+                    
+                    if (loginBtn) loginBtn.style.display = 'none';
+                    if (logoutBtn) logoutBtn.style.display = 'block';
+                    
+                    if (adminLink) {
+                        if (user.role !== 'admin') {
+                            adminLink.parentElement.style.display = 'none';
+                        } else {
+                            adminLink.parentElement.style.display = 'block';
+                        }
+                    }
+                    
+                    loadUserAvatar(user);
+                    return;
+                }
+            }
+            
+            if (userName) userName.textContent = 'Гость';
+            if (userRole) userRole.textContent = 'Войти в аккаунт';
+            if (loginBtn) loginBtn.style.display = 'block';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+            
+            if (avatar) {
+                avatar.innerHTML = '<i class="fas fa-user"></i>';
+                avatar.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+                avatar.style.backgroundImage = 'none';
+            }
+            
+            if (adminLink) {
+                adminLink.parentElement.style.display = 'none';
+            }
+            
+        } catch (error) {
+            console.error('❌ Ошибка в initAuth:', error);
+        }
+    }
+
+    // Функция для загрузки аватара пользователя
+    function loadUserAvatar(user) {
+        if (!user || !user.id) return;
+        
+        const avatar = document.querySelector('.avatar');
+        if (!avatar) return;
+        
+        try {
+            const savedAvatar = localStorage.getItem(`userAvatar_${user.id}`);
+            
+            if (savedAvatar) {
+                const avatarData = JSON.parse(savedAvatar);
+                if (avatarData.type === 'image') {
+                    avatar.innerHTML = '';
+                    avatar.style.background = `url('${avatarData.value}') center/cover no-repeat`;
+                    avatar.style.backgroundColor = 'transparent';
+                    avatar.style.backgroundImage = `url('${avatarData.value}')`;
+                } else {
+                    avatar.innerHTML = avatarData.value;
+                    avatar.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+                    avatar.style.backgroundImage = 'none';
+                }
+            } else {
+                const initials = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+                avatar.innerHTML = initials;
+                avatar.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+                avatar.style.backgroundImage = 'none';
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки аватара:', error);
+        }
+    }
+
+    // Функция для обновления аватара из данных
+    function updateAvatarFromData(avatarElement, avatarData) {
+        if (!avatarElement) return;
+        
+        try {
+            if (avatarData.type === 'image') {
+                avatarElement.innerHTML = '';
+                avatarElement.style.background = `url('${avatarData.value}') center/cover no-repeat`;
+                avatarElement.style.backgroundColor = 'transparent';
+                avatarElement.style.backgroundImage = `url('${avatarData.value}')`;
+            } else {
+                avatarElement.innerHTML = avatarData.value;
+                avatarElement.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+                avatarElement.style.backgroundImage = 'none';
+            }
+        } catch (e) {
+            console.error('Ошибка при установке аватара:', e);
+            avatarElement.innerHTML = '<i class="fas fa-user"></i>';
+            avatarElement.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+        }
+    }
+
+    // Инициализация мобильного меню
+    function initMobileMenu() {
+        const menuToggle = document.getElementById('menuToggle');
+        const navbarNav = document.getElementById('navbarNav');
+        
+        if (menuToggle && navbarNav) {
+            menuToggle.addEventListener('click', function() {
+                navbarNav.classList.toggle('active');
+            });
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    navbarNav.classList.remove('active');
+                });
+            });
+        }
+    }
+
+    // Выход из системы
+    function logout() {
+        if (confirm('Вы уверены, что хотите выйти?')) {
+            localStorage.removeItem('user');
+            localStorage.removeItem('cart');
+            window.location.href = 'login.html';
+        }
+    }
+
+    // Загрузка избранного
+    async function loadFavorites() {
+        try {
+            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            updateFavoritesCount();
+            
+            if (favorites.length === 0) {
+                showEmptyFavorites();
+                return;
+            }
+            
+            showFavoritesWithItems();
+            
+            const products = {};
+            
+            for (const productId of favorites) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/products/${productId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        let product;
+                        if (data.success && data.product) {
+                            product = data.product;
+                        } else if (data.id) {
+                            product = data;
+                        } else {
+                            console.error('Неизвестный формат данных:', data);
+                            continue;
+                        }
+                        
+                        const safeProduct = {
+                            id: product.id || productId,
+                            name: product.name || `Товар #${productId}`,
+                            description: product.description || `${product.name || 'Товар'} - качественный товар от проверенного производителя.`,
+                            price: product.price || 0,
+                            image_url: product.image_url || 'https://via.placeholder.com/300',
+                            category: product.category || 'Компьютерные комплектующие',
+                            stock: product.stock || 0
+                        };
+                        
+                        products[productId] = safeProduct;
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки товара:', error);
+                }
+            }
+            
+            renderFavorites(favorites, products);
+            
+        } catch (error) {
+            console.error('Ошибка загрузки избранного:', error);
+            showNotification('Ошибка загрузки избранного', 'error');
+        }
+    }
+
+    // Отображение избранного
+    function renderFavorites(favorites, products) {
+        const container = document.getElementById('favoritesGrid');
+        const itemCount = document.getElementById('itemCount');
+        
+        container.innerHTML = '';
+        
+        if (favorites.length === 0) {
+            showEmptyFavorites();
+            return;
+        }
+        
+        itemCount.textContent = `${favorites.length} товаров`;
+        
+        favorites.forEach(productId => {
+            const product = products[productId];
+            
+            if (!product) {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <button class="remove-favorite" onclick="removeFromFavorites(${productId})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div style="padding: 1.5rem; text-align: center;">
+                        <i class="fas fa-box" style="font-size: 2rem; color: var(--color-text-tertiary); margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 0.5rem;">Товар #${productId}</h3>
+                        <p style="color: var(--color-text-secondary);">Информация о товаре не найдена</p>
+                    </div>
+                `;
+                container.appendChild(card);
+                return;
+            }
+            
+            let description = product.description;
+            
+            if (!description || description === 'undefined' || description === 'null') {
+                description = `${product.name} - качественный товар от проверенного производителя.`;
+            }
+            
+            if (description.length > 100) {
+                description = description.substring(0, 100) + '...';
+            }
+            
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <button class="remove-favorite" onclick="removeFromFavorites(${product.id})">
+                    <i class="fas fa-times"></i>
+                </button>
+                <img src="${product.image_url}" 
+                     alt="${product.name}" 
+                     class="product-image"
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/300';">
+                <div class="product-content">
+                    <h3 class="product-title">${product.name}</h3>
+                    <p class="product-description">${description}</p>
+                    <div class="product-price">${product.price.toLocaleString('ru-RU')} ₽</div>
+                    <div class="product-actions">
+                        <button class="btn btn-primary btn-sm" onclick="addToCart(${product.id})" style="flex: 1;">
+                            <i class="fas fa-cart-plus"></i> В корзину
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="removeFromFavorites(${product.id})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // Удаление из избранного
+    function removeFromFavorites(productId) {
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        favorites = favorites.filter(id => id !== productId);
+        localStorage.setItem('favorites', JSON.stringify(favorites));
+        
+        updateFavoritesCount();
+        loadFavorites();
+        showNotification('Товар удален из избранного', 'info');
+    }
+
+    // Добавление в корзину
+    function addToCart(productId) {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const existingItem = cart.find(item => item.productId === productId);
+        
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                productId: productId,
+                quantity: 1
+            });
+        }
+        
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCartCount();
+        showNotification('Товар добавлен в корзину', 'success');
+    }
+
+    // Обновление счетчика корзины
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cartCount = document.getElementById('cartCount');
+        if (cartCount) {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+        }
+    }
+
+    // Обновление счетчика избранного
+    function updateFavoritesCount() {
+        const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        const favoritesCount = document.getElementById('favoritesCount');
+        if (favoritesCount) {
+            favoritesCount.textContent = favorites.length;
+        }
+    }
+
+    // Настройка переключения темы
+    function setupThemeToggle() {
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme');
+        
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+        
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    }
+
+    // Вспомогательные функции
+    function showEmptyFavorites() {
+        document.getElementById('favoritesEmpty').style.display = 'block';
+        document.getElementById('favoritesWithItems').style.display = 'none';
+        document.getElementById('itemCount').textContent = '0 товаров';
+    }
+
+    function showFavoritesWithItems() {
+        document.getElementById('favoritesEmpty').style.display = 'none';
+        document.getElementById('favoritesWithItems').style.display = 'block';
+    }
+
+    function showNotification(message, type = 'info') {
+        const container = document.querySelector('.notifications-container');
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" style="background: none; border: none; cursor: pointer; padding: 0.5rem; color: var(--color-text-tertiary);">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        container.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+
+    // Слушаем изменения localStorage для синхронизации между вкладками
+    window.addEventListener('storage', function(e) {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        if (user && user.id) {
+            const avatarKey = `userAvatar_${user.id}`;
+            if (e.key === avatarKey) {
+                const avatar = document.querySelector('.avatar');
+                if (avatar && e.newValue) {
+                    try {
+                        const avatarData = JSON.parse(e.newValue);
+                        if (avatarData.type === 'image') {
+                            avatar.innerHTML = '';
+                            avatar.style.background = `url('${avatarData.value}') center/cover no-repeat`;
+                            avatar.style.backgroundColor = 'transparent';
+                            avatar.style.backgroundImage = `url('${avatarData.value}')`;
+                        } else {
+                            avatar.innerHTML = avatarData.value;
+                            avatar.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+                            avatar.style.backgroundImage = 'none';
+                        }
+                    } catch (error) {
+                        console.error('Ошибка обновления аватара:', error);
+                    }
+                }
+            }
+        }
+        
+        if (e.key === 'favorites' || e.key === 'cart') {
+            updateFavoritesCount();
+            updateCartCount();
+        }
+        
+        if (e.key === 'user') {
+            location.reload();
+        }
+    });
+
+    // Переопределяем стандартный localStorage.setItem для немедленного обновления
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = function(key, value) {
+        originalSetItem.apply(this, arguments);
+        
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user && user.id) {
+            const avatarKey = `userAvatar_${user.id}`;
+            if (key === avatarKey || key === 'user' || key === 'favorites' || key === 'cart') {
+                const event = new Event('storage');
+                event.key = key;
+                window.dispatchEvent(event);
+            }
+        }
+    };
+
+    // Делаем функции глобальными
+    window.removeFromFavorites = removeFromFavorites;
+    window.addToCart = addToCart;
+    window.showNotification = showNotification;
+    window.logout = logout;
+</script>
+</body>
+</html>

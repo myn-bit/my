@@ -128,3 +128,7 @@ INSERT INTO products (name, slug, description, price, category_id, stock) VALUES
 -- Тестовый администратор (пароль: admin123)
 INSERT INTO users (username, email, password_hash, role) VALUES
 ('admin', 'admin@pcstore.ru', '$2a$10$N9qo8uLOickgx2ZMRZoMy.MrqK3a5yE2hUhK5ZIRMh.6YVtq3Qy/G', 'admin');
+
+-- Добавляем второго администратора (пароль: admin456)
+INSERT INTO users (username, email, password_hash, role) VALUES
+('admin2', 'admin2@pcstore.ru', '$2a$10$8xQrGdjKpqiHdRXlTml612OsgZMyqjfC1QVY9Y1j5Eli5H6z9qYUyH', 'admin');

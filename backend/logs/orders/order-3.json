@@ -1,0 +1,13 @@
+{
+  "orderId": 3,
+  "orderNumber": "ORD-88564348",
+  "userId": 1,
+  "username": "admin",
+  "totalAmount": 29490,
+  "itemsCount": 1,
+  "shippingAddress": "фвфвфвфц",
+  "deliveryMethod": "courier",
+  "paymentMethod": "card",
+  "timestamp": "2026-03-14T11:42:44.357Z",
+  "loggedAt": "2026-03-14 14:42:44"
+}

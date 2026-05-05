@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,661 +7,4076 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .admin-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        /* Базовые переменные и сброс */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
+
+        :root {
+            /* Цветовая схема светлая */
+            --color-primary: #3498db;
+            --color-secondary: #2980b9;
+            --color-success: #2ecc71;
+            --color-warning: #e74c3c;
+            --color-info: #f39c12;
+            --color-error: #e74c3c;
+            
+            --color-bg-primary: #ffffff;
+            --color-bg-secondary: #f8f9fa;
+            --color-bg-card: #ffffff;
+            --color-bg-tertiary: #f1f3f5;
+            
+            --color-text: #2c3e50;
+            --color-text-secondary: #34495e;
+            --color-text-tertiary: #7f8c8d;
+            
+            --color-border: #e9ecef;
+            
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
+            
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --color-primary: #4fa3e0;
+            --color-secondary: #3a8bc4;
+            
+            --color-bg-primary: #1a1a1a;
+            --color-bg-secondary: #2d2d2d;
+            --color-bg-card: #333333;
+            --color-bg-tertiary: #404040;
+            
+            --color-text: #ffffff;
+            --color-text-secondary: #e0e0e0;
+            --color-text-tertiary: #b0b0b0;
+            
+            --color-border: #404040;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg-secondary);
+            color: var(--color-text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Навигация */
+        .navbar {
+            background: var(--color-bg-card);
+            border-bottom: 1px solid var(--color-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .navbar-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--color-text);
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .navbar-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            transform: rotate(-5deg);
+            transition: transform var(--transition-fast);
+        }
+
+        .navbar-brand:hover .navbar-logo {
+            transform: rotate(0deg);
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-badge {
+            background: var(--color-warning);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            margin-left: 0.5rem;
+        }
+
+        .navbar-nav {
+            display: flex;
+            list-style: none;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: var(--color-bg-tertiary);
+            color: var(--color-primary);
+        }
+
+        .nav-link.active {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .nav-link i {
+            font-size: 1.1rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--color-text);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            position: relative;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all var(--transition-fast);
+        }
+
+        .action-btn:hover {
+            background: var(--color-bg-tertiary);
+            color: var(--color-primary);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--color-warning);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-avatar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+
+        .user-avatar:hover {
+            background: var(--color-bg-tertiary);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 200px;
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            display: none;
+            z-index: 1000;
+        }
+
+        .dropdown-menu.active {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--color-text);
+            text-decoration: none;
+            transition: background var(--transition-fast);
+        }
+
+        .dropdown-item:hover {
+            background: var(--color-bg-tertiary);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--color-border);
+            margin: 0.5rem 0;
+        }
+
+        /* Основной контент */
+        .admin-main {
+            padding: 2rem 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
         .admin-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--color-border);
+            flex-wrap: wrap;
+            gap: 1rem;
         }
-        
+
         .admin-title {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            color: #1e293b;
+            color: var(--color-text);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
-        
-        .admin-stats {
+
+        .admin-title i {
+            color: var(--color-primary);
+            font-size: 2.2rem;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        /* Статистика */
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
-        
+
         .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border: 1px solid #e2e8f0;
+            background: var(--color-bg-card);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
         }
-        
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.users { background: linear-gradient(135deg, #9b59b6, #3498db); }
+        .stat-icon.products { background: linear-gradient(135deg, #f39c12, #e74c3c); }
+        .stat-icon.categories { background: linear-gradient(135deg, #3498db, #2ecc71); }
+        .stat-icon.orders { background: linear-gradient(135deg, #2ecc71, #3498db); }
+
         .stat-value {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            color: #3b82f6;
-            margin-bottom: 10px;
+            color: var(--color-text);
+            line-height: 1.2;
         }
-        
+
         .stat-label {
-            color: #64748b;
-            font-size: 0.9rem;
+            color: var(--color-text-tertiary);
+            font-size: 0.875rem;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        
+
+        /* Секции */
         .admin-section {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            padding: 25px;
-            margin-bottom: 30px;
-            border: 1px solid #e2e8f0;
+            background: var(--color-bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--color-border);
         }
-        
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
         .section-title {
             font-size: 1.5rem;
             font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 20px;
+            color: var(--color-text);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.75rem;
         }
-        
+
         .section-title i {
-            color: #3b82f6;
+            color: var(--color-primary);
         }
-        
+
+        .section-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        /* Таблицы */
         .table-container {
             overflow-x: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+            max-height: 600px;
+            overflow-y: auto;
         }
-        
+
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: var(--color-bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: var(--color-text-tertiary);
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: var(--color-text-secondary);
+        }
+
         .admin-table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 1200px;
         }
-        
+
+        .admin-table thead {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
         .admin-table th {
-            background: #f8fafc;
-            padding: 15px;
+            padding: 1rem;
             text-align: left;
             font-weight: 600;
-            color: #475569;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .admin-table td {
-            padding: 15px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        
-        .admin-table tr:hover {
-            background: #f8fafc;
-        }
-        
-        .btn-delete {
-            background: #ef4444;
             color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .admin-table tbody tr {
+            border-bottom: 1px solid var(--color-border);
+            transition: background var(--transition-fast);
+        }
+
+        .admin-table tbody tr:hover {
+            background: var(--color-bg-tertiary);
+        }
+
+        .admin-table td {
+            padding: 1rem;
+            vertical-align: middle;
+            color: var(--color-text);
+        }
+
+        /* Бейджи и индикаторы */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-admin {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .badge-moderator {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .badge-user {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .badge-success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+
+        .badge-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .badge-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .status-active {
+            background: var(--color-success);
+            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.2);
+        }
+
+        .status-banned {
+            background: var(--color-error);
+            box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+        }
+
+        .status-pending {
+            background: #f39c12;
+            box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.2);
+        }
+
+        /* Кнопки */
+        .btn {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
         }
-        
-        .btn-delete:hover {
-            background: #dc2626;
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            color: white;
         }
-        
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--color-text-tertiary);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: nowrap;
+        }
+
+        /* Формы */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.25rem;
         }
-        
+
         .form-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem;
             font-weight: 500;
-            color: #475569;
+            color: var(--color-text);
+            font-size: 0.9rem;
         }
-        
-        .form-input {
+
+        .form-control {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-md);
+            background: var(--color-bg-primary);
+            color: var(--color-text);
+            font-size: 0.95rem;
+            transition: all var(--transition-fast);
         }
-        
-        .form-input:focus {
+
+        .form-control:focus {
             outline: none;
-            border-color: #3b82f6;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
-        
-        .btn-add {
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 1rem;
-            display: inline-flex;
+
+        .form-control.error {
+            border-color: var(--color-error);
+        }
+
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            backdrop-filter: blur(5px);
         }
-        
-        .btn-add:hover {
-            background: #059669;
+
+        .modal-content {
+            background: var(--color-bg-card);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--color-border);
+            animation: modalSlideIn 0.3s ease;
         }
-        
-        .access-denied {
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            color: white;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+            padding: 0.25rem;
+            line-height: 1;
+            transition: transform var(--transition-fast);
+        }
+
+        .modal-close:hover {
+            transform: scale(1.1);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        /* Вкладки для редактирования */
+        .edit-user-tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--color-border);
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .edit-user-tab {
+            background: none;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            color: var(--color-text-tertiary);
+            font-weight: 500;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .edit-user-tab:hover {
+            color: var(--color-primary);
+            background: var(--color-bg-tertiary);
+        }
+
+        .edit-user-tab.active {
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-primary);
+            margin-bottom: -2px;
+        }
+
+        .edit-user-tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .edit-user-tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Информационные блоки */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-item {
+            background: var(--color-bg-tertiary);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border-left: 3px solid var(--color-primary);
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: var(--color-text-tertiary);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: var(--color-text);
+            font-size: 1.1rem;
+        }
+
+        .info-value.small {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Индикатор сложности пароля */
+        .password-strength {
+            margin-top: 0.5rem;
+            height: 4px;
+            background: var(--color-border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        .password-strength-bar.weak { 
+            background: var(--color-error); 
+            width: 33%; 
+        }
+
+        .password-strength-bar.medium { 
+            background: #f39c12; 
+            width: 66%; 
+        }
+
+        .password-strength-bar.strong { 
+            background: var(--color-success); 
+            width: 100%; 
+        }
+
+        .password-requirements {
+            font-size: 0.8rem;
+            color: var(--color-text-tertiary);
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .requirement.met {
+            color: var(--color-success);
+        }
+
+        .requirement i {
+            font-size: 0.7rem;
+        }
+
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 3000;
+            animation: slideInRight 0.3s ease;
+            max-width: 400px;
+            color: white;
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Входное окно */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-box {
+            background: var(--color-bg-card);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--color-border);
+            animation: modalSlideIn 0.5s ease;
+        }
+
+        .login-title {
             text-align: center;
-            padding: 60px 20px;
+            margin-bottom: 2rem;
+            color: var(--color-text);
         }
-        
-        .access-denied i {
-            font-size: 4rem;
-            color: #ef4444;
-            margin-bottom: 20px;
+
+        .login-title i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--color-primary);
         }
-        
-        .access-denied h2 {
-            font-size: 1.8rem;
-            color: #1e293b;
-            margin-bottom: 10px;
+
+        .login-info {
+            background: var(--color-bg-tertiary);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+            border-left: 3px solid var(--color-primary);
         }
-        
-        .access-denied p {
-            color: #64748b;
-            margin-bottom: 30px;
+
+        /* Состояния */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--color-text-tertiary);
         }
-        
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--color-border);
+        }
+
         .loading {
-            text-align: center;
-            padding: 40px;
-            grid-column: 1 / -1;
-        }
-        
-        .loading i {
-            font-size: 2rem;
-            color: #3b82f6;
-            margin-bottom: 15px;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--color-border);
+            border-top: 2px solid var(--color-primary);
+            border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Аватар пользователя */
+        .user-avatar-small {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .user-info-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-email {
+            font-size: 0.85rem;
+            color: var(--color-text-tertiary);
+            margin-top: 2px;
+        }
+
+        /* Статус подключения */
+        .admin-status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            background: var(--color-bg-tertiary);
+            border-left: 4px solid var(--color-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-status i {
+            font-size: 1.2rem;
+        }
+
+        .status-text {
+            flex: 1;
+        }
+
+        .status-title {
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 0.25rem;
+        }
+
+        .status-desc {
+            font-size: 0.85rem;
+            color: var(--color-text-tertiary);
+        }
+
+        /* Кнопка переключения темы */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--color-bg-card);
+            border: 2px solid var(--color-border);
+            color: var(--color-text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            z-index: 1000;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            border-color: var(--color-primary);
+        }
+
+        .theme-toggle .fa-sun {
+            display: none;
+        }
+
+        .theme-toggle .fa-moon {
+            display: block;
+        }
+
+        [data-theme="dark"] .theme-toggle .fa-sun {
+            display: block;
+        }
+
+        [data-theme="dark"] .theme-toggle .fa-moon {
+            display: none;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 1024px) {
+            .navbar-container {
+                padding: 0.75rem 1rem;
+            }
+
+            .navbar-nav {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--color-bg-card);
+                flex-direction: column;
+                padding: 1rem;
+                border-bottom: 1px solid var(--color-border);
+                box-shadow: var(--shadow-md);
+            }
+
+            .navbar-nav.active {
+                display: flex;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .user-info {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-main {
+                padding: 1rem;
+            }
+
+            .admin-title {
+                font-size: 1.8rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .section-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .stat-card {
+                padding: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.8rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Навигация -->
-    <header class="header">
-        <div class="container">
-            <nav class="navbar">
-                <div class="nav-brand">
-                    <a href="index.html" class="logo">
-                        <i class="fas fa-desktop"></i>
-                        <span>PC<span class="logo-highlight">Store</span></span>
-                    </a>
+    <!-- Входное окно -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <h2 class="login-title">
+                <i class="fas fa-lock"></i>
+                <div>Вход в админ-панель</div>
+            </h2>
+            
+            <div id="loginMessage" style="display: none; background: rgba(231, 76, 60, 0.1); color: var(--color-error); padding: 0.75rem; border-radius: var(--radius-md); margin-bottom: 1rem; font-size: 0.9rem;">
+                <i class="fas fa-exclamation-circle"></i> <span id="loginMessageText">Неверные данные</span>
+            </div>
+            
+            <div id="loginInfo" class="login-info" style="display: none;">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <strong>Тестовые данные:</strong><br>
+                    Email: admin@pcstore.ru<br>
+                    Пароль: admin123
                 </div>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-envelope"></i>
+                        Email
+                    </label>
+                    <input type="text" id="loginEmail" class="form-control" value="admin@pcstore.ru" placeholder="admin@pcstore.ru" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i>
+                        Пароль
+                    </label>
+                    <input type="password" id="loginPassword" class="form-control" value="admin123" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-sign-in-alt"></i> Войти
+                </button>
+            </form>
+        </div>
+    </div>
 
-                <ul class="nav-menu">
-                    <li class="nav-item"><a href="index.html"><i class="fas fa-home"></i> Главная</a></li>
-                    <li class="nav-item"><a href="catalog.html"><i class="fas fa-th-large"></i> Каталог</a></li>
-                    <li class="nav-item"><a href="cart.html"><i class="fas fa-shopping-cart"></i> Корзина</a></li>
-                    <li class="nav-item active"><a href="admin.html"><i class="fas fa-crown"></i> Админ</a></li>
-                </ul>
+    <!-- Навигация -->
+    <nav class="navbar" style="display: none;">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <span class="logo-text">PCStore</span>
+                <span class="logo-badge">Админ</span>
+            </a>
 
-                <div class="nav-actions">
-                    <a href="cart.html" class="cart-btn">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <ul class="navbar-nav" id="navbarNav">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Главная</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="catalog.html" class="nav-link">
+                        <i class="fas fa-store"></i>
+                        <span>Каталог</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="cart.html" class="nav-link">
                         <i class="fas fa-shopping-cart"></i>
+                        <span>Корзина</span>
                         <span class="cart-badge" id="cartCount">0</span>
                     </a>
-                    <div class="user-dropdown">
-                        <button class="user-btn" id="userMenuBtn">
+                </li>
+                <li class="nav-item">
+                    <a href="orders.html" class="nav-link">
+                        <i class="fas fa-history"></i>
+                        <span>Мои заказы</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i>
+                        <span>Профиль</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="admin.html" class="nav-link active">
+                        <i class="fas fa-cog"></i>
+                        <span>Админ-панель</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="nav-actions">
+                <a href="favorites.html" class="action-btn" id="favoritesBtn">
+                    <i class="fas fa-heart"></i>
+                    <span class="cart-badge" id="favoritesCount">0</span>
+                </a>
+                
+                <div class="user-dropdown">
+                    <div class="user-avatar" id="userAvatar">
+                        <div class="avatar">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name" id="adminName">Администратор</span>
+                            <span class="user-role">Панель управления</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    
+                    <div class="dropdown-menu" id="userDropdown">
+                        <a href="profile.html" class="dropdown-item">
                             <i class="fas fa-user"></i>
-                            <span id="userName">Войти</span>
+                            <span>Профиль</span>
+                        </a>
+                        <a href="orders.html" class="dropdown-item">
+                            <i class="fas fa-history"></i>
+                            <span>Мои заказы</span>
+                        </a>
+                        <a href="favorites.html" class="dropdown-item">
+                            <i class="fas fa-heart"></i>
+                            <span>Избранное</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Выйти</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Контент админ-панели -->
+    <main class="admin-main" style="display: none;">
+        <div class="admin-container">
+            <div id="adminDashboard">
+                <!-- Заголовок -->
+                <div class="admin-header">
+                    <h1 class="admin-title">
+                        <i class="fas fa-cogs"></i>
+                        Панель управления
+                    </h1>
+                    <div class="admin-actions">
+                        <button class="btn btn-primary" onclick="loadAllData()" id="refreshBtn">
+                            <i class="fas fa-sync-alt"></i> Обновить
                         </button>
-                        <div class="dropdown-menu" id="userMenu">
-                            <a href="login.html" class="dropdown-item" id="loginLink"><i class="fas fa-sign-in-alt"></i> Войти</a>
-                            <a href="register.html" class="dropdown-item" id="registerLink"><i class="fas fa-user-plus"></i> Регистрация</a>
-                            <div class="dropdown-divider" id="authDivider"></div>
-                            <a href="#" class="dropdown-item" id="logoutLink" style="display: none;"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                        <button class="btn btn-warning" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Выйти
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Статус подключения -->
+                <div id="connectionStatus" class="admin-status" style="display: none;">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="status-text">
+                        <div class="status-title" id="statusTitle">Соединение установлено</div>
+                        <div class="status-desc" id="statusDesc">Админ-панель подключена к серверу</div>
+                    </div>
+                </div>
+
+                <!-- Статистика -->
+                <div class="stats-grid" id="statsSection">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="statUsers">0</div>
+                                <div class="stat-label">Пользователей</div>
+                            </div>
+                            <div class="stat-icon users">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--color-text-tertiary);">
+                            <i class="fas fa-user-plus"></i> +12 за неделю
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="statProducts">0</div>
+                                <div class="stat-label">Товаров</div>
+                            </div>
+                            <div class="stat-icon products">
+                                <i class="fas fa-box"></i>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--color-text-tertiary);">
+                            <i class="fas fa-plus-circle"></i> 5 новых
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="statCategories">0</div>
+                                <div class="stat-label">Категорий</div>
+                            </div>
+                            <div class="stat-icon categories">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="statOrders">0</div>
+                                <div class="stat-label">Заказов</div>
+                            </div>
+                            <div class="stat-icon orders">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--color-text-tertiary);">
+                            <i class="fas fa-clock"></i> 3 в обработке
                         </div>
                     </div>
                 </div>
-            </nav>
-        </div>
-    </header>
 
-    <!-- Админ-панель -->
-    <div class="admin-container" id="adminContent" style="display: none;">
-        <div class="admin-header">
-            <h1 class="admin-title">Админ-панель</h1>
-            <button class="btn btn-primary" onclick="loadAllData()">
-                <i class="fas fa-redo"></i> Обновить
-            </button>
-        </div>
+                <!-- Управление пользователями -->
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-users-cog"></i>
+                            Управление пользователями
+                        </h2>
+                        <div class="section-actions">
+                            <button class="btn btn-success" onclick="showAddUserModal()">
+                                <i class="fas fa-user-plus"></i> Добавить
+                            </button>
+                            <button class="btn btn-info" onclick="exportUsers()">
+                                <i class="fas fa-download"></i> Экспорт
+                            </button>
+                        </div>
+                    </div>
 
-        <!-- Статистика -->
-        <div class="admin-stats" id="statsSection">
-            <div class="stat-card">
-                <div class="stat-value" id="statUsers">0</div>
-                <div class="stat-label">Пользователей</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statProducts">0</div>
-                <div class="stat-label">Товаров</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statCategories">0</div>
-                <div class="stat-label">Категорий</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statTotalValue">0 ₽</div>
-                <div class="stat-label">Общая стоимость</div>
-            </div>
-        </div>
-
-        <!-- Управление товарами -->
-        <div class="admin-section">
-            <h2 class="section-title"><i class="fas fa-box"></i> Управление товарами</h2>
-            
-            <!-- Форма добавления товара -->
-            <div class="form-group">
-                <h3 style="margin-bottom: 15px; color: #475569;">Добавить новый товар</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                    <div>
-                        <label class="form-label">Название товара</label>
-                        <input type="text" id="productName" class="form-input" placeholder="Например: Intel Core i9">
-                    </div>
-                    <div>
-                        <label class="form-label">Описание</label>
-                        <input type="text" id="productDescription" class="form-input" placeholder="Описание товара">
-                    </div>
-                    <div>
-                        <label class="form-label">Цена (₽)</label>
-                        <input type="number" id="productPrice" class="form-input" placeholder="Например: 39990">
-                    </div>
-                    <div>
-                        <label class="form-label">Категория</label>
-                        <select id="productCategory" class="form-input">
-                            <option value="">Выберите категорию</option>
-                            <!-- Загрузится через JS -->
-                        </select>
+                    <div class="table-container">
+                        <table class="admin-table" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Пользователь</th>
+                                    <th>Роль</th>
+                                    <th>Статус</th>
+                                    <th>Заказов</th>
+                                    <th>Сумма</th>
+                                    <th>Дата регистрации</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr>
+                                    <td colspan="8" style="text-align: center; padding: 2.5rem;">
+                                        <div class="loading" style="margin: 0 auto 1rem;"></div>
+                                        <p>Загрузка пользователей...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <button class="btn-add" onclick="addProduct()">
-                    <i class="fas fa-plus"></i> Добавить товар
-                </button>
-            </div>
-            
-            <!-- Список товаров -->
-            <div class="table-container">
-                <table class="admin-table" id="productsTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Название</th>
-                            <th>Категория</th>
-                            <th>Цена</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productsTableBody">
-                        <!-- Загрузится через JS -->
-                    </tbody>
-                </table>
+
+                <!-- Управление товарами -->
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-boxes"></i>
+                            Управление товарами
+                        </h2>
+                        <div class="section-actions">
+                            <button class="btn btn-success" onclick="showAddProductModal()">
+                                <i class="fas fa-plus"></i> Добавить
+                            </button>
+                            <button class="btn btn-info" onclick="importProducts()">
+                                <i class="fas fa-upload"></i> Импорт
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="admin-table" id="productsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Название</th>
+                                    <th>Категория</th>
+                                    <th>Цена</th>
+                                    <th>Количество</th>
+                                    <th>Продажи</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody">
+                                <tr>
+                                    <td colspan="8" style="text-align: center; padding: 2.5rem;">
+                                        <div class="empty-state">
+                                            <i class="fas fa-box-open"></i>
+                                            <p>Загрузка товаров...</p>
+                                            <div class="loading" style="margin: 1rem auto;"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Управление заказами -->
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-shopping-bag"></i>
+                            Управление заказами
+                        </h2>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="admin-table" id="ordersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Номер заказа</th>
+                                    <th>Пользователь</th>
+                                    <th>Товаров</th>
+                                    <th>Сумма</th>
+                                    <th>Статус</th>
+                                    <th>Дата</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <tr>
+                                    <td colspan="8" style="text-align: center; padding: 2.5rem;">
+                                        <div class="loading" style="margin: 0 auto 1rem;"></div>
+                                        <p>Загрузка заказов...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
+    </main>
 
-        <!-- Пользователи -->
-        <div class="admin-section">
-            <h2 class="section-title"><i class="fas fa-users"></i> Пользователи</h2>
-            <div class="table-container">
-                <table class="admin-table" id="usersTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Имя</th>
-                            <th>Email</th>
-                            <th>Роль</th>
-                            <th>Дата регистрации</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                        <!-- Загрузится через JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <!-- Контейнер для модальных окон -->
+    <div id="modalsContainer"></div>
 
-    <!-- Доступ запрещен -->
-    <div class="access-denied" id="accessDenied" style="display: none;">
-        <i class="fas fa-lock"></i>
-        <h2>Доступ запрещен</h2>
-        <p>Только администраторы имеют доступ к этой панели</p>
-        <a href="login.html" class="btn btn-primary">
-            <i class="fas fa-sign-in-alt"></i> Войти как администратор
-        </a>
-    </div>
+    <!-- Контейнер для уведомлений -->
+    <div class="notifications-container"></div>
+
+    <!-- Кнопка переключения темы -->
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-sun"></i>
+        <i class="fas fa-moon"></i>
+    </button>
 
     <script>
-        // Проверка доступа при загрузке
+        // ==================== КОНФИГУРАЦИЯ ====================
+        const API_BASE = 'http://localhost:3001';
+        const AUTH_TOKEN_KEY = 'admin_auth_token';
+        
+        // Глобальные переменные
+        let users = [];
+        let products = [];
+        let categories = [];
+        let orders = [];
+        let authToken = null;
+        let isDemoMode = false;
+        let currentUser = null;
+
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
         document.addEventListener('DOMContentLoaded', function() {
-            checkAdminAccess();
+            initMobileMenu();
+            initUserDropdown();
+            setupLoginForm();
+            setupThemeToggle();
             updateCartCount();
-            initUser();
+            updateFavoritesCount();
+            autoLogin();
+            
+            // Обработчик выхода
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logout();
+                });
+            }
         });
 
-        // Инициализация пользователя
-        function initUser() {
-            const user = JSON.parse(localStorage.getItem('user'));
-            const userName = document.getElementById('userName');
-            const loginLink = document.getElementById('loginLink');
-            const registerLink = document.getElementById('registerLink');
-            const logoutLink = document.getElementById('logoutLink');
-            const authDivider = document.getElementById('authDivider');
+        // ==================== НАСТРОЙКА ИНТЕРФЕЙСА ====================
+
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            const savedTheme = localStorage.getItem('theme');
             
-            if (user) {
-                userName.textContent = user.username;
-                loginLink.style.display = 'none';
-                registerLink.style.display = 'none';
-                logoutLink.style.display = 'block';
-                authDivider.style.display = 'block';
-                
-                logoutLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    localStorage.removeItem('user');
-                    window.location.reload();
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+            
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const currentTheme = document.documentElement.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
                 });
             }
         }
 
-        // Проверка прав администратора
-        function checkAdminAccess() {
-            const user = JSON.parse(localStorage.getItem('user'));
+        function initMobileMenu() {
+            const menuToggle = document.getElementById('menuToggle');
+            const navbarNav = document.getElementById('navbarNav');
             
-            if (user && user.role === 'admin') {
-                document.getElementById('adminContent').style.display = 'block';
-                document.getElementById('accessDenied').style.display = 'none';
-                loadAllData();
-                loadCategoriesForSelect();
-            } else {
-                document.getElementById('adminContent').style.display = 'none';
-                document.getElementById('accessDenied').style.display = 'block';
+            if (menuToggle && navbarNav) {
+                menuToggle.addEventListener('click', function() {
+                    navbarNav.classList.toggle('active');
+                });
+                
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', () => {
+                        navbarNav.classList.remove('active');
+                    });
+                });
             }
         }
 
-        // Загрузка всех данных
-        async function loadAllData() {
-            await Promise.all([
-                loadStats(),
-                loadProducts(),
-                loadUsers()
-            ]);
+        function initUserDropdown() {
+            const userAvatar = document.getElementById('userAvatar');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            if (userAvatar && userDropdown) {
+                userAvatar.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    userDropdown.classList.toggle('active');
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!userAvatar.contains(e.target) && !userDropdown.contains(e.target)) {
+                        userDropdown.classList.remove('active');
+                    }
+                });
+            }
         }
 
-        // Загрузка статистики
+        // ==================== АВТОРИЗАЦИЯ ====================
+
+        function setupLoginForm() {
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await login();
+                });
+            }
+            
+            document.getElementById('loginInfo').style.display = 'block';
+        }
+
+        async function autoLogin() {
+            const email = 'admin@pcstore.ru';
+            const password = 'admin123';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.token) {
+                        localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+                        authToken = data.token;
+                        currentUser = data.user;
+                        
+                        if (data.user) {
+                            document.getElementById('adminName').textContent = data.user.username;
+                        }
+                        
+                        showAdminPanel();
+                        loadAllData();
+                        showNotification('✅ Автоматический вход выполнен успешно', 'success');
+                        return;
+                    }
+                }
+                
+                showLoginScreen();
+                showLoginMessage('❌ Не удалось выполнить автоматический вход. Войдите вручную.');
+            } catch (error) {
+                console.error('Ошибка автоматического входа:', error);
+                showLoginScreen();
+                showLoginMessage('❌ Сервер недоступен. Проверьте подключение.');
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showLoginMessage('❌ Введите email и пароль');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.token) {
+                    localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+                    authToken = data.token;
+                    currentUser = data.user;
+                    
+                    if (data.user) {
+                        document.getElementById('adminName').textContent = data.user.username;
+                    }
+                    
+                    isDemoMode = false;
+                    showAdminPanel();
+                    loadAllData();
+                    showNotification('✅ Успешный вход в систему', 'success');
+                } else {
+                    showLoginMessage(data.message || '❌ Неверный email или пароль');
+                }
+            } catch (error) {
+                console.error('Ошибка входа:', error);
+                showLoginMessage('❌ Ошибка соединения с сервером');
+            }
+        }
+
+        function logout() {
+            if (confirm('Вы уверены, что хотите выйти?')) {
+                localStorage.removeItem(AUTH_TOKEN_KEY);
+                localStorage.removeItem('user');
+                authToken = null;
+                isDemoMode = false;
+                currentUser = null;
+                
+                showNotification('👋 Вы вышли из системы', 'info');
+                
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
+            }
+        }
+
+        function showLoginScreen() {
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.querySelector('.navbar').style.display = 'none';
+            document.querySelector('.admin-main').style.display = 'none';
+            hideLoginMessage();
+        }
+
+        function showAdminPanel() {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.querySelector('.navbar').style.display = 'block';
+            document.querySelector('.admin-main').style.display = 'block';
+            updateConnectionStatus();
+        }
+
+        function showLoginMessage(message) {
+            const messageElement = document.getElementById('loginMessage');
+            const messageText = document.getElementById('loginMessageText');
+            if (messageElement && messageText) {
+                messageText.textContent = message;
+                messageElement.style.display = 'block';
+            }
+        }
+
+        function hideLoginMessage() {
+            const messageElement = document.getElementById('loginMessage');
+            if (messageElement) {
+                messageElement.style.display = 'none';
+            }
+        }
+
+        // ==================== ЗАГРУЗКА ДАННЫХ ====================
+
+        async function loadAllData() {
+            if (!authToken && !isDemoMode) {
+                showNotification('❌ Требуется авторизация', 'error');
+                showLoginScreen();
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                
+                if (isDemoMode) {
+                    loadDemoData();
+                    showLoading(false);
+                    return;
+                }
+                
+                await Promise.all([
+                    loadStats(),
+                    loadUsers(),
+                    loadProducts(),
+                    loadCategories(),
+                    loadOrders()
+                ]);
+                
+                showLoading(false);
+                showNotification('✅ Данные успешно загружены', 'success');
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                
+                if (error.message.includes('Failed to fetch') || error.message.includes('401')) {
+                    showNotification('⚠️ Сервер недоступен. Переход в демо-режим.', 'warning');
+                    loadDemoData();
+                } else {
+                    showNotification(`❌ Ошибка: ${error.message}`, 'error');
+                }
+                showLoading(false);
+            }
+        }
+
+        function loadDemoData() {
+            isDemoMode = true;
+            updateConnectionStatus();
+            
+            // Демо-пользователи
+            users = [
+                {
+                    id: 1,
+                    username: 'admin',
+                    email: 'admin@pcstore.ru',
+                    role: 'admin',
+                    is_banned: 0,
+                    orders_count: 156,
+                    total_spent: 1250000,
+                    created_at: '2024-01-01T12:00:00Z'
+                },
+                {
+                    id: 2,
+                    username: 'ivan_petrov',
+                    email: 'ivan@example.com',
+                    role: 'user',
+                    is_banned: 0,
+                    orders_count: 23,
+                    total_spent: 345000,
+                    created_at: '2024-01-02T10:30:00Z'
+                },
+                {
+                    id: 3,
+                    username: 'maria_sidorova',
+                    email: 'maria@example.com',
+                    role: 'moderator',
+                    is_banned: 0,
+                    orders_count: 45,
+                    total_spent: 567000,
+                    created_at: '2024-01-03T14:15:00Z'
+                },
+                {
+                    id: 4,
+                    username: 'petr_nikolaev',
+                    email: 'petr@example.com',
+                    role: 'user',
+                    is_banned: 1,
+                    orders_count: 3,
+                    total_spent: 45000,
+                    created_at: '2024-01-04T09:20:00Z',
+                    ban_reason: 'Нарушение правил'
+                }
+            ];
+            
+            // Демо-товары
+            products = [];
+            const categories_list = ['Ноутбуки', 'Видеокарты', 'Процессоры', 'Материнские платы', 'Оперативная память'];
+            for (let i = 1; i <= 50; i++) {
+                products.push({
+                    id: i,
+                    name: `${categories_list[i % 5]} ${i}`,
+                    description: `Подробное описание товара ${i}. Отличные характеристики и качество.`,
+                    price: 10000 + (i * 1500),
+                    category_id: (i % 5) + 1,
+                    category_name: categories_list[i % 5],
+                    stock: Math.floor(Math.random() * 20),
+                    sold: Math.floor(Math.random() * 50),
+                    image_url: 'https://via.placeholder.com/300x200'
+                });
+            }
+            
+            // Демо-категории
+            categories = categories_list.map((name, index) => ({
+                id: index + 1,
+                name: name,
+                products_count: products.filter(p => p.category_id === index + 1).length
+            }));
+            
+            // Демо-заказы
+            orders = [
+                {
+                    id: 1001,
+                    user_id: 2,
+                    username: 'ivan_petrov',
+                    items_count: 3,
+                    total_amount: 89999,
+                    status: 'pending',
+                    payment_method: 'card',
+                    shipping_address: 'Москва, ул. Примерная, д. 1',
+                    created_at: '2024-01-10T09:00:00Z'
+                },
+                {
+                    id: 1002,
+                    user_id: 3,
+                    username: 'maria_sidorova',
+                    items_count: 2,
+                    total_amount: 107998,
+                    status: 'delivered',
+                    payment_method: 'cash',
+                    shipping_address: 'Санкт-Петербург, пр. Тестовый, д. 5',
+                    created_at: '2024-01-09T14:30:00Z'
+                },
+                {
+                    id: 1003,
+                    user_id: 2,
+                    username: 'ivan_petrov',
+                    items_count: 1,
+                    total_amount: 45999,
+                    status: 'processing',
+                    payment_method: 'card',
+                    shipping_address: 'Москва, ул. Примерная, д. 1',
+                    created_at: '2024-01-08T11:15:00Z'
+                }
+            ];
+            
+            updateStats();
+            renderUsersTable();
+            renderProductsTable();
+            renderOrdersTable();
+        }
+
+        function updateStats() {
+            document.getElementById('statUsers').textContent = users.length;
+            document.getElementById('statProducts').textContent = products.length;
+            document.getElementById('statCategories').textContent = categories.length;
+            document.getElementById('statOrders').textContent = orders.length;
+        }
+
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            const statusTitle = document.getElementById('statusTitle');
+            const statusDesc = document.getElementById('statusDesc');
+            
+            if (isDemoMode) {
+                statusTitle.textContent = '🔧 Режим демонстрации';
+                statusDesc.textContent = 'Сервер недоступен. Работа с тестовыми данными.';
+                statusElement.style.display = 'flex';
+                statusElement.style.borderLeftColor = '#f39c12';
+                statusElement.querySelector('i').style.color = '#f39c12';
+            } else {
+                statusTitle.textContent = '✅ Соединение установлено';
+                statusDesc.textContent = 'Админ-панель подключена к серверу';
+                statusElement.style.display = 'flex';
+                statusElement.style.borderLeftColor = '#2ecc71';
+                statusElement.querySelector('i').style.color = '#2ecc71';
+            }
+        }
+
+        function showLoading(show) {
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                if (show) {
+                    refreshBtn.innerHTML = '<div class="loading"></div> Загрузка...';
+                    refreshBtn.disabled = true;
+                } else {
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Обновить';
+                    refreshBtn.disabled = false;
+                }
+            }
+        }
+
+        // ==================== ЗАГРУЗКА С СЕРВЕРА ====================
+
         async function loadStats() {
             try {
-                const response = await fetch('http://localhost:3001/api/admin/stats');
+                const response = await fetch(`${API_BASE}/api/admin/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
                 if (!response.ok) throw new Error('Ошибка загрузки статистики');
                 
-                const stats = await response.json();
+                const data = await response.json();
                 
-                document.getElementById('statUsers').textContent = stats.users;
-                document.getElementById('statProducts').textContent = stats.products;
-                document.getElementById('statCategories').textContent = stats.categories;
-                document.getElementById('statTotalValue').textContent = formatPrice(stats.totalValue) + ' ₽';
-                
+                if (data.success) {
+                    document.getElementById('statUsers').textContent = data.stats.totalUsers || 0;
+                    document.getElementById('statProducts').textContent = data.stats.totalProducts || 0;
+                    document.getElementById('statCategories').textContent = data.stats.totalCategories || 0;
+                    document.getElementById('statOrders').textContent = data.stats.totalOrders || 0;
+                }
             } catch (error) {
                 console.error('Ошибка загрузки статистики:', error);
-                showNotification('Ошибка загрузки статистики', true);
+                throw error;
             }
         }
 
-        // Загрузка товаров для админки
-        async function loadProducts() {
-            try {
-                const response = await fetch('http://localhost:3001/api/admin/products');
-                if (!response.ok) throw new Error('Ошибка загрузки товаров');
-                
-                const products = await response.json();
-                renderProductsTable(products);
-                
-            } catch (error) {
-                console.error('Ошибка загрузки товаров:', error);
-                showNotification('Ошибка загрузки товаров', true);
-            }
-        }
-
-        // Отображение таблицы товаров
-        function renderProductsTable(products) {
-            const tbody = document.getElementById('productsTableBody');
-            
-            if (products.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" style="text-align: center; color: #64748b; padding: 40px;">
-                            <i class="fas fa-box-open"></i>
-                            <p>Товары не найдены</p>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            tbody.innerHTML = products.map(product => `
-                <tr>
-                    <td>${product.id}</td>
-                    <td><strong>${product.name}</strong><br>
-                        <small style="color: #64748b;">${product.description || 'Нет описания'}</small>
-                    </td>
-                    <td>${product.category_name}</td>
-                    <td>${formatPrice(product.price)} ₽</td>
-                    <td>
-                        <button class="btn-delete" onclick="deleteProduct(${product.id}, '${escapeHtml(product.name)}')">
-                            <i class="fas fa-trash"></i> Удалить
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // Загрузка пользователей
         async function loadUsers() {
             try {
-                const response = await fetch('http://localhost:3001/api/admin/users');
+                const response = await fetch(`${API_BASE}/api/admin/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
                 if (!response.ok) throw new Error('Ошибка загрузки пользователей');
                 
-                const users = await response.json();
-                renderUsersTable(users);
+                const data = await response.json();
                 
+                if (data.success) {
+                    users = data.users || [];
+                    renderUsersTable();
+                }
             } catch (error) {
                 console.error('Ошибка загрузки пользователей:', error);
-                showNotification('Ошибка загрузки пользователей', true);
+                throw error;
             }
         }
 
-        // Отображение таблицы пользователей
-        function renderUsersTable(users) {
-            const tbody = document.getElementById('usersTableBody');
-            
-            if (users.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" style="text-align: center; color: #64748b; padding: 40px;">
-                            <i class="fas fa-users"></i>
-                            <p>Пользователи не найдены</p>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            tbody.innerHTML = users.map(user => `
-                <tr>
-                    <td>${user.id}</td>
-                    <td><strong>${user.username}</strong></td>
-                    <td>${user.email}</td>
-                    <td>
-                        <span class="product-category" style="background: ${user.role === 'admin' ? '#fef3c7' : '#e0f2fe'}; color: ${user.role === 'admin' ? '#92400e' : '#0369a1'};">
-                            ${user.role === 'admin' ? '👑 Админ' : '👤 Пользователь'}
-                        </span>
-                    </td>
-                    <td>${new Date(user.created_at).toLocaleDateString('ru-RU')}</td>
-                </tr>
-            `).join('');
-        }
-
-        // Загрузка категорий для select
-        async function loadCategoriesForSelect() {
+        async function loadProducts() {
             try {
-                const response = await fetch('http://localhost:3001/api/categories');
+                const response = await fetch(`${API_BASE}/api/admin/products`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Ошибка загрузки товаров');
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    products = data.products || [];
+                    renderProductsTable();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки товаров:', error);
+                throw error;
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${API_BASE}/api/categories`);
+                
                 if (!response.ok) throw new Error('Ошибка загрузки категорий');
                 
-                const categories = await response.json();
-                const select = document.getElementById('productCategory');
+                const data = await response.json();
                 
-                select.innerHTML = '<option value="">Выберите категорию</option>' +
-                    categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
-                
+                if (data.success) {
+                    categories = data.categories || [];
+                }
             } catch (error) {
                 console.error('Ошибка загрузки категорий:', error);
             }
         }
 
-        // Добавление товара
-        async function addProduct() {
-            const name = document.getElementById('productName').value;
-            const description = document.getElementById('productDescription').value;
-            const price = document.getElementById('productPrice').value;
-            const categoryId = document.getElementById('productCategory').value;
+        async function loadOrders() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/orders`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Ошибка загрузки заказов');
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    orders = data.orders || [];
+                    renderOrdersTable();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки заказов:', error);
+                throw error;
+            }
+        }
+
+        // ==================== ОТОБРАЖЕНИЕ ТАБЛИЦ ====================
+
+        function renderUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
             
-            if (!name || !price || !categoryId) {
-                showNotification('Заполните все обязательные поля', true);
+            if (!users.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <i class="fas fa-users-slash"></i>
+                            <p>Пользователи не найдены</p>
+                            ${!isDemoMode ? `
+                                <button class="btn btn-success btn-sm" onclick="showAddUserModal()">
+                                    <i class="fas fa-user-plus"></i> Добавить пользователя
+                                </button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = users.map(user => {
+                const isBanned = user.is_banned === 1;
+                const roleClass = {
+                    'admin': 'badge-admin',
+                    'moderator': 'badge-moderator',
+                    'user': 'badge-user'
+                }[user.role] || 'badge-user';
+                
+                const roleText = {
+                    'admin': 'Администратор',
+                    'moderator': 'Модератор',
+                    'user': 'Пользователь'
+                }[user.role] || 'Пользователь';
+                
+                return `
+                    <tr>
+                        <td><strong>#${user.id}</strong></td>
+                        <td>
+                            <div class="user-info-cell">
+                                <div class="user-avatar-small">${user.username ? user.username.charAt(0).toUpperCase() : 'U'}</div>
+                                <div class="user-details">
+                                    <div style="font-weight: 600;">${escapeHtml(user.username)}</div>
+                                    <div class="user-email">${escapeHtml(user.email)}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge ${roleClass}">
+                                <i class="fas ${user.role === 'admin' ? 'fa-crown' : user.role === 'moderator' ? 'fa-shield-alt' : 'fa-user'}"></i>
+                                ${roleText}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-indicator ${isBanned ? 'status-banned' : 'status-active'}"></span>
+                            ${isBanned ? 'Заблокирован' : 'Активный'}
+                        </td>
+                        <td>${user.orders_count || 0}</td>
+                        <td style="font-weight: 600;">${formatPrice(user.total_spent || 0)} ₽</td>
+                        <td>${user.created_at ? new Date(user.created_at).toLocaleDateString('ru-RU') : 'Не указано'}</td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-info btn-sm" onclick="viewUser(${user.id})" title="Просмотр">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                ${!isDemoMode ? `
+                                    <button class="btn btn-warning btn-sm" onclick="editUser(${user.id})" title="Редактировать">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn ${isBanned ? 'btn-success' : 'btn-danger'} btn-sm" 
+                                            onclick="${isBanned ? `unbanUser(${user.id})` : `banUser(${user.id})`}" 
+                                            title="${isBanned ? 'Разблокировать' : 'Заблокировать'}">
+                                        <i class="fas ${isBanned ? 'fa-unlock' : 'fa-ban'}"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})" title="Удалить">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderProductsTable() {
+            const tbody = document.getElementById('productsTableBody');
+            
+            if (!products.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <i class="fas fa-box-open"></i>
+                            <p>Товары не найдены</p>
+                            ${!isDemoMode ? `
+                                <button class="btn btn-success btn-sm" onclick="showAddProductModal()">
+                                    <i class="fas fa-plus"></i> Добавить товар
+                                </button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = products.map(product => {
+                const stock = product.stock || 0;
+                const status = stock > 0 ? 'В наличии' : 'Нет в наличии';
+                const statusClass = stock > 0 ? 'status-active' : 'status-banned';
+                
+                return `
+                    <tr>
+                        <td><strong>#${product.id}</strong></td>
+                        <td>
+                            <div style="font-weight: 600;">${escapeHtml(product.name)}</div>
+                            <div style="font-size: 0.8rem; color: var(--color-text-tertiary);">
+                                ${product.description ? escapeHtml(product.description.substring(0, 60)) + '...' : 'Без описания'}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-info">
+                                <i class="fas fa-tag"></i>
+                                ${escapeHtml(product.category_name || 'Без категории')}
+                            </span>
+                        </td>
+                        <td style="font-weight: 600; color: var(--color-success);">${formatPrice(product.price)} ₽</td>
+                        <td>
+                            <span style="font-weight: 600;">${stock} шт.</span>
+                        </td>
+                        <td>${product.sold || 0} шт.</td>
+                        <td>
+                            <span class="status-indicator ${statusClass}"></span>
+                            ${status}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-info btn-sm" onclick="viewProduct(${product.id})" title="Просмотр">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                ${!isDemoMode ? `
+                                    <button class="btn btn-warning btn-sm" onclick="editProduct(${product.id})" title="Редактировать">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})" title="Удалить">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderOrdersTable() {
+            const tbody = document.getElementById('ordersTableBody');
+            
+            if (!orders.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <i class="fas fa-shopping-bag"></i>
+                            <p>Заказы не найдены</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = orders.map(order => {
+                const statusText = getOrderStatusText(order.status);
+                const statusClass = getOrderStatusClass(order.status);
+                
+                return `
+                    <tr>
+                        <td><strong>#${order.id}</strong></td>
+                        <td style="font-weight: 600;">#${order.id}</td>
+                        <td>${escapeHtml(order.username || `ID: ${order.user_id}`)}</td>
+                        <td>${order.items_count || 1} шт.</td>
+                        <td style="font-weight: 600; color: var(--color-success);">${formatPrice(order.total_amount)} ₽</td>
+                        <td>
+                            <span class="status-indicator ${statusClass}"></span>
+                            <span class="badge ${statusClass === 'status-active' ? 'badge-success' : 'badge-warning'}">
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td>${order.created_at ? new Date(order.created_at).toLocaleDateString('ru-RU') : 'Не указано'}</td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-info btn-sm" onclick="viewOrder(${order.id})" title="Просмотр">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                ${!isDemoMode ? `
+                                    <button class="btn btn-success btn-sm" onclick="updateOrderStatus(${order.id}, 'delivered')" title="Завершить">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="updateOrderStatus(${order.id}, 'cancelled')" title="Отменить">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ==================== ФУНКЦИИ ДЛЯ РАБОТЫ С ПОЛЬЗОВАТЕЛЯМИ ====================
+
+        // === УЛУЧШЕННАЯ ФУНКЦИЯ РЕДАКТИРОВАНИЯ ПОЛЬЗОВАТЕЛЯ ===
+        async function editUser(userId) {
+            if (isDemoMode) {
+                showNotification('❌ Редактирование недоступно в демо-режиме', 'warning');
+                return;
+            }
+
+            showNotification('⏳ Загрузка данных пользователя...', 'info');
+
+            try {
+                // Получаем данные пользователя
+                const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        showNotification('❌ Сессия истекла. Войдите снова', 'error');
+                        logout();
+                        return;
+                    }
+                    if (response.status === 404) {
+                        showNotification('❌ Пользователь не найден', 'error');
+                        return;
+                    }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data.success || !data.user) {
+                    throw new Error(data.message || 'Не удалось загрузить данные пользователя');
+                }
+
+                const user = data.user;
+
+                // Форматируем даты
+                const registrationDate = user.created_at 
+                    ? new Date(user.created_at).toLocaleString('ru-RU', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                    : 'Не указана';
+
+                const lastLoginDate = user.last_login 
+                    ? new Date(user.last_login).toLocaleString('ru-RU', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                    : 'Никогда';
+
+                // Получаем статистику
+                let userStats = null;
+                try {
+                    const statsResponse = await fetch(`${API_BASE}/api/admin/users/${userId}/stats`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+                    if (statsResponse.ok) {
+                        const statsData = await statsResponse.json();
+                        if (statsData.success) {
+                            userStats = statsData.stats;
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Не удалось загрузить статистику:', error);
+                }
+
+                const modalId = 'editUserModal-' + Date.now();
+                
+                // HTML модального окна
+                const modalHTML = `
+                    <style>
+                        .edit-user-tabs {
+                            display: flex;
+                            gap: 0.5rem;
+                            border-bottom: 2px solid var(--color-border);
+                            margin-bottom: 1.5rem;
+                            flex-wrap: wrap;
+                        }
+                        
+                        .edit-user-tab {
+                            background: none;
+                            border: none;
+                            padding: 0.75rem 1.25rem;
+                            cursor: pointer;
+                            color: var(--color-text-tertiary);
+                            font-weight: 500;
+                            border-radius: var(--radius-md) var(--radius-md) 0 0;
+                            transition: all var(--transition-fast);
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        }
+                        
+                        .edit-user-tab:hover {
+                            color: var(--color-primary);
+                            background: var(--color-bg-tertiary);
+                        }
+                        
+                        .edit-user-tab.active {
+                            color: var(--color-primary);
+                            border-bottom: 2px solid var(--color-primary);
+                            margin-bottom: -2px;
+                        }
+                        
+                        .edit-user-tab-content {
+                            display: none;
+                            animation: fadeIn 0.3s ease;
+                        }
+                        
+                        .edit-user-tab-content.active {
+                            display: block;
+                        }
+                        
+                        @keyframes fadeIn {
+                            from { opacity: 0; transform: translateY(10px); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+                        
+                        .info-grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 1rem;
+                            margin-bottom: 1.5rem;
+                        }
+                        
+                        .info-item {
+                            background: var(--color-bg-tertiary);
+                            padding: 1rem;
+                            border-radius: var(--radius-md);
+                            border-left: 3px solid var(--color-primary);
+                        }
+                        
+                        .info-label {
+                            font-size: 0.85rem;
+                            color: var(--color-text-tertiary);
+                            margin-bottom: 0.25rem;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        }
+                        
+                        .info-value {
+                            font-weight: 600;
+                            color: var(--color-text);
+                            font-size: 1.1rem;
+                        }
+                        
+                        .info-value.small {
+                            font-size: 0.95rem;
+                            font-weight: 500;
+                        }
+                        
+                        .status-badge {
+                            display: inline-flex;
+                            align-items: center;
+                            padding: 0.25rem 0.75rem;
+                            border-radius: 20px;
+                            font-size: 0.85rem;
+                            font-weight: 500;
+                        }
+                        
+                        .status-badge.active {
+                            background: rgba(46, 204, 113, 0.1);
+                            color: var(--color-success);
+                            border: 1px solid var(--color-success);
+                        }
+                        
+                        .status-badge.banned {
+                            background: rgba(231, 76, 60, 0.1);
+                            color: var(--color-error);
+                            border: 1px solid var(--color-error);
+                        }
+                        
+                        .password-strength {
+                            margin-top: 0.5rem;
+                            height: 4px;
+                            background: var(--color-border);
+                            border-radius: 2px;
+                            overflow: hidden;
+                        }
+                        
+                        .password-strength-bar {
+                            height: 100%;
+                            width: 0;
+                            transition: width 0.3s ease;
+                        }
+                        
+                        .password-strength-bar.weak { background: var(--color-error); width: 33%; }
+                        .password-strength-bar.medium { background: #f39c12; width: 66%; }
+                        .password-strength-bar.strong { background: var(--color-success); width: 100%; }
+                        
+                        .password-requirements {
+                            font-size: 0.8rem;
+                            color: var(--color-text-tertiary);
+                            margin-top: 0.5rem;
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 1rem;
+                        }
+                        
+                        .requirement {
+                            display: flex;
+                            align-items: center;
+                            gap: 0.25rem;
+                        }
+                        
+                        .requirement.met {
+                            color: var(--color-success);
+                        }
+                        
+                        .requirement i {
+                            font-size: 0.7rem;
+                        }
+                    </style>
+
+                    <div class="modal" id="${modalId}">
+                        <div class="modal-content" style="max-width: 700px;">
+                            <div class="modal-header">
+                                <h3 class="modal-title">
+                                    <i class="fas fa-user-edit"></i>
+                                    Редактирование: ${escapeHtml(user.username)}
+                                </h3>
+                                <button class="modal-close" onclick="closeModal('${modalId}')">&times;</button>
+                            </div>
+                            
+                            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                                <!-- Вкладки -->
+                                <div class="edit-user-tabs">
+                                    <button class="edit-user-tab active" data-tab="main" onclick="switchTab('${modalId}', 'main')">
+                                        <i class="fas fa-user"></i>
+                                        Основное
+                                    </button>
+                                    <button class="edit-user-tab" data-tab="security" onclick="switchTab('${modalId}', 'security')">
+                                        <i class="fas fa-shield-alt"></i>
+                                        Безопасность
+                                    </button>
+                                    <button class="edit-user-tab" data-tab="stats" onclick="switchTab('${modalId}', 'stats')">
+                                        <i class="fas fa-chart-bar"></i>
+                                        Статистика
+                                    </button>
+                                    <button class="edit-user-tab" data-tab="orders" onclick="switchTab('${modalId}', 'orders')">
+                                        <i class="fas fa-shopping-bag"></i>
+                                        Заказы
+                                    </button>
+                                </div>
+
+                                <!-- Вкладка Основное -->
+                                <div id="tab-main-${modalId}" class="edit-user-tab-content active">
+                                    <form id="editUserForm-${modalId}">
+                                        <div class="info-grid">
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="fas fa-id-card"></i>
+                                                    ID пользователя
+                                                </div>
+                                                <div class="info-value">#${user.id}</div>
+                                            </div>
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="fas fa-calendar-alt"></i>
+                                                    Дата регистрации
+                                                </div>
+                                                <div class="info-value small">${registrationDate}</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-user" style="margin-right: 0.5rem; color: var(--color-primary);"></i>
+                                                Имя пользователя *
+                                            </label>
+                                            <input type="text" 
+                                                   id="editUsername-${modalId}" 
+                                                   class="form-control" 
+                                                   value="${escapeHtml(user.username)}" 
+                                                   placeholder="Введите имя пользователя"
+                                                   required
+                                                   minlength="3"
+                                                   maxlength="50">
+                                            <small style="color: var(--color-text-tertiary);">От 3 до 50 символов</small>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-envelope" style="margin-right: 0.5rem; color: var(--color-primary);"></i>
+                                                Email *
+                                            </label>
+                                            <input type="email" 
+                                                   id="editEmail-${modalId}" 
+                                                   class="form-control" 
+                                                   value="${escapeHtml(user.email)}" 
+                                                   placeholder="user@example.com"
+                                                   required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-tag" style="margin-right: 0.5rem; color: var(--color-primary);"></i>
+                                                Роль
+                                            </label>
+                                            <select id="editRole-${modalId}" class="form-control">
+                                                <option value="user" ${user.role === 'user' ? 'selected' : ''}>👤 Пользователь</option>
+                                                <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>🛡️ Модератор</option>
+                                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>⚡ Администратор</option>
+                                            </select>
+                                            <small style="color: var(--color-text-tertiary);">Администраторы имеют полный доступ</small>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-toggle-on" style="margin-right: 0.5rem; color: var(--color-primary);"></i>
+                                                Статус аккаунта
+                                            </label>
+                                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                                    <input type="radio" name="userStatus-${modalId}" value="active" ${!user.is_banned ? 'checked' : ''}>
+                                                    <span class="status-badge active">
+                                                        <i class="fas fa-check-circle"></i>
+                                                        Активен
+                                                    </span>
+                                                </label>
+                                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                                    <input type="radio" name="userStatus-${modalId}" value="banned" ${user.is_banned ? 'checked' : ''}>
+                                                    <span class="status-badge banned">
+                                                        <i class="fas fa-ban"></i>
+                                                        Заблокирован
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div id="banReasonContainer-${modalId}" style="display: ${user.is_banned ? 'block' : 'none'}; margin-top: 1rem;">
+                                            <div class="form-group">
+                                                <label class="form-label">
+                                                    <i class="fas fa-comment"></i>
+                                                    Причина блокировки
+                                                </label>
+                                                <textarea id="editBanReason-${modalId}" 
+                                                          class="form-control" 
+                                                          rows="2"
+                                                          placeholder="Укажите причину блокировки">${escapeHtml(user.ban_reason || '')}</textarea>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Вкладка Безопасность -->
+                                <div id="tab-security-${modalId}" class="edit-user-tab-content">
+                                    <form id="editSecurityForm-${modalId}">
+                                        <div class="info-grid">
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="fas fa-clock"></i>
+                                                    Последний вход
+                                                </div>
+                                                <div class="info-value small">${lastLoginDate}</div>
+                                            </div>
+                                            <div class="info-item">
+                                                <div class="info-label">
+                                                    <i class="fas fa-globe"></i>
+                                                    IP адрес
+                                                </div>
+                                                <div class="info-value small">${user.last_ip || 'Неизвестно'}</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-lock" style="margin-right: 0.5rem; color: var(--color-primary);"></i>
+                                                Новый пароль
+                                            </label>
+                                            <input type="password" 
+                                                   id="editPassword-${modalId}" 
+                                                   class="form-control" 
+                                                   placeholder="Оставьте пустым, чтобы не менять"
+                                                   oninput="checkPasswordStrength(this.value, '${modalId}')">
+                                            <div class="password-strength" id="passwordStrength-${modalId}">
+                                                <div class="password-strength-bar" id="passwordStrengthBar-${modalId}"></div>
+                                            </div>
+                                            <div class="password-requirements" id="passwordRequirements-${modalId}">
+                                                <span class="requirement" id="req-length-${modalId}">
+                                                    <i class="fas fa-circle"></i> мин. 6 символов
+                                                </span>
+                                                <span class="requirement" id="req-number-${modalId}">
+                                                    <i class="fas fa-circle"></i> цифра
+                                                </span>
+                                                <span class="requirement" id="req-letter-${modalId}">
+                                                    <i class="fas fa-circle"></i> буква
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-redo-alt" style="margin-right: 0.5rem;"></i>
+                                                Подтверждение пароля
+                                            </label>
+                                            <input type="password" 
+                                                   id="editPasswordConfirm-${modalId}" 
+                                                   class="form-control" 
+                                                   placeholder="Повторите новый пароль"
+                                                   oninput="checkPasswordMatch('${modalId}')">
+                                            <small id="passwordMatchMessage-${modalId}" style="color: var(--color-error); display: none;">
+                                                Пароли не совпадают
+                                            </small>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <input type="checkbox" id="forcePasswordChange-${modalId}" style="width: auto; margin-right: 0.5rem;">
+                                                Требовать смену пароля при следующем входе
+                                            </label>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Вкладка Статистика -->
+                                <div id="tab-stats-${modalId}" class="edit-user-tab-content">
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <div class="info-label">
+                                                <i class="fas fa-shopping-bag"></i>
+                                                Всего заказов
+                                            </div>
+                                            <div class="info-value">${userStats?.totalOrders || 0}</div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">
+                                                <i class="fas fa-ruble-sign"></i>
+                                                Общая сумма
+                                            </div>
+                                            <div class="info-value">${formatPrice(userStats?.totalSpent || 0)} ₽</div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">
+                                                <i class="fas fa-heart"></i>
+                                                В избранном
+                                            </div>
+                                            <div class="info-value">${userStats?.favoritesCount || 0}</div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">
+                                                <i class="fas fa-star"></i>
+                                                Отзывов
+                                            </div>
+                                            <div class="info-value">${userStats?.reviewsCount || 0}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="margin-top: 1.5rem;">
+                                        <h4 style="margin-bottom: 1rem; color: var(--color-text);">Активность за последний месяц</h4>
+                                        <canvas id="userActivityChart-${modalId}" style="width: 100%; height: 200px;"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- Вкладка Заказы -->
+                                <div id="tab-orders-${modalId}" class="edit-user-tab-content">
+                                    <div style="max-height: 300px; overflow-y: auto;">
+                                        ${userStats?.recentOrders?.length > 0 ? `
+                                            <table style="width: 100%; border-collapse: collapse;">
+                                                <thead style="position: sticky; top: 0; background: var(--color-bg-card);">
+                                                    <tr>
+                                                        <th style="text-align: left; padding: 0.5rem;">№</th>
+                                                        <th style="text-align: left; padding: 0.5rem;">Дата</th>
+                                                        <th style="text-align: left; padding: 0.5rem;">Сумма</th>
+                                                        <th style="text-align: left; padding: 0.5rem;">Статус</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    ${userStats.recentOrders.map(order => `
+                                                        <tr>
+                                                            <td style="padding: 0.5rem;">#${order.id}</td>
+                                                            <td style="padding: 0.5rem;">${new Date(order.created_at).toLocaleDateString('ru-RU')}</td>
+                                                            <td style="padding: 0.5rem; font-weight: 600;">${formatPrice(order.total_amount)} ₽</td>
+                                                            <td style="padding: 0.5rem;">
+                                                                <span class="status-indicator ${getOrderStatusClass(order.status)}"></span>
+                                                                ${getOrderStatusText(order.status)}
+                                                            </td>
+                                                        </tr>
+                                                    `).join('')}
+                                                </tbody>
+                                            </table>
+                                        ` : `
+                                            <div class="empty-state">
+                                                <i class="fas fa-shopping-bag"></i>
+                                                <p>У пользователя пока нет заказов</p>
+                                            </div>
+                                        `}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" onclick="closeModal('${modalId}')">
+                                    <i class="fas fa-times"></i> Отмена
+                                </button>
+                                <button class="btn btn-success" onclick="saveUserChanges(${user.id}, '${modalId}')">
+                                    <i class="fas fa-save"></i> Сохранить изменения
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Добавляем модальное окно
+                const container = document.getElementById('modalsContainer');
+                container.insertAdjacentHTML('beforeend', modalHTML);
+
+                // Показываем модальное окно
+                const modal = document.getElementById(modalId);
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+
+                // Обработчик для статуса
+                const statusRadios = modal.querySelectorAll(`input[name="userStatus-${modalId}"]`);
+                const banReasonContainer = modal.querySelector(`#banReasonContainer-${modalId}`);
+                
+                statusRadios.forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        if (e.target.value === 'banned') {
+                            banReasonContainer.style.display = 'block';
+                        } else {
+                            banReasonContainer.style.display = 'none';
+                        }
+                    });
+                });
+
+                // Инициализируем график
+                if (typeof Chart !== 'undefined' && userStats?.activityData) {
+                    initUserActivityChart(userStats.activityData, modalId);
+                }
+
+                showNotification('✅ Данные пользователя загружены', 'success');
+
+            } catch (error) {
+                console.error('Ошибка загрузки данных пользователя:', error);
+                showNotification(`❌ Ошибка: ${error.message}`, 'error');
+            }
+        }
+
+        // Переключение вкладок
+        function switchTab(modalId, tabName) {
+            const modal = document.getElementById(modalId);
+            
+            // Обновляем вкладки
+            modal.querySelectorAll('.edit-user-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.tab === tabName) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Обновляем контент
+            modal.querySelectorAll('.edit-user-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            modal.querySelector(`#tab-${tabName}-${modalId}`).classList.add('active');
+        }
+
+        // Проверка сложности пароля
+        function checkPasswordStrength(password, modalId) {
+            const strengthBar = document.getElementById(`passwordStrengthBar-${modalId}`);
+            const reqLength = document.getElementById(`req-length-${modalId}`);
+            const reqNumber = document.getElementById(`req-number-${modalId}`);
+            const reqLetter = document.getElementById(`req-letter-${modalId}`);
+            
+            const hasLength = password.length >= 6;
+            const hasNumber = /\d/.test(password);
+            const hasLetter = /[a-zA-Zа-яА-Я]/.test(password);
+            
+            updateRequirement(reqLength, hasLength);
+            updateRequirement(reqNumber, hasNumber);
+            updateRequirement(reqLetter, hasLetter);
+            
+            if (password.length === 0) {
+                strengthBar.className = 'password-strength-bar';
+            } else if (hasLength && hasNumber && hasLetter) {
+                strengthBar.className = 'password-strength-bar strong';
+            } else if (hasLength && (hasNumber || hasLetter)) {
+                strengthBar.className = 'password-strength-bar medium';
+            } else {
+                strengthBar.className = 'password-strength-bar weak';
+            }
+        }
+
+        function updateRequirement(element, met) {
+            if (met) {
+                element.classList.add('met');
+                element.querySelector('i').className = 'fas fa-check-circle';
+            } else {
+                element.classList.remove('met');
+                element.querySelector('i').className = 'fas fa-circle';
+            }
+        }
+
+        function checkPasswordMatch(modalId) {
+            const password = document.getElementById(`editPassword-${modalId}`).value;
+            const confirm = document.getElementById(`editPasswordConfirm-${modalId}`).value;
+            const message = document.getElementById(`passwordMatchMessage-${modalId}`);
+            
+            if (confirm && password !== confirm) {
+                message.style.display = 'block';
+                return false;
+            } else {
+                message.style.display = 'none';
+                return true;
+            }
+        }
+
+        async function saveUserChanges(userId, modalId) {
+            if (isDemoMode) {
+                showNotification('❌ Редактирование недоступно в демо-режиме', 'warning');
+                return;
+            }
+
+            const saveBtn = document.querySelector(`#${modalId} .btn-success`);
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<div class="loading" style="margin-right: 0.5rem;"></div> Сохранение...';
+            saveBtn.disabled = true;
+
+            try {
+                const username = document.getElementById(`editUsername-${modalId}`).value.trim();
+                const email = document.getElementById(`editEmail-${modalId}`).value.trim();
+                const role = document.getElementById(`editRole-${modalId}`).value;
+                const password = document.getElementById(`editPassword-${modalId}`).value;
+                const passwordConfirm = document.getElementById(`editPasswordConfirm-${modalId}`).value;
+                const forcePasswordChange = document.getElementById(`forcePasswordChange-${modalId}`)?.checked || false;
+                
+                const statusRadio = document.querySelector(`input[name="userStatus-${modalId}"]:checked`);
+                const isBanned = statusRadio?.value === 'banned' ? 1 : 0;
+                const banReason = isBanned ? document.getElementById(`editBanReason-${modalId}`)?.value : '';
+
+                // Валидация
+                if (!username || !email) {
+                    showNotification('❌ Заполните обязательные поля', 'error');
+                    return;
+                }
+
+                if (username.length < 3 || username.length > 50) {
+                    showNotification('❌ Имя пользователя должно быть от 3 до 50 символов', 'error');
+                    return;
+                }
+
+                if (!isValidEmail(email)) {
+                    showNotification('❌ Введите корректный email', 'error');
+                    return;
+                }
+
+                if (password) {
+                    if (password.length < 6) {
+                        showNotification('❌ Пароль должен содержать минимум 6 символов', 'error');
+                        return;
+                    }
+                    
+                    if (password !== passwordConfirm) {
+                        showNotification('❌ Пароли не совпадают', 'error');
+                        return;
+                    }
+                }
+
+                const updateData = {
+                    username,
+                    email,
+                    role,
+                    is_banned: isBanned,
+                    ban_reason: banReason
+                };
+
+                if (password) {
+                    updateData.password = password;
+                    updateData.force_password_change = forcePasswordChange;
+                }
+
+                const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('✅ Пользователь успешно обновлен', 'success');
+                    closeModal(modalId);
+                    loadUsers();
+                } else {
+                    throw new Error(data.message || 'Ошибка обновления пользователя');
+                }
+
+            } catch (error) {
+                console.error('Ошибка сохранения:', error);
+                showNotification(`❌ Ошибка: ${error.message}`, 'error');
+            } finally {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        // Просмотр пользователя
+        async function viewUser(userId) {
+            try {
+                let user;
+                
+                if (isDemoMode) {
+                    user = users.find(u => u.id === userId);
+                } else {
+                    const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        user = data.user;
+                    } else {
+                        throw new Error(data.message || 'Пользователь не найден');
+                    }
+                }
+                
+                if (!user) {
+                    showNotification('Пользователь не найден', 'error');
+                    return;
+                }
+                
+                const modal = createModal({
+                    title: `Информация о пользователе: ${escapeHtml(user.username)}`,
+                    content: `
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                            <div style="text-align: center; margin-bottom: 1rem;">
+                                <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto;">
+                                    ${user.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                                </div>
+                            </div>
+                            
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="fas fa-id-card"></i>
+                                        ID
+                                    </div>
+                                    <div class="info-value">#${user.id}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="fas fa-user"></i>
+                                        Имя пользователя
+                                    </div>
+                                    <div class="info-value">${escapeHtml(user.username)}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="fas fa-envelope"></i>
+                                        Email
+                                    </div>
+                                    <div class="info-value small">${escapeHtml(user.email)}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="fas fa-tag"></i>
+                                        Роль
+                                    </div>
+                                    <div>
+                                        <span class="badge ${user.role === 'admin' ? 'badge-admin' : user.role === 'moderator' ? 'badge-moderator' : 'badge-user'}">
+                                            ${user.role === 'admin' ? 'Администратор' : 
+                                              user.role === 'moderator' ? 'Модератор' : 'Пользователь'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="fas fa-toggle-on"></i>
+                                        Статус
+                                    </div>
+                                    <div>
+                                        <span class="status-indicator ${user.is_banned ? 'status-banned' : 'status-active'}"></span>
+                                        ${user.is_banned ? 'Заблокирован' : 'Активный'}
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="fas fa-calendar"></i>
+                                        Дата регистрации
+                                    </div>
+                                    <div class="info-value small">${user.created_at ? new Date(user.created_at).toLocaleDateString('ru-RU') : 'Не указано'}</div>
+                                </div>
+                            </div>
+                            
+                            ${user.ban_reason ? `
+                                <div style="background: rgba(231, 76, 60, 0.1); padding: 1rem; border-radius: var(--radius-md); border-left: 3px solid var(--color-error);">
+                                    <strong style="color: var(--color-error);">Причина блокировки:</strong>
+                                    <p style="margin-top: 0.5rem;">${escapeHtml(user.ban_reason)}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `,
+                    buttons: [
+                        {
+                            text: 'Закрыть',
+                            class: 'btn-secondary',
+                            onClick: 'closeModal()'
+                        },
+                        {
+                            text: 'Редактировать',
+                            class: 'btn-warning',
+                            onClick: `editUser(${userId})`
+                        }
+                    ]
+                });
+                
+                modal.show();
+            } catch (error) {
+                console.error('Ошибка загрузки информации:', error);
+                showNotification('Ошибка загрузки информации', 'error');
+            }
+        }
+
+        // Добавление пользователя
+        function showAddUserModal() {
+            if (isDemoMode) {
+                showNotification('❌ Функция недоступна в демо-режиме', 'warning');
+                return;
+            }
+            
+            const modal = createModal({
+                title: '➕ Добавить нового пользователя',
+                content: `
+                    <form id="addUserForm">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user" style="color: var(--color-primary);"></i>
+                                Имя пользователя *
+                            </label>
+                            <input type="text" id="newUsername" class="form-control" placeholder="Введите имя пользователя" required minlength="3" maxlength="50">
+                            <small>От 3 до 50 символов</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-envelope" style="color: var(--color-primary);"></i>
+                                Email *
+                            </label>
+                            <input type="email" id="newEmail" class="form-control" placeholder="user@example.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-lock" style="color: var(--color-primary);"></i>
+                                Пароль *
+                            </label>
+                            <input type="password" id="newPassword" class="form-control" placeholder="Минимум 6 символов" required minlength="6">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-tag" style="color: var(--color-primary);"></i>
+                                Роль
+                            </label>
+                            <select id="newRole" class="form-control">
+                                <option value="user">👤 Пользователь</option>
+                                <option value="moderator">🛡️ Модератор</option>
+                                <option value="admin">⚡ Администратор</option>
+                            </select>
+                        </div>
+                    </form>
+                `,
+                buttons: [
+                    {
+                        text: 'Отмена',
+                        class: 'btn-secondary',
+                        onClick: 'closeModal()'
+                    },
+                    {
+                        text: 'Добавить',
+                        class: 'btn-success',
+                        onClick: 'addUser()'
+                    }
+                ]
+            });
+            
+            modal.show();
+        }
+
+        async function addUser() {
+            if (isDemoMode) {
+                showNotification('❌ Функция недоступна в демо-режиме', 'warning');
+                return;
+            }
+            
+            const username = document.getElementById('newUsername').value.trim();
+            const email = document.getElementById('newEmail').value.trim();
+            const password = document.getElementById('newPassword').value;
+            const role = document.getElementById('newRole').value;
+            
+            if (!username || !email || !password) {
+                showNotification('❌ Заполните все обязательные поля', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('❌ Пароль должен содержать минимум 6 символов', 'error');
                 return;
             }
             
             try {
-                const response = await fetch('http://localhost:3001/api/admin/products', {
+                const response = await fetch(`${API_BASE}/api/admin/users`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ username, email, password, role })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ Пользователь успешно добавлен', 'success');
+                    closeModal();
+                    loadUsers();
+                    loadStats();
+                } else {
+                    showNotification(data.message || '❌ Ошибка добавления пользователя', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка добавления пользователя:', error);
+                showNotification('❌ Ошибка добавления пользователя', 'error');
+            }
+        }
+
+        // Блокировка/разблокировка пользователя
+        async function banUser(userId) {
+            if (isDemoMode) {
+                showNotification('❌ Функция недоступна в демо-режиме', 'warning');
+                return;
+            }
+            
+            const reason = prompt('Укажите причину блокировки:');
+            if (reason === null) return;
+            
+            if (!reason.trim()) {
+                showNotification('❌ Укажите причину блокировки', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/users/${userId}/ban`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ reason: reason.trim() })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('🔒 Пользователь заблокирован', 'success');
+                    loadUsers();
+                } else {
+                    showNotification(data.message || '❌ Ошибка блокировки', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка блокировки:', error);
+                showNotification('❌ Ошибка блокировки', 'error');
+            }
+        }
+
+        async function unbanUser(userId) {
+            if (isDemoMode) {
+                showNotification('❌ Функция недоступна в демо-режиме', 'warning');
+                return;
+            }
+            
+            if (!confirm('Вы уверены, что хотите разблокировать этого пользователя?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/users/${userId}/unban`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('🔓 Пользователь разблокирован', 'success');
+                    loadUsers();
+                } else {
+                    showNotification(data.message || '❌ Ошибка разблокировки', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка разблокировки:', error);
+                showNotification('❌ Ошибка разблокировки', 'error');
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (isDemoMode) {
+                showNotification('❌ Функция недоступна в демо-режиме', 'warning');
+                return;
+            }
+            
+            if (!confirm('⚠️ Вы уверены, что хотите удалить этого пользователя? Это действие необратимо!')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ Пользователь удален', 'success');
+                    loadUsers();
+                    loadStats();
+                } else {
+                    showNotification(data.message || '❌ Ошибка удаления', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка удаления:', error);
+                showNotification('❌ Ошибка удаления', 'error');
+            }
+        }
+
+        // ==================== ФУНКЦИИ ДЛЯ ТОВАРОВ ====================
+
+        async function showAddProductModal() {
+            if (isDemoMode) {
+                showNotification('❌ Функция недоступна в демо-режиме', 'warning');
+                return;
+            }
+            
+            if (categories.length === 0) {
+                await loadCategories();
+            }
+            
+            let categoryOptions = '';
+            if (categories.length > 0) {
+                categoryOptions = categories.map(cat => 
+                    `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`
+                ).join('');
+            }
+            
+            const modal = createModal({
+                title: '➕ Добавить новый товар',
+                content: `
+                    <form id="addProductForm">
+                        <div class="form-group">
+                            <label class="form-label">Название товара *</label>
+                            <input type="text" id="newProductName" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Описание</label>
+                            <textarea id="newProductDescription" class="form-control" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Цена (₽) *</label>
+                            <input type="number" id="newProductPrice" class="form-control" step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Категория</label>
+                            <select id="newProductCategory" class="form-control">
+                                <option value="">Выберите категорию</option>
+                                ${categoryOptions}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Количество на складе</label>
+                            <input type="number" id="newProductStock" class="form-control" value="10" min="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">URL изображения</label>
+                            <input type="url" id="newProductImage" class="form-control" placeholder="https://example.com/image.jpg">
+                        </div>
+                    </form>
+                `,
+                buttons: [
+                    {
+                        text: 'Отмена',
+                        class: 'btn-secondary',
+                        onClick: 'closeModal()'
+                    },
+                    {
+                        text: 'Добавить',
+                        class: 'btn-success',
+                        onClick: 'addProduct()'
+                    }
+                ]
+            });
+            
+            modal.show();
+        }
+
+        async function addProduct() {
+            if (isDemoMode) {
+                showNotification('❌ Функция недоступна в демо-режиме', 'warning');
+                return;
+            }
+            
+            const name = document.getElementById('newProductName').value.trim();
+            const description = document.getElementById('newProductDescription').value.trim();
+            const price = parseFloat(document.getElementById('newProductPrice').value);
+            const category_id = parseInt(document.getElementById('newProductCategory').value);
+            const stock = parseInt(document.getElementById('newProductStock').value) || 10;
+            const image_url = document.getElementById('newProductImage').value.trim();
+            
+            if (!name || !price) {
+                showNotification('❌ Заполните обязательные поля', 'error');
+                return;
+            }
+            
+            if (price <= 0) {
+                showNotification('❌ Цена должна быть больше 0', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/products`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify({
                         name,
                         description,
-                        price: parseFloat(price),
-                        category_id: parseInt(categoryId)
+                        price,
+                        category_id: category_id || null,
+                        stock,
+                        image_url: image_url || null
                     })
                 });
                 
-                const result = await response.json();
+                const data = await response.json();
                 
-                if (result.success) {
-                    showNotification('Товар успешно добавлен');
-                    // Очищаем форму
-                    document.getElementById('productName').value = '';
-                    document.getElementById('productDescription').value = '';
-                    document.getElementById('productPrice').value = '';
-                    document.getElementById('productCategory').value = '';
-                    // Обновляем данные
-                    loadAllData();
+                if (data.success) {
+                    showNotification('✅ Товар добавлен', 'success');
+                    closeModal();
+                    loadProducts();
+                    loadStats();
                 } else {
-                    showNotification(result.message || 'Ошибка при добавлении', true);
+                    showNotification(data.message || '❌ Ошибка добавления', 'error');
                 }
-                
             } catch (error) {
                 console.error('Ошибка добавления товара:', error);
-                showNotification('Ошибка при добавлении товара', true);
+                showNotification('❌ Ошибка добавления товара', 'error');
             }
         }
 
-        // Удаление товара
-        async function deleteProduct(id, name) {
-            if (!confirm(`Вы уверены, что хотите удалить товар "${name}"?`)) {
+        function viewProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                showNotification('Товар не найден', 'error');
+                return;
+            }
+            
+            const modal = createModal({
+                title: `Товар: ${escapeHtml(product.name)}`,
+                content: `
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                        <div style="text-align: center; background: var(--color-bg-tertiary); padding: 1rem; border-radius: var(--radius-md);">
+                            <img src="${product.image_url || 'https://via.placeholder.com/300x200'}" 
+                                 style="max-width: 100%; max-height: 200px; object-fit: contain; border-radius: var(--radius-md);">
+                        </div>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">ID</div>
+                                <div class="info-value">#${product.id}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Название</div>
+                                <div class="info-value">${escapeHtml(product.name)}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Категория</div>
+                                <div class="info-value">${escapeHtml(product.category_name || 'Без категории')}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Цена</div>
+                                <div class="info-value" style="color: var(--color-success);">${formatPrice(product.price)} ₽</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">На складе</div>
+                                <div class="info-value">${product.stock || 0} шт.</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Продано</div>
+                                <div class="info-value">${product.sold || 0} шт.</div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <strong>Описание:</strong>
+                            <p style="margin-top: 0.5rem; color: var(--color-text-secondary);">${escapeHtml(product.description || 'Нет описания')}</p>
+                        </div>
+                    </div>
+                `,
+                buttons: [
+                    {
+                        text: 'Закрыть',
+                        class: 'btn-secondary',
+                        onClick: 'closeModal()'
+                    },
+                    {
+                        text: 'Редактировать',
+                        class: 'btn-warning',
+                        onClick: `editProduct(${productId})`
+                    }
+                ]
+            });
+            
+            modal.show();
+        }
+
+        async function editProduct(productId) {
+            if (isDemoMode) {
+                showNotification('❌ Функция недоступна в демо-режиме', 'warning');
+                return;
+            }
+            
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                showNotification('Товар не найден', 'error');
+                return;
+            }
+            
+            if (categories.length === 0) {
+                await loadCategories();
+            }
+            
+            let categoryOptions = '';
+            if (categories.length > 0) {
+                categoryOptions = categories.map(cat => 
+                    `<option value="${cat.id}" ${cat.id === product.category_id ? 'selected' : ''}>${escapeHtml(cat.name)}</option>`
+                ).join('');
+            }
+            
+            const modal = createModal({
+                title: `✏️ Редактировать: ${escapeHtml(product.name)}`,
+                content: `
+                    <form id="editProductForm">
+                        <div class="form-group">
+                            <label class="form-label">Название товара *</label>
+                            <input type="text" id="editProductName" class="form-control" value="${escapeHtml(product.name)}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Описание</label>
+                            <textarea id="editProductDescription" class="form-control" rows="3">${escapeHtml(product.description || '')}</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Цена (₽) *</label>
+                            <input type="number" id="editProductPrice" class="form-control" step="0.01" min="0" value="${product.price}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Категория</label>
+                            <select id="editProductCategory" class="form-control">
+                                <option value="">Выберите категорию</option>
+                                ${categoryOptions}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Количество на складе</label>
+                            <input type="number" id="editProductStock" class="form-control" value="${product.stock || 10}" min="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">URL изображения</label>
+                            <input type="url" id="editProductImage" class="form-control" value="${escapeHtml(product.image_url || '')}" placeholder="https://example.com/image.jpg">
+                        </div>
+                    </form>
+                `,
+                buttons: [
+                    {
+                        text: 'Отмена',
+                        class: 'btn-secondary',
+                        onClick: 'closeModal()'
+                    },
+                    {
+                        text: 'Сохранить',
+                        class: 'btn-success',
+                        onClick: `saveProduct(${productId})`
+                    }
+                ]
+            });
+            
+            modal.show();
+        }
+
+        async function saveProduct(productId) {
+            if (isDemoMode) {
+                showNotification('❌ Функция недоступна в демо-режиме', 'warning');
+                return;
+            }
+            
+            const name = document.getElementById('editProductName').value.trim();
+            const description = document.getElementById('editProductDescription').value.trim();
+            const price = parseFloat(document.getElementById('editProductPrice').value);
+            const category_id = parseInt(document.getElementById('editProductCategory').value);
+            const stock = parseInt(document.getElementById('editProductStock').value) || 10;
+            const image_url = document.getElementById('editProductImage').value.trim();
+            
+            if (!name || !price) {
+                showNotification('❌ Заполните обязательные поля', 'error');
+                return;
+            }
+            
+            if (price <= 0) {
+                showNotification('❌ Цена должна быть больше 0', 'error');
                 return;
             }
             
             try {
-                const response = await fetch(`http://localhost:3001/api/admin/products/${id}`, {
-                    method: 'DELETE'
+                const response = await fetch(`${API_BASE}/api/admin/products/${productId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        name,
+                        description,
+                        price,
+                        category_id: category_id || null,
+                        stock,
+                        image_url: image_url || null
+                    })
                 });
                 
-                const result = await response.json();
+                const data = await response.json();
                 
-                if (result.success) {
-                    showNotification('Товар успешно удален');
-                    loadAllData();
+                if (data.success) {
+                    showNotification('✅ Товар обновлен', 'success');
+                    closeModal();
+                    loadProducts();
                 } else {
-                    showNotification(result.message || 'Ошибка при удалении', true);
+                    showNotification(data.message || '❌ Ошибка обновления', 'error');
                 }
+            } catch (error) {
+                console.error('Ошибка обновления товара:', error);
+                showNotification('❌ Ошибка обновления товара', 'error');
+            }
+        }
+
+        async function deleteProduct(productId) {
+            if (isDemoMode) {
+                showNotification('❌ Функция недоступна в демо-режиме', 'warning');
+                return;
+            }
+            
+            if (!confirm('⚠️ Вы уверены, что хотите удалить этот товар?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/products/${productId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
                 
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ Товар удален', 'success');
+                    loadProducts();
+                    loadStats();
+                } else {
+                    showNotification(data.message || '❌ Ошибка удаления', 'error');
+                }
             } catch (error) {
                 console.error('Ошибка удаления товара:', error);
-                showNotification('Ошибка при удалении товара', true);
+                showNotification('❌ Ошибка удаления товара', 'error');
             }
         }
 
-        // Обновление счетчика корзины
-        function updateCartCount() {
-            const cartCount = document.getElementById('cartCount');
-            if (cartCount) {
-                const cart = JSON.parse(localStorage.getItem('cart')) || [];
-                const total = cart.reduce((sum, item) => sum + item.quantity, 0);
-                cartCount.textContent = total;
+        // ==================== ФУНКЦИИ ДЛЯ ЗАКАЗОВ ====================
+
+        async function viewOrder(orderId) {
+            try {
+                let order;
+                
+                if (isDemoMode) {
+                    order = orders.find(o => o.id === orderId);
+                } else {
+                    const response = await fetch(`${API_BASE}/api/admin/orders/${orderId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        order = data.order;
+                    } else {
+                        throw new Error(data.message || 'Заказ не найден');
+                    }
+                }
+                
+                if (!order) {
+                    showNotification('Заказ не найден', 'error');
+                    return;
+                }
+                
+                const modal = createModal({
+                    title: `Заказ #${order.id}`,
+                    content: `
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">ID заказа</div>
+                                    <div class="info-value">#${order.id}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Пользователь</div>
+                                    <div class="info-value">${escapeHtml(order.username || `ID: ${order.user_id}`)}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Email</div>
+                                    <div class="info-value small">${order.email || 'Не указан'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Сумма</div>
+                                    <div class="info-value" style="color: var(--color-success);">${formatPrice(order.total_amount)} ₽</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Количество товаров</div>
+                                    <div class="info-value">${order.items_count || 1} шт.</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Статус</div>
+                                    <div>
+                                        <span class="status-indicator ${getOrderStatusClass(order.status)}"></span>
+                                        <span class="badge ${getOrderStatusClass(order.status) === 'status-active' ? 'badge-success' : 'badge-warning'}">
+                                            ${getOrderStatusText(order.status)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Способ оплаты</div>
+                                    <div class="info-value">${order.payment_method || 'Не указан'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Дата создания</div>
+                                    <div class="info-value small">${order.created_at ? new Date(order.created_at).toLocaleString('ru-RU') : 'Не указано'}</div>
+                                </div>
+                            </div>
+                            
+                            <div style="background: var(--color-bg-tertiary); padding: 1rem; border-radius: var(--radius-md);">
+                                <strong style="display: block; margin-bottom: 0.5rem;">📍 Адрес доставки:</strong>
+                                <p>${order.shipping_address || 'Самовывоз'}</p>
+                            </div>
+                            
+                            ${order.notes ? `
+                                <div style="background: rgba(243, 156, 18, 0.1); padding: 1rem; border-radius: var(--radius-md); border-left: 3px solid #f39c12;">
+                                    <strong style="color: #f39c12;">📝 Примечания:</strong>
+                                    <p style="margin-top: 0.5rem;">${escapeHtml(order.notes)}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `,
+                    buttons: [
+                        {
+                            text: 'Закрыть',
+                            class: 'btn-secondary',
+                            onClick: 'closeModal()'
+                        },
+                        {
+                            text: 'Изменить статус',
+                            class: 'btn-warning',
+                            onClick: `showOrderStatusModal(${order.id})`
+                        }
+                    ]
+                });
+                
+                modal.show();
+            } catch (error) {
+                console.error('Ошибка загрузки заказа:', error);
+                showNotification('Ошибка загрузки информации', 'error');
             }
         }
 
-        // Форматирование цены
+        function showOrderStatusModal(orderId) {
+            const statuses = [
+                { value: 'pending', label: 'В обработке', icon: 'fa-clock' },
+                { value: 'processing', label: 'В процессе', icon: 'fa-cog' },
+                { value: 'shipped', label: 'Отправлен', icon: 'fa-truck' },
+                { value: 'delivered', label: 'Доставлен', icon: 'fa-check-circle' },
+                { value: 'cancelled', label: 'Отменен', icon: 'fa-times-circle' }
+            ];
+            
+            const modal = createModal({
+                title: '📦 Изменить статус заказа',
+                content: `
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
+                        ${statuses.map(s => `
+                            <button class="btn btn-info" onclick="updateOrderStatus(${orderId}, '${s.value}')" style="justify-content: flex-start;">
+                                <i class="fas ${s.icon}"></i>
+                                ${s.label}
+                            </button>
+                        `).join('')}
+                    </div>
+                `,
+                buttons: [
+                    {
+                        text: 'Отмена',
+                        class: 'btn-secondary',
+                        onClick: 'closeModal()'
+                    }
+                ]
+            });
+            
+            modal.show();
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            if (isDemoMode) {
+                showNotification('❌ Функция недоступна в демо-режиме', 'warning');
+                return;
+            }
+            
+            const statusText = getOrderStatusText(status);
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification(`✅ Статус заказа изменен на "${statusText}"`, 'success');
+                    closeModal();
+                    loadOrders();
+                } else {
+                    showNotification(data.message || '❌ Ошибка обновления статуса', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка обновления статуса:', error);
+                showNotification('❌ Ошибка обновления статуса', 'error');
+            }
+        }
+
+        // ==================== ЭКСПОРТ/ИМПОРТ ====================
+
+        function exportUsers() {
+            const dataStr = JSON.stringify(users, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `users_export_${new Date().toISOString().slice(0,10)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showNotification('✅ Данные пользователей экспортированы', 'success');
+        }
+
+        function importProducts() {
+            showNotification('⚠️ Функция импорта в разработке', 'warning');
+        }
+
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+
         function formatPrice(price) {
-            return new Intl.NumberFormat('ru-RU').format(price);
+            return new Intl.NumberFormat('ru-RU').format(price || 0);
         }
 
-        // Экранирование HTML
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
-            return div.innerHTML;
+            return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
 
-        // Показ уведомления
-        function showNotification(message, isError = false) {
-            // Удаляем старые уведомления
-            document.querySelectorAll('.notification').forEach(n => n.remove());
+        function getOrderStatusText(status) {
+            const statuses = {
+                'pending': 'В обработке',
+                'processing': 'В процессе',
+                'shipped': 'Отправлен',
+                'delivered': 'Доставлен',
+                'cancelled': 'Отменен'
+            };
+            return statuses[status] || status;
+        }
+
+        function getOrderStatusClass(status) {
+            const classes = {
+                'pending': 'status-pending',
+                'processing': 'status-active',
+                'shipped': 'status-active',
+                'delivered': 'status-active',
+                'cancelled': 'status-banned'
+            };
+            return classes[status] || 'status-banned';
+        }
+
+        function initUserActivityChart(activityData, modalId) {
+            const ctx = document.getElementById(`userActivityChart-${modalId}`)?.getContext('2d');
+            if (!ctx) return;
             
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: activityData?.labels || ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+                    datasets: [{
+                        label: 'Активность',
+                        data: activityData?.values || [0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function showNotification(message, type = 'info') {
+            const oldNotifications = document.querySelectorAll('.notification');
+            oldNotifications.forEach(n => n.remove());
+
             const notification = document.createElement('div');
-            notification.className = 'notification';
-            if (isError) notification.classList.add('error');
+            notification.className = `notification ${type}`;
+            
+            const icons = {
+                'success': 'fa-check-circle',
+                'error': 'fa-exclamation-circle',
+                'warning': 'fa-exclamation-triangle',
+                'info': 'fa-info-circle'
+            };
             
             notification.innerHTML = `
-                <i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i>
+                <i class="fas ${icons[type] || 'fa-info-circle'}"></i>
                 <span>${message}</span>
+                <button onclick="this.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer; margin-left: auto; padding: 0;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        function createModal(config) {
+            const modalId = 'modal-' + Date.now();
+            const modalHTML = `
+                <div class="modal" id="${modalId}">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title">
+                                <i class="fas ${config.title.includes('➕') ? 'fa-plus-circle' : 'fa-info-circle'}" style="margin-right: 0.5rem;"></i>
+                                ${config.title}
+                            </h3>
+                            <button class="modal-close" onclick="closeModal('${modalId}')">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            ${config.content}
+                        </div>
+                        <div class="modal-footer">
+                            ${config.buttons.map(btn => 
+                                `<button class="btn ${btn.class}" onclick="${btn.onClick}">${btn.text}</button>`
+                            ).join('')}
+                        </div>
+                    </div>
+                </div>
             `;
             
-            document.body.appendChild(notification);
+            const container = document.getElementById('modalsContainer');
+            container.insertAdjacentHTML('beforeend', modalHTML);
             
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
+            const modal = document.getElementById(modalId);
+            
+            return {
+                show: () => {
+                    modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                },
+                hide: () => {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                    setTimeout(() => modal.remove(), 300);
+                }
+            };
+        }
+
+        function closeModal(modalId = null) {
+            if (modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                    setTimeout(() => modal.remove(), 300);
+                }
+            } else {
+                const modal = document.querySelector('.modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                    setTimeout(() => modal.remove(), 300);
+                }
+            }
+        }
+
+        function updateCartCount() {
+            try {
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const cartCount = document.getElementById('cartCount');
+                const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+                if (cartCount) cartCount.textContent = totalItems;
+            } catch (error) {
+                console.error('Ошибка обновления счетчика корзины:', error);
+            }
+        }
+
+        function updateFavoritesCount() {
+            try {
+                const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+                const favoritesCount = document.getElementById('favoritesCount');
+                if (favoritesCount) favoritesCount.textContent = favorites.length;
+            } catch (error) {
+                console.error('Ошибка обновления счетчика избранного:', error);
+            }
         }
     </script>
 </body>

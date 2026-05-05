@@ -1,0 +1,2971 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой профиль | PC Store</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Стили для профиля */
+        .profile-page {
+            padding: 2rem 0;
+            min-height: 70vh;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            color: var(--color-text);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .page-title i {
+            color: var(--color-primary);
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .breadcrumb a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            color: var(--color-primary);
+        }
+        
+        .breadcrumb .fas {
+            font-size: 0.7rem;
+        }
+        
+        /* Контейнер профиля */
+        .profile-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 992px) {
+            .profile-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-sidebar {
+                position: static !important;
+            }
+        }
+        
+        /* Боковая панель профиля */
+        .profile-sidebar {
+            background: var(--color-bg-card);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            border: 1px solid var(--color-border);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+        
+        .user-info-card {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+            margin-bottom: 1.5rem;
+        }
+        
+        .avatar-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+            cursor: pointer;
+        }
+        
+        .avatar-large {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            font-weight: 600;
+            overflow: hidden;
+            position: relative;
+            border: 3px solid var(--color-bg-card);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .avatar-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .avatar-large span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .avatar-container:hover .avatar-overlay {
+            opacity: 1;
+        }
+        
+        .avatar-overlay i {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .avatar-overlay span {
+            font-size: 0.75rem;
+            background: none;
+        }
+        
+        .btn-avatar-upload {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            border: 2px solid var(--color-bg-card);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-avatar-upload:hover {
+            background: var(--color-primary-dark);
+            transform: scale(1.1);
+        }
+        
+        .btn-avatar-upload i {
+            font-size: 0.875rem;
+        }
+        
+        .user-name-large {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--color-text);
+        }
+        
+        .user-email-large {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .user-role-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--color-primary-light);
+            color: white;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .user-role-badge.admin {
+            background: var(--color-warning);
+        }
+        
+        .user-role-badge.moderator {
+            background: var(--color-info);
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-fast);
+        }
+        
+        .sidebar-menu a:hover {
+            background: var(--color-bg-secondary);
+            color: var(--color-text);
+        }
+        
+        .sidebar-menu a.active {
+            background: var(--color-bg-secondary);
+            color: var(--color-primary);
+            font-weight: 500;
+        }
+        
+        .sidebar-menu a i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Основной контент профиля */
+        .profile-main {
+            background: var(--color-bg-card);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            border: 1px solid var(--color-border);
+        }
+        
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .profile-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+        
+        .profile-subtitle {
+            color: var(--color-text-secondary);
+            margin-top: 0.25rem;
+        }
+        
+        /* Карточки статистики */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            border-left: 4px solid var(--color-primary);
+        }
+        
+        .stat-card.warning {
+            border-left-color: var(--color-warning);
+        }
+        
+        .stat-card.danger {
+            border-left-color: var(--color-error);
+        }
+        
+        .stat-card.success {
+            border-left-color: var(--color-success);
+        }
+        
+        .stat-title {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+        
+        /* Информация профиля */
+        .profile-info {
+            margin-top: 2rem;
+        }
+        
+        .profile-info h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--color-text);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            background: var(--color-bg-secondary);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            font-weight: 500;
+            font-size: 1rem;
+            color: var(--color-text);
+        }
+        
+        /* Вкладки профиля */
+        .profile-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--color-border);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+        
+        .profile-tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            border-bottom: 3px solid transparent;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+        
+        .profile-tab:hover {
+            color: var(--color-primary);
+        }
+        
+        .profile-tab.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Заказы */
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .orders-table th {
+            text-align: left;
+            padding: 1rem;
+            background: var(--color-bg-secondary);
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .orders-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .order-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-pending {
+            background: var(--color-warning-light);
+            color: #92400e;
+        }
+        
+        .status-processing {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status-shipped {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+        
+        .status-delivered {
+            background: var(--color-success-light);
+            color: #065f46;
+        }
+        
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        /* Избранное */
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .favorite-card {
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+            transition: all var(--transition-normal);
+        }
+        
+        .favorite-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--color-primary-light);
+        }
+        
+        .favorite-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        
+        .favorite-card-content {
+            padding: 1rem;
+        }
+        
+        .favorite-card-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .favorite-card-price {
+            color: var(--color-primary);
+            font-weight: 700;
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Пустые состояния */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--color-text-secondary);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--color-text-tertiary);
+        }
+        
+        .empty-state h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+        }
+        
+        /* Загрузка */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--color-text-secondary);
+        }
+        
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            animation: spin 1s linear infinite;
+            color: var(--color-primary);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Уведомления */
+        .notifications-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
+        }
+        
+        .notification {
+            background: var(--color-bg-card);
+            border-left: 4px solid var(--color-primary);
+            border-radius: var(--radius-md);
+            padding: 15px 20px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification.success {
+            border-left-color: var(--color-success);
+        }
+        
+        .notification.error {
+            border-left-color: var(--color-error);
+        }
+        
+        .notification.info {
+            border-left-color: var(--color-info);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--color-bg-card);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--color-border);
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        /* Формы */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--color-text);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            color: var(--color-text);
+            font-size: 1rem;
+            transition: all var(--transition-fast);
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        /* Стили для загрузки аватара */
+        .avatar-preview-container {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 1.5rem;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid var(--color-primary);
+            box-shadow: var(--shadow-md);
+        }
+        
+        #avatarPreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .avatar-preview-placeholder {
+            width: 100%;
+            height: 100%;
+            background: var(--color-bg-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-secondary);
+        }
+        
+        .avatar-preview-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .avatar-preview-placeholder p {
+            font-size: 0.875rem;
+            text-align: center;
+            padding: 0 1rem;
+        }
+        
+        .upload-controls {
+            text-align: center;
+        }
+        
+        .file-info {
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+        
+        .upload-progress {
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--color-primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .upload-progress.active {
+            display: block;
+        }
+        
+        /* Стили для кнопки удаления в модальном окне */
+        #removeAvatarBtn {
+            transition: all 0.3s ease;
+        }
+        
+        #removeAvatarBtn:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Анимация для предупреждения */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .fa-exclamation-triangle {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        /* Переключатель */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--color-primary);
+        }
+        
+        input:focus + .toggle-slider {
+            box-shadow: 0 0 1px var(--color-primary);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* QR код */
+        .qr-code-container {
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 1rem;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+        }
+        
+        .backup-codes {
+            background: var(--color-bg-secondary);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-top: 1rem;
+            text-align: left;
+        }
+        
+        .backup-codes h4 {
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+        }
+        
+        .codes-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--color-text);
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .profile-main {
+                padding: 1.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .favorites-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .orders-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .profile-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .profile-tab {
+                flex: 1;
+                min-width: 120px;
+                text-align: center;
+            }
+            
+            .codes-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .avatar-preview-container {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <!-- Логотип -->
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <span class="logo-text">PCStore</span>
+            </a>
+
+            <!-- Кнопка мобильного меню -->
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Основное меню -->
+            <ul class="navbar-nav" id="navbarNav">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Главная</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="catalog.html" class="nav-link">
+                        <i class="fas fa-store"></i>
+                        <span>Каталог</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="cart.html" class="nav-link">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Корзина</span>
+                        <span class="cart-badge" id="cartCount">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="orders.html" class="nav-link">
+                        <i class="fas fa-history"></i>
+                        <span>Мои заказы</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link active">
+                        <i class="fas fa-user"></i>
+                        <span>Профиль</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin.html" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Админ-панель</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Панель действий -->
+            <div class="nav-actions">
+                <!-- Избранное -->
+                <a href="favorites.html" class="action-btn" id="favoritesBtn">
+                    <i class="fas fa-heart"></i>
+                    <span class="cart-badge" id="favoritesCount">0</span>
+                </a>
+                
+                <!-- Аккаунт пользователя -->
+                <div class="user-dropdown">
+                    <div class="user-avatar" id="userAvatar">
+                        <div class="avatar" id="navAvatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">Гость</span>
+                            <span class="user-role">Войти в аккаунт</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    
+                    <!-- Выпадающее меню -->
+                    <div class="dropdown-menu" id="userDropdown">
+                        <a href="login.html" class="dropdown-item" id="loginBtn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Войти</span>
+                        </a>
+                        <a href="register.html" class="dropdown-item">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Регистрация</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="settings.html" class="dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Настройки</span>
+                        </a>
+                        <a href="orders.html" class="dropdown-item">
+                            <i class="fas fa-history"></i>
+                            <span>Мои заказы</span>
+                        </a>
+                        <a href="favorites.html" class="dropdown-item">
+                            <i class="fas fa-heart"></i>
+                            <span>Избранное</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" id="logoutBtn" style="display: none;">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Выйти</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="main-content">
+        <div class="container">
+            <div class="profile-page">
+                <!-- Хлебные крошки -->
+                <div class="breadcrumb">
+                    <a href="index.html">Главная</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Профиль</span>
+                </div>
+
+                <h1 class="page-title">
+                    <i class="fas fa-user"></i>
+                    Мой профиль
+                </h1>
+
+                <div class="profile-container">
+                    <!-- Боковая панель -->
+                    <aside class="profile-sidebar">
+                        <div class="user-info-card">
+                            <div class="avatar-container">
+                                <div class="avatar-large" id="avatarLarge">
+                                    <span id="avatarInitial">U</span>
+                                    <img id="avatarImage" src="#" alt="Avatar" style="display: none;">
+                                    <div class="avatar-overlay" onclick="openAvatarUploadModal()">
+                                        <i class="fas fa-camera"></i>
+                                        <span>Изменить фото</span>
+                                    </div>
+                                </div>
+                                <button class="btn-avatar-upload" onclick="openAvatarUploadModal()">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                            </div>
+                            <h2 class="user-name-large" id="userNameLarge">Пользователь</h2>
+                            <p class="user-email-large" id="userEmailLarge">user@example.com</p>
+                            <span class="user-role-badge" id="userRoleBadge">user</span>
+                        </div>
+                        
+                        <ul class="sidebar-menu">
+                            <li><a href="#personal" class="active" onclick="showTab('personal')">
+                                <i class="fas fa-user"></i> Личная информация
+                            </a></li>
+                            <li><a href="#orders" onclick="showTab('orders')">
+                                <i class="fas fa-shopping-bag"></i> Мои заказы
+                            </a></li>
+                            <li><a href="#favorites" onclick="showTab('favorites')">
+                                <i class="fas fa-heart"></i> Избранное
+                            </a></li>
+                            <li><a href="#settings" onclick="showTab('settings')">
+                                <i class="fas fa-cog"></i> Настройки
+                            </a></li>
+                            <li><a href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt"></i> Выйти
+                            </a></li>
+                        </ul>
+                    </aside>
+
+                    <!-- Основной контент -->
+                    <main class="profile-main">
+                        <!-- Вкладки -->
+                        <div class="profile-tabs">
+                            <div class="profile-tab active" data-tab="personal">Личная информация</div>
+                            <div class="profile-tab" data-tab="orders">Мои заказы</div>
+                            <div class="profile-tab" data-tab="favorites">Избранное</div>
+                            <div class="profile-tab" data-tab="settings">Настройки</div>
+                        </div>
+
+                        <!-- Вкладка "Личная информация" -->
+                        <div id="personal-tab" class="tab-content active">
+                            <div class="profile-header">
+                                <div>
+                                    <h2 class="profile-title">Личная информация</h2>
+                                    <p class="profile-subtitle">Основные данные вашего профиля</p>
+                                </div>
+                                <button class="btn btn-primary" onclick="openEditModal()">
+                                    <i class="fas fa-edit"></i> Редактировать
+                                </button>
+                            </div>
+
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-title">Дата регистрации</div>
+                                    <div class="stat-value" id="registrationDate">01.01.2024</div>
+                                </div>
+                                <div class="stat-card success">
+                                    <div class="stat-title">Заказов</div>
+                                    <div class="stat-value" id="ordersCount">0</div>
+                                </div>
+                                <div class="stat-card warning">
+                                    <div class="stat-title">Избранное</div>
+                                    <div class="stat-value" id="favoritesCountTab">0</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-title">Статус аккаунта</div>
+                                    <div class="stat-value" id="accountStatus">Активен</div>
+                                </div>
+                            </div>
+
+                            <div class="profile-info">
+                                <h3>Детали профиля</h3>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <span class="info-label">Имя пользователя</span>
+                                        <span class="info-value" id="detailUsername">user123</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Email</span>
+                                        <span class="info-value" id="detailEmail">user@example.com</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Роль</span>
+                                        <span class="info-value" id="detailRole">Пользователь</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">ID пользователя</span>
+                                        <span class="info-value" id="detailUserId">1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Вкладка "Мои заказы" -->
+                        <div id="orders-tab" class="tab-content">
+                            <div class="profile-header">
+                                <div>
+                                    <h2 class="profile-title">Мои заказы</h2>
+                                    <p class="profile-subtitle">История всех ваших покупок</p>
+                                </div>
+                                <button class="btn btn-secondary" onclick="refreshOrders()">
+                                    <i class="fas fa-sync-alt"></i> Обновить
+                                </button>
+                            </div>
+
+                            <div id="orders-content">
+                                <div class="loading">
+                                    <i class="fas fa-spinner"></i>
+                                    <p>Загрузка заказов...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Вкладка "Избранное" -->
+                        <div id="favorites-tab" class="tab-content">
+                            <div class="profile-header">
+                                <div>
+                                    <h2 class="profile-title">Избранное</h2>
+                                    <p class="profile-subtitle">Сохраненные товары</p>
+                                </div>
+                                <button class="btn btn-secondary" onclick="refreshFavorites()">
+                                    <i class="fas fa-sync-alt"></i> Обновить
+                                </button>
+                            </div>
+
+                            <div id="favorites-content">
+                                <div class="loading">
+                                    <i class="fas fa-spinner"></i>
+                                    <p>Загрузка избранного...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Вкладка "Настройки" -->
+                        <div id="settings-tab" class="tab-content">
+                            <div class="profile-header">
+                                <div>
+                                    <h2 class="profile-title">Настройки аккаунта</h2>
+                                    <p class="profile-subtitle">Управление вашим аккаунтом</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                                <div>
+                                    <h3 style="margin-bottom: 1rem; color: var(--color-text);">Безопасность</h3>
+                                    <div style="background: var(--color-bg-secondary); padding: 1.5rem; border-radius: var(--radius-lg);">
+                                        <button class="btn btn-primary" style="margin-right: 1rem;" onclick="openPasswordModal()">
+                                            <i class="fas fa-key"></i> Сменить пароль
+                                        </button>
+                                        <button class="btn btn-primary" onclick="openTwoFactorModal()">
+                                            <i class="fas fa-shield-alt"></i> Двухфакторная аутентификация
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 style="margin-bottom: 1rem; color: var(--color-text);">Уведомления</h3>
+                                    <div style="background: var(--color-bg-secondary); padding: 1.5rem; border-radius: var(--radius-lg);">
+                                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                            <input type="checkbox" id="emailNotifications" checked style="width: 1.25rem; height: 1.25rem; accent-color: var(--color-primary);">
+                                            <label for="emailNotifications" style="cursor: pointer; color: var(--color-text);">Email уведомления</label>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <input type="checkbox" id="orderUpdates" checked style="width: 1.25rem; height: 1.25rem; accent-color: var(--color-primary);">
+                                            <label for="orderUpdates" style="cursor: pointer; color: var(--color-text);">Обновления заказов</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 style="margin-bottom: 1rem; color: var(--color-error);">Опасная зона</h3>
+                                    <div style="background: rgba(239, 68, 68, 0.1); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-error);">
+                                        <p style="margin-bottom: 1rem; color: var(--color-text);">Эти действия необратимы. Будьте осторожны.</p>
+                                        <button class="btn btn-danger" onclick="showDeleteModal()">
+                                            <i class="fas fa-trash"></i> Удалить аккаунт
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>PC Store</h3>
+                <p>Лучшие комплектующие для вашего ПК</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Контакты</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-phone"></i> 8 (800) 123-45-67</li>
+                    <li><i class="fas fa-envelope"></i> info@pcstore.ru</li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Помощь</h3>
+                <ul class="footer-links">
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="profile.html">Профиль</a></li>
+                    <li><a href="login.html">Войти в аккаунт</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 PC Store. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <!-- Кнопка переключения темы -->
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-sun"></i>
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <!-- Модальное окно редактирования профиля -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Редактировать профиль</h2>
+                <button onclick="closeEditModal()" style="background: none; border: none; color: var(--color-text-secondary); font-size: 1.5rem; cursor: pointer; padding: 0.25rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <div class="form-group">
+                        <label class="form-label">Имя пользователя</label>
+                        <input type="text" class="form-input" id="editUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="editEmail" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveProfile()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно смены пароля -->
+    <div class="modal" id="passwordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Смена пароля</h2>
+                <button onclick="closePasswordModal()" style="background: none; border: none; color: var(--color-text-secondary); font-size: 1.5rem; cursor: pointer; padding: 0.25rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label class="form-label">Текущий пароль</label>
+                        <input type="password" class="form-input" id="currentPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Новый пароль</label>
+                        <input type="password" class="form-input" id="newPassword" required>
+                        <small style="color: var(--color-text-secondary); margin-top: 0.25rem; display: block;">
+                            Пароль должен содержать не менее 8 символов, включая цифры и буквы
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Повторите новый пароль</label>
+                        <input type="password" class="form-input" id="confirmNewPassword" required>
+                    </div>
+                    <div id="passwordError" style="color: var(--color-error); margin-top: 1rem; display: none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePasswordModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="changePassword()">Сменить пароль</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно двухфакторной аутентификации -->
+    <div class="modal" id="twoFactorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Двухфакторная аутентификация</h2>
+                <button onclick="closeTwoFactorModal()" style="background: none; border: none; color: var(--color-text-secondary); font-size: 1.5rem; cursor: pointer; padding: 0.25rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="twoFactorContent">
+                    <!-- Контент будет динамически обновляться -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeTwoFactorModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно удаления аккаунта -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: var(--color-error);">Удалить аккаунт</h2>
+                <button onclick="closeDeleteModal()" style="background: none; border: none; color: var(--color-text-secondary); font-size: 1.5rem; cursor: pointer; padding: 0.25rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem; color: var(--color-text);">Вы уверены, что хотите удалить свой аккаунт? Это действие необратимо.</p>
+                <p style="color: var(--color-error); font-weight: 500; margin-bottom: 1.5rem;">Все ваши данные, заказы и избранное будут удалены без возможности восстановления.</p>
+                <div class="form-group">
+                    <label class="form-label">Введите пароль для подтверждения</label>
+                    <input type="password" class="form-input" id="confirmPassword" placeholder="Ваш пароль">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Отмена</button>
+                <button class="btn btn-danger" onclick="deleteAccount()">Удалить аккаунт</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно загрузки аватара -->
+    <div class="modal" id="avatarModal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2>Фото профиля</h2>
+                <button onclick="closeAvatarModal()" style="background: none; border: none; color: var(--color-text-secondary); font-size: 1.5rem; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="avatar-preview-container">
+                    <img id="avatarPreview" src="#" alt="Превью" style="display: none;">
+                    <div class="avatar-preview-placeholder" id="avatarPreviewPlaceholder">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Выберите файл или перетащите его сюда</p>
+                    </div>
+                </div>
+                
+                <div class="upload-controls">
+                    <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button class="btn btn-primary" onclick="document.getElementById('avatarInput').click()">
+                            <i class="fas fa-folder-open"></i> Выбрать файл
+                        </button>
+                        <button class="btn btn-danger" id="removeAvatarBtn" onclick="confirmRemoveAvatar()" style="display: none;">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </div>
+                    <p class="file-info" id="fileInfo"></p>
+                </div>
+
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p style="text-align: center; margin-top: 0.5rem; font-size: 0.875rem; color: var(--color-text-secondary);" id="progressText">Загрузка...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAvatarModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="uploadAvatar()" id="uploadButton">Загрузить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения удаления аватара -->
+    <div class="modal" id="confirmRemoveAvatarModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 style="color: var(--color-error);">Удалить фото</h2>
+                <button onclick="closeConfirmRemoveAvatarModal()" style="background: none; border: none; color: var(--color-text-secondary); font-size: 1.5rem; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--color-warning); margin-bottom: 1rem;"></i>
+                    <p style="color: var(--color-text); font-size: 1.1rem; margin-bottom: 0.5rem;">Вы уверены, что хотите удалить фото профиля?</p>
+                    <p style="color: var(--color-text-secondary);">Будет восстановлен стандартный аватар с инициалами.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeConfirmRemoveAvatarModal()">Отмена</button>
+                <button class="btn btn-danger" onclick="removeAvatar()">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Контейнер для уведомлений -->
+    <div class="notifications-container"></div>
+
+    <script>
+// Конфигурация API
+const API_BASE_URL = 'http://localhost:3001';
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Профиль: инициализация...');
+    
+    // Инициализация навигации
+    initNavigation();
+    
+    // Настройка темы
+    setupThemeToggle();
+    
+    // Проверяем аутентификацию
+    await checkAuth();
+    
+    // Загружаем данные профиля
+    await loadProfileData();
+    
+    // Загружаем заказы
+    await loadOrders();
+    
+    // Загружаем избранное
+    await loadFavorites();
+    
+    // Инициализируем аватар
+    await initAvatar();
+    
+    // Инициализируем вкладки
+    initTabs();
+    
+    // Обновляем счетчики
+    updateCartCount();
+    updateFavoritesCount();
+    
+    // Загружаем настройки двухфакторной аутентификации
+    loadTwoFactorStatus();
+
+    // Настройка загрузки файла
+    setupAvatarUpload();
+});
+
+// Инициализация навигации
+function initNavigation() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    const userName = document.querySelector('.user-name');
+    const userRole = document.querySelector('.user-role');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const adminLink = document.querySelector('a[href="admin.html"]');
+    const avatar = document.getElementById('navAvatar');
+    
+    if (user && user.token) {
+        userName.textContent = user.username || 'Пользователь';
+        userRole.textContent = user.role === 'admin' ? 'Администратор' : 'Пользователь';
+        
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'block';
+        
+        // Скрыть админ-панель для не-админов
+        if (user.role !== 'admin' && adminLink) {
+            adminLink.parentElement.style.display = 'none';
+        } else if (user.role === 'admin' && adminLink) {
+            adminLink.parentElement.style.display = 'block';
+        }
+    } else {
+        userName.textContent = 'Гость';
+        userRole.textContent = 'Войти в аккаунт';
+        loginBtn.style.display = 'block';
+        logoutBtn.style.display = 'none';
+        
+        if (adminLink) {
+            adminLink.parentElement.style.display = 'none';
+        }
+    }
+    
+    // Выход из системы
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            logout();
+        });
+    }
+    
+    // Мобильное меню
+    const menuToggle = document.getElementById('menuToggle');
+    const navbarNav = document.getElementById('navbarNav');
+    
+    if (menuToggle && navbarNav) {
+        menuToggle.addEventListener('click', function() {
+            navbarNav.classList.toggle('active');
+        });
+        
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navbarNav.classList.remove('active');
+            });
+        });
+    }
+    
+    // Выпадающее меню пользователя
+    const userAvatar = document.getElementById('userAvatar');
+    const userDropdown = document.getElementById('userDropdown');
+    
+    if (userAvatar && userDropdown) {
+        userAvatar.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('active');
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!userAvatar.contains(e.target) && !userDropdown.contains(e.target)) {
+                userDropdown.classList.remove('active');
+            }
+        });
+    }
+}
+
+// Настройка переключения темы
+function setupThemeToggle() {
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme');
+    
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+    
+    themeToggle.addEventListener('click', function() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    });
+}
+
+// Инициализация вкладок
+function initTabs() {
+    const tabs = document.querySelectorAll('.profile-tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.dataset.tab;
+            showTab(tabName);
+        });
+    });
+}
+
+// Показать вкладку
+function showTab(tabName) {
+    document.querySelectorAll('.sidebar-menu a').forEach(link => {
+        link.classList.remove('active');
+    });
+    const activeLink = document.querySelector(`.sidebar-menu a[href="#${tabName}"]`);
+    if (activeLink) activeLink.classList.add('active');
+    
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.tab === tabName) {
+            tab.classList.add('active');
+        }
+    });
+    
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById(`${tabName}-tab`).classList.add('active');
+}
+
+// Проверка аутентификации
+async function checkAuth() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!user || !user.token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/verify`, {
+            headers: {
+                'Authorization': `Bearer ${user.token}`
+            }
+        });
+        
+        if (!response.ok) {
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+        
+    } catch (error) {
+        console.error('Ошибка проверки аутентификации:', error);
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
+    }
+}
+
+// Загрузка данных профиля
+async function loadProfileData() {
+    try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        if (!user.token) {
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/api/profile`, {
+            headers: {
+                'Authorization': `Bearer ${user.token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Ошибка загрузки профиля');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.user) {
+            updateProfileUI(data.user);
+        }
+        
+    } catch (error) {
+        console.error('Ошибка загрузки профиля:', error);
+        showNotification('Ошибка загрузки профиля', 'error');
+    }
+}
+
+// Обновление интерфейса профиля
+function updateProfileUI(user) {
+    document.getElementById('userNameLarge').textContent = user.username || 'Пользователь';
+    document.getElementById('userEmailLarge').textContent = user.email || 'user@example.com';
+    
+    const roleElement = document.getElementById('userRoleBadge');
+    roleElement.textContent = user.role || 'user';
+    roleElement.className = 'user-role-badge ' + (user.role || 'user');
+    
+    document.getElementById('detailUsername').textContent = user.username || 'user123';
+    document.getElementById('detailEmail').textContent = user.email || 'user@example.com';
+    document.getElementById('detailRole').textContent = getRoleName(user.role);
+    document.getElementById('detailUserId').textContent = user.id || '1';
+    
+    if (user.created_at) {
+        const date = new Date(user.created_at);
+        document.getElementById('registrationDate').textContent = 
+            date.toLocaleDateString('ru-RU');
+    }
+    
+    document.getElementById('editUsername').value = user.username || '';
+    document.getElementById('editEmail').value = user.email || '';
+    
+    const navUserName = document.querySelector('.user-name');
+    const navUserRole = document.querySelector('.user-role');
+    
+    if (navUserName) navUserName.textContent = user.username || 'Пользователь';
+    if (navUserRole) navUserRole.textContent = user.role === 'admin' ? 'Администратор' : 'Пользователь';
+}
+
+// Функция для инициализации аватара при загрузке страницы
+async function initAvatar() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!user.token || !user.id) {
+        const navAvatar = document.getElementById('navAvatar');
+        if (navAvatar) {
+            navAvatar.innerHTML = '<i class="fas fa-user"></i>';
+            navAvatar.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+        }
+        return;
+    }
+    
+    const avatarData = await getUserAvatar(user);
+    if (avatarData) {
+        updateAvatarUI(avatarData);
+    }
+}
+
+// Функция для получения аватара пользователя
+async function getUserAvatar(user) {
+    if (!user || !user.id) return null;
+    
+    try {
+        const savedAvatar = localStorage.getItem(`userAvatar_${user.id}`);
+        if (savedAvatar) {
+            try {
+                const parsed = JSON.parse(savedAvatar);
+                if (parsed.type === 'image' && parsed.value && parsed.value.startsWith('http')) {
+                    return parsed;
+                } else if (parsed.type === 'initials') {
+                    return parsed;
+                }
+            } catch (e) {
+                // Игнорируем ошибки парсинга
+            }
+        }
+        
+        // Пытаемся загрузить с сервера
+        const response = await fetch(`${API_BASE_URL}/api/profile/avatar`, {
+            headers: {
+                'Authorization': `Bearer ${user.token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.avatar) {
+                const avatarData = {
+                    type: data.avatar_type || 'initials',
+                    value: data.avatar || (user.username ? user.username.charAt(0).toUpperCase() : 'U')
+                };
+                localStorage.setItem(`userAvatar_${user.id}`, JSON.stringify(avatarData));
+                return avatarData;
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки аватара с сервера:', error);
+    }
+    
+    return {
+        type: 'initials',
+        value: user.username ? user.username.charAt(0).toUpperCase() : 'U'
+    };
+}
+
+// Функция для обновления аватара на странице
+function updateAvatarUI(avatarData) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    const avatarImage = document.getElementById('avatarImage');
+    const avatarInitial = document.getElementById('avatarInitial');
+    const avatarLarge = document.getElementById('avatarLarge');
+    
+    if (avatarData.type === 'image' && avatarData.value) {
+        avatarImage.src = avatarData.value;
+        avatarImage.style.display = 'block';
+        avatarInitial.style.display = 'none';
+        avatarLarge.style.background = 'transparent';
+    } else {
+        avatarImage.style.display = 'none';
+        avatarInitial.textContent = avatarData.value || 'U';
+        avatarInitial.style.display = 'flex';
+        avatarLarge.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+    }
+    
+    const navAvatar = document.getElementById('navAvatar');
+    if (navAvatar) {
+        if (avatarData.type === 'image' && avatarData.value) {
+            navAvatar.innerHTML = `<img src="${avatarData.value}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+            navAvatar.style.background = 'transparent';
+        } else {
+            navAvatar.innerHTML = avatarData.value || 'U';
+            navAvatar.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
+        }
+    }
+}
+
+// Функция для конвертации base64 в Blob (больше не нужна, но оставим)
+function dataURLtoBlob(dataURL) {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    
+    return new Blob([u8arr], { type: mime });
+}
+
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ СОХРАНЕНИЯ АВАТАРА - ТЕПЕРЬ ОТПРАВЛЯЕТ JSON
+async function saveAvatar(avatarData) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.token || !user.id) {
+        showNotification('Необходимо авторизоваться', 'error');
+        return false;
+    }
+    
+    try {
+        console.log('Отправка JSON на сервер:', `${API_BASE_URL}/api/profile/avatar`);
+        console.log('Данные:', JSON.stringify({
+            type: avatarData.type,
+            value: avatarData.value
+        }));
+        
+        const response = await fetch(`${API_BASE_URL}/api/profile/avatar`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${user.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: avatarData.type,
+                value: avatarData.value
+            })
+        });
+        
+        console.log('Статус ответа:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Текст ошибки:', errorText);
+            
+            let errorMessage;
+            try {
+                const errorData = JSON.parse(errorText);
+                errorMessage = errorData.message || 'Ошибка сохранения на сервере';
+            } catch (e) {
+                errorMessage = `Ошибка сервера: ${response.status} ${response.statusText}`;
+            }
+            throw new Error(errorMessage);
+        }
+        
+        const responseData = await response.json();
+        console.log('Ответ сервера:', responseData);
+        
+        // Сохраняем в localStorage
+        if (responseData.avatar) {
+            localStorage.setItem(`userAvatar_${user.id}`, JSON.stringify({
+                type: avatarData.type,
+                value: responseData.avatar
+            }));
+            
+            // Обновляем UI с данными от сервера
+            updateAvatarUI({
+                type: avatarData.type,
+                value: responseData.avatar
+            });
+        } else {
+            // Если сервер не вернул avatar, используем то что отправили
+            localStorage.setItem(`userAvatar_${user.id}`, JSON.stringify(avatarData));
+            updateAvatarUI(avatarData);
+        }
+        
+        showNotification('Фото профиля обновлено', 'success');
+        return true;
+        
+    } catch (error) {
+        console.error('Ошибка сохранения аватара:', error);
+        showNotification('Ошибка при сохранении фото: ' + error.message, 'error');
+        return false;
+    }
+}
+
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ АВАТАРА
+function uploadAvatar() {
+    const avatarInput = document.getElementById('avatarInput');
+    const file = avatarInput.files[0];
+    
+    if (!file) {
+        showNotification('Пожалуйста, выберите файл', 'error');
+        return;
+    }
+    
+    // Проверяем размер файла (макс 5 МБ)
+    if (file.size > 5 * 1024 * 1024) {
+        showNotification('Файл слишком большой. Максимальный размер 5 МБ', 'error');
+        avatarInput.value = '';
+        return;
+    }
+    
+    const progressContainer = document.getElementById('uploadProgress');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const uploadButton = document.getElementById('uploadButton');
+    
+    progressContainer.classList.add('active');
+    uploadButton.disabled = true;
+    progressFill.style.width = '0%';
+    progressText.textContent = 'Подготовка...';
+    
+    // Оптимизируем изображение перед сохранением
+    optimizeImage(file, async (optimizedBase64) => {
+        console.log('Изображение оптимизировано, размер:', Math.round(optimizedBase64.length / 1024), 'КБ');
+        
+        // Показываем прогресс
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 10;
+            progressFill.style.width = progress + '%';
+            progressText.textContent = `Загрузка... ${progress}%`;
+            
+            if (progress >= 100) {
+                clearInterval(interval);
+            }
+        }, 100);
+        
+        const avatarData = {
+            type: 'image',
+            value: optimizedBase64
+        };
+        
+        const success = await saveAvatar(avatarData);
+        
+        if (success) {
+            setTimeout(() => {
+                progressContainer.classList.remove('active');
+                uploadButton.disabled = false;
+                closeAvatarModal();
+            }, 500);
+        } else {
+            progressContainer.classList.remove('active');
+            uploadButton.disabled = false;
+            progressFill.style.width = '0%';
+            progressText.textContent = 'Загрузка...';
+        }
+    });
+}
+
+// ФУНКЦИЯ ДЛЯ ОПТИМИЗАЦИИ ИЗОБРАЖЕНИЙ
+function optimizeImage(file, callback) {
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        const img = new Image();
+        img.src = e.target.result;
+        
+        img.onload = function() {
+            // Создаем canvas для сжатия
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            
+            // Уменьшаем размер если изображение слишком большое
+            const MAX_WIDTH = 300;
+            const MAX_HEIGHT = 300;
+            
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Сжимаем качество до 0.8 для уменьшения размера
+            const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            
+            callback(optimizedBase64);
+        };
+        
+        img.onerror = function() {
+            showNotification('Ошибка при обработке изображения', 'error');
+        };
+    };
+    
+    reader.onerror = function() {
+        showNotification('Ошибка при чтении файла', 'error');
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+// Функция выхода из системы
+function logout() {
+    if (confirm('Вы уверены, что хотите выйти?')) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('cart');
+        window.location.href = 'login.html';
+    }
+}
+
+// Настройка загрузки аватара
+function setupAvatarUpload() {
+    const avatarInput = document.getElementById('avatarInput');
+    
+    avatarInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
+            if (!validTypes.includes(file.type)) {
+                showNotification('Пожалуйста, выберите изображение (JPG, PNG, GIF, WEBP)', 'error');
+                avatarInput.value = '';
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showNotification('Файл слишком большой. Максимальный размер 5 МБ', 'error');
+                avatarInput.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('avatarPreview');
+                const placeholder = document.getElementById('avatarPreviewPlaceholder');
+                
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                placeholder.style.display = 'none';
+                
+                document.getElementById('fileInfo').textContent = `Выбран файл: ${file.name} (${(file.size / 1024).toFixed(2)} КБ)`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+// Открыть модальное окно загрузки аватара
+async function openAvatarUploadModal() {
+    document.getElementById('avatarModal').classList.add('active');
+    
+    document.getElementById('avatarInput').value = '';
+    document.getElementById('avatarPreview').style.display = 'none';
+    document.getElementById('avatarPreviewPlaceholder').style.display = 'flex';
+    document.getElementById('fileInfo').textContent = '';
+    document.getElementById('uploadProgress').classList.remove('active');
+    
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.id) {
+        const savedAvatar = localStorage.getItem(`userAvatar_${user.id}`);
+        const removeAvatarBtn = document.getElementById('removeAvatarBtn');
+        if (savedAvatar) {
+            try {
+                const avatarData = JSON.parse(savedAvatar);
+                if (avatarData.type === 'image') {
+                    removeAvatarBtn.style.display = 'inline-flex';
+                } else {
+                    removeAvatarBtn.style.display = 'none';
+                }
+            } catch (e) {
+                removeAvatarBtn.style.display = 'none';
+            }
+        } else {
+            removeAvatarBtn.style.display = 'none';
+        }
+    }
+}
+
+// Закрыть модальное окно загрузки аватара
+function closeAvatarModal() {
+    document.getElementById('avatarModal').classList.remove('active');
+}
+
+// Подтверждение удаления аватара
+function confirmRemoveAvatar() {
+    closeAvatarModal();
+    document.getElementById('confirmRemoveAvatarModal').classList.add('active');
+}
+
+// Закрыть модальное окно подтверждения удаления
+function closeConfirmRemoveAvatarModal() {
+    document.getElementById('confirmRemoveAvatarModal').classList.remove('active');
+}
+
+// Удалить аватар
+async function removeAvatar() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!user.id) {
+        showNotification('Необходимо авторизоваться', 'error');
+        return;
+    }
+    
+    try {
+        // Отправляем запрос на удаление аватара
+        const response = await fetch(`${API_BASE_URL}/api/profile/avatar`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${user.token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Ошибка удаления:', errorText);
+        }
+        
+        localStorage.removeItem(`userAvatar_${user.id}`);
+        
+        const firstLetter = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+        
+        const avatarData = {
+            type: 'initials',
+            value: firstLetter
+        };
+        
+        updateAvatarUI(avatarData);
+        
+        closeConfirmRemoveAvatarModal();
+        showNotification('Фото профиля удалено', 'success');
+        
+        if (document.getElementById('avatarModal').classList.contains('active')) {
+            document.getElementById('removeAvatarBtn').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Ошибка удаления аватара:', error);
+        
+        // Даже при ошибке удаляем локально
+        localStorage.removeItem(`userAvatar_${user.id}`);
+        
+        const firstLetter = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+        
+        const avatarData = {
+            type: 'initials',
+            value: firstLetter
+        };
+        
+        updateAvatarUI(avatarData);
+        closeConfirmRemoveAvatarModal();
+        showNotification('Фото профиля удалено локально', 'success');
+    }
+}
+
+// Загрузка заказов
+async function loadOrders() {
+    try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        const response = await fetch(`${API_BASE_URL}/api/orders/my`, {
+            headers: {
+                'Authorization': `Bearer ${user.token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Ошибка загрузки заказов');
+        }
+        
+        const data = await response.json();
+        displayOrders(data.orders || []);
+        document.getElementById('ordersCount').textContent = data.orders?.length || 0;
+        
+    } catch (error) {
+        console.error('Ошибка загрузки заказов:', error);
+        document.getElementById('orders-content').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <h3>Ошибка загрузки заказов</h3>
+                <p>Попробуйте обновить страницу</p>
+            </div>
+        `;
+    }
+}
+
+// Отображение заказов
+function displayOrders(orders) {
+    const ordersContent = document.getElementById('orders-content');
+    
+    if (!orders || orders.length === 0) {
+        ordersContent.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-shopping-bag"></i>
+                <h3>Заказов пока нет</h3>
+                <p>Совершите свою первую покупку!</p>
+                <a href="catalog.html" class="btn btn-primary" style="margin-top: 15px;">
+                    Перейти в магазин
+                </a>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = `
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Номер заказа</th>
+                    <th>Дата</th>
+                    <th>Сумма</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    orders.forEach(order => {
+        const orderDate = new Date(order.created_at).toLocaleDateString('ru-RU');
+        const orderNumber = order.order_number || `ORD-${String(order.id).padStart(6, '0')}`;
+        const statusText = getStatusText(order.status);
+        const statusClass = getStatusClass(order.status);
+        
+        html += `
+            <tr>
+                <td>${orderNumber}</td>
+                <td>${orderDate}</td>
+                <td>${formatPrice(order.total_amount || 0)} ₽</td>
+                <td><span class="order-status ${statusClass}">${statusText}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-secondary" onclick="viewOrder(${order.id})">
+                        <i class="fas fa-eye"></i> Подробнее
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += `
+            </tbody>
+        </table>
+    `;
+    
+    ordersContent.innerHTML = html;
+}
+
+// Загрузка избранного
+async function loadFavorites() {
+    try {
+        const favoritesContent = document.getElementById('favorites-content');
+        const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        
+        document.getElementById('favoritesCount').textContent = favorites.length;
+        document.getElementById('favoritesCountTab').textContent = favorites.length;
+        
+        if (favorites.length === 0) {
+            favoritesContent.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-heart"></i>
+                    <h3>Избранное пусто</h3>
+                    <p>Добавляйте товары в избранное, чтобы не потерять</p>
+                    <a href="catalog.html" class="btn btn-primary" style="margin-top: 15px;">
+                        Перейти в магазин
+                    </a>
+                </div>
+            `;
+            return;
+        }
+        
+        // Показываем загрузку
+        favoritesContent.innerHTML = `
+            <div class="loading">
+                <i class="fas fa-spinner"></i>
+                <p>Загрузка избранного...</p>
+            </div>
+        `;
+        
+        // Загружаем данные о товарах
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        // Пытаемся загрузить с сервера, если есть токен
+        if (user.token) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/favorites`, {
+                    headers: {
+                        'Authorization': `Bearer ${user.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.favorites && data.favorites.length > 0) {
+                        displayFavorites(data.favorites);
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки избранного с сервера:', error);
+            }
+        }
+        
+        // Загружаем из localStorage
+        let html = '<div class="favorites-grid">';
+        let loadedCount = 0;
+        
+        for (const productId of favorites) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const product = data.product || data;
+                    
+                    if (product && product.id) {
+                        html += `
+                            <div class="favorite-card" data-product-id="${product.id}">
+                                <img src="${product.image_url || 'https://via.placeholder.com/300x150'}" 
+                                     alt="${product.name || 'Товар'}" 
+                                     onerror="this.src='https://via.placeholder.com/300x150'">
+                                <div class="favorite-card-content">
+                                    <h3 class="favorite-card-title">${product.name || 'Товар'}</h3>
+                                    <p class="favorite-card-price">${formatPrice(product.price || 0)} ₽</p>
+                                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                                        <button class="btn btn-sm btn-primary" onclick="addToCartFromFavorites(${product.id})">
+                                            <i class="fas fa-shopping-cart"></i> В корзину
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="removeFromFavorites(${product.id})">
+                                            <i class="fas fa-trash"></i> Удалить
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        loadedCount++;
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки товара:', error);
+            }
+        }
+        
+        html += '</div>';
+        
+        if (loadedCount === 0) {
+            favoritesContent.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h3>Товары не найдены</h3>
+                    <p>Не удалось загрузить товары из избранного</p>
+                    <button class="btn btn-primary" style="margin-top: 15px;" onclick="clearFavorites()">
+                        Очистить избранное
+                    </button>
+                </div>
+            `;
+        } else {
+            favoritesContent.innerHTML = html;
+        }
+        
+    } catch (error) {
+        console.error('Ошибка загрузки избранного:', error);
+        document.getElementById('favorites-content').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <h3>Ошибка загрузки</h3>
+                <p>Попробуйте обновить страницу</p>
+            </div>
+        `;
+    }
+}
+
+// Отображение избранного с сервера
+function displayFavorites(favorites) {
+    const favoritesContent = document.getElementById('favorites-content');
+    
+    if (!favorites || favorites.length === 0) {
+        favoritesContent.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-heart"></i>
+                <h3>Избранное пусто</h3>
+                <p>Добавляйте товары в избранное, чтобы не потерять</p>
+                <a href="catalog.html" class="btn btn-primary" style="margin-top: 15px;">
+                    Перейти в магазин
+                </a>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '<div class="favorites-grid">';
+    
+    favorites.forEach(product => {
+        html += `
+            <div class="favorite-card" data-product-id="${product.id}">
+                <img src="${product.image_url || 'https://via.placeholder.com/300x150'}" 
+                     alt="${product.name}"
+                     onerror="this.src='https://via.placeholder.com/300x150'">
+                <div class="favorite-card-content">
+                    <h3 class="favorite-card-title">${product.name}</h3>
+                    <p class="favorite-card-price">${formatPrice(product.price)} ₽</p>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button class="btn btn-sm btn-primary" onclick="addToCartFromFavorites(${product.id})">
+                            <i class="fas fa-shopping-cart"></i> В корзину
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="removeFromFavorites(${product.id})">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    favoritesContent.innerHTML = html;
+}
+
+// Функции для избранного
+function addToCartFromFavorites(productId) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const existingItem = cart.find(item => item.productId === productId);
+    
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            productId: productId,
+            quantity: 1
+        });
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    showNotification('Товар добавлен в корзину', 'success');
+}
+
+function removeFromFavorites(productId) {
+    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    favorites = favorites.filter(id => id !== productId);
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+    
+    document.getElementById('favoritesCount').textContent = favorites.length;
+    document.getElementById('favoritesCountTab').textContent = favorites.length;
+    
+    const card = document.querySelector(`.favorite-card[data-product-id="${productId}"]`);
+    if (card) {
+        card.remove();
+    }
+    
+    if (favorites.length === 0 || document.querySelectorAll('.favorite-card').length === 0) {
+        document.getElementById('favorites-content').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-heart"></i>
+                <h3>Избранное пусто</h3>
+                <p>Добавляйте товары в избранное, чтобы не потерять</p>
+                <a href="catalog.html" class="btn btn-primary" style="margin-top: 15px;">
+                    Перейти в магазин
+                </a>
+            </div>
+        `;
+    }
+    
+    showNotification('Товар удален из избранного', 'info');
+}
+
+function clearFavorites() {
+    if (confirm('Вы уверены, что хотите очистить всё избранное?')) {
+        localStorage.setItem('favorites', JSON.stringify([]));
+        document.getElementById('favoritesCount').textContent = '0';
+        document.getElementById('favoritesCountTab').textContent = '0';
+        
+        document.getElementById('favorites-content').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-heart"></i>
+                <h3>Избранное пусто</h3>
+                <p>Добавляйте товары в избранное, чтобы не потерять</p>
+                <a href="catalog.html" class="btn btn-primary" style="margin-top: 15px;">
+                    Перейти в магазин
+                </a>
+            </div>
+        `;
+        
+        showNotification('Избранное очищено', 'info');
+    }
+}
+
+// Загрузка статуса двухфакторной аутентификации
+async function loadTwoFactorStatus() {
+    try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const twoFactorEnabled = localStorage.getItem(`twoFactorEnabled_${user.id}`) === 'true';
+        
+        const twoFactorElement = document.querySelector('.fa-shield-alt');
+        if (twoFactorElement && twoFactorEnabled) {
+            twoFactorElement.style.color = 'var(--color-success)';
+        }
+        
+    } catch (error) {
+        console.error('Ошибка загрузки статуса 2FA:', error);
+    }
+}
+
+// Вспомогательные функции
+function formatPrice(price) {
+    return new Intl.NumberFormat('ru-RU').format(price);
+}
+
+function getStatusText(status) {
+    const statusMap = {
+        'pending': 'Ожидает',
+        'processing': 'В обработке',
+        'shipped': 'Отправлен',
+        'delivered': 'Доставлен',
+        'cancelled': 'Отменен'
+    };
+    return statusMap[status] || status;
+}
+
+function getStatusClass(status) {
+    const classMap = {
+        'pending': 'status-pending',
+        'processing': 'status-processing',
+        'shipped': 'status-shipped',
+        'delivered': 'status-delivered',
+        'cancelled': 'status-cancelled'
+    };
+    return classMap[status] || 'status-pending';
+}
+
+function getRoleName(role) {
+    const roleMap = {
+        'user': 'Пользователь',
+        'admin': 'Администратор',
+        'moderator': 'Модератор'
+    };
+    return roleMap[role] || role;
+}
+
+// Открыть модальное окно редактирования
+function openEditModal() {
+    document.getElementById('editModal').classList.add('active');
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
+}
+
+function openPasswordModal() {
+    document.getElementById('passwordModal').classList.add('active');
+    document.getElementById('passwordError').style.display = 'none';
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmNewPassword').value = '';
+}
+
+function closePasswordModal() {
+    document.getElementById('passwordModal').classList.remove('active');
+}
+
+function openTwoFactorModal() {
+    document.getElementById('twoFactorModal').classList.add('active');
+    showTwoFactorSetup();
+}
+
+function closeTwoFactorModal() {
+    document.getElementById('twoFactorModal').classList.remove('active');
+}
+
+function showTwoFactorSetup() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const twoFactorEnabled = localStorage.getItem(`twoFactorEnabled_${user.id}`) === 'true';
+    const twoFactorContent = document.getElementById('twoFactorContent');
+    
+    if (twoFactorEnabled) {
+        twoFactorContent.innerHTML = `
+            <div style="text-align: center;">
+                <div style="margin-bottom: 1.5rem;">
+                    <i class="fas fa-shield-alt" style="font-size: 3rem; color: var(--color-success);"></i>
+                    <h3 style="margin-top: 1rem; color: var(--color-text);">Двухфакторная аутентификация включена</h3>
+                    <p style="color: var(--color-text-secondary); margin-bottom: 1.5rem;">
+                        Ваш аккаунт защищен дополнительным уровнем безопасности
+                    </p>
+                </div>
+                
+                <div class="backup-codes">
+                    <h4>Резервные коды</h4>
+                    <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+                        Сохраните эти коды в безопасном месте. Каждый код можно использовать один раз.
+                    </p>
+                    <div class="codes-list">
+                        <div>A1B2-C3D4</div>
+                        <div>E5F6-G7H8</div>
+                        <div>I9J0-K1L2</div>
+                        <div>M3N4-O5P6</div>
+                        <div>Q7R8-S9T0</div>
+                        <div>U1V2-W3X4</div>
+                    </div>
+                    <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;" onclick="generateNewBackupCodes()">
+                        <i class="fas fa-redo"></i> Сгенерировать новые коды
+                    </button>
+                </div>
+                
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border);">
+                    <button class="btn btn-danger" onclick="disableTwoFactor()" style="width: 100%;">
+                        <i class="fas fa-times-circle"></i> Отключить двухфакторную аутентификацию
+                    </button>
+                </div>
+            </div>
+        `;
+    } else {
+        twoFactorContent.innerHTML = `
+            <div style="text-align: center;">
+                <div style="margin-bottom: 1.5rem;">
+                    <i class="fas fa-shield-alt" style="font-size: 3rem; color: var(--color-text-tertiary);"></i>
+                    <h3 style="margin-top: 1rem; color: var(--color-text);">Двухфакторная аутентификация</h3>
+                    <p style="color: var(--color-text-secondary); margin-bottom: 1.5rem;">
+                        Добавьте дополнительный уровень защиты к вашему аккаунту
+                    </p>
+                </div>
+                
+                <ol style="text-align: left; margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--color-text);">
+                    <li style="margin-bottom: 0.5rem;">Установите приложение для аутентификации (Google Authenticator, Authy, Microsoft Authenticator)</li>
+                    <li style="margin-bottom: 0.5rem;">Отсканируйте QR-код или введите секретный ключ</li>
+                    <li style="margin-bottom: 0.5rem;">Введите код из приложения для подтверждения</li>
+                </ol>
+                
+                <div class="qr-code-container">
+                    <div class="qr-code">
+                        <div style="text-align: center;">
+                            <i class="fas fa-qrcode" style="font-size: 4rem; color: var(--color-text-tertiary);"></i>
+                            <p style="margin-top: 0.5rem; color: var(--color-text-secondary);">QR-код</p>
+                        </div>
+                    </div>
+                    <p style="color: var(--color-text-secondary); margin-top: 0.5rem;">
+                        Секретный ключ: <strong>JBSWY3DPEHPK3PXP</strong>
+                    </p>
+                </div>
+                
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label class="form-label">Код из приложения</label>
+                    <input type="text" class="form-input" id="twoFactorCode" placeholder="Введите 6-значный код" maxlength="6" style="text-align: center; letter-spacing: 0.5rem; font-size: 1.25rem;">
+                </div>
+                
+                <div style="margin-top: 1.5rem;">
+                    <button class="btn btn-primary" onclick="enableTwoFactor()" style="width: 100%;">
+                        <i class="fas fa-check-circle"></i> Включить двухфакторную аутентификацию
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function enableTwoFactor() {
+    const code = document.getElementById('twoFactorCode')?.value;
+    
+    if (!code || code.length !== 6) {
+        showNotification('Введите 6-значный код из приложения', 'error');
+        return;
+    }
+    
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    localStorage.setItem(`twoFactorEnabled_${user.id}`, 'true');
+    
+    const twoFactorElement = document.querySelector('.fa-shield-alt');
+    if (twoFactorElement && twoFactorEnabled) {
+        twoFactorElement.style.color = 'var(--color-success)';
+    }
+    
+    closeTwoFactorModal();
+    showNotification('Двухфакторная аутентификация успешно включена', 'success');
+}
+
+function disableTwoFactor() {
+    if (!confirm('Вы уверены, что хотите отключить двухфакторную аутентификацию?')) {
+        return;
+    }
+    
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    localStorage.removeItem(`twoFactorEnabled_${user.id}`);
+    
+    const twoFactorElement = document.querySelector('.fa-shield-alt');
+    if (twoFactorElement) {
+        twoFactorElement.style.color = '';
+    }
+    
+    closeTwoFactorModal();
+    showNotification('Двухфакторная аутентификация отключена', 'info');
+}
+
+function generateNewBackupCodes() {
+    showNotification('Новые резервные коды сгенерированы', 'success');
+    showTwoFactorSetup();
+}
+
+async function saveProfile() {
+    const username = document.getElementById('editUsername').value.trim();
+    const email = document.getElementById('editEmail').value.trim();
+    
+    if (!username || !email) {
+        showNotification('Заполните все поля', 'error');
+        return;
+    }
+    
+    try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        const response = await fetch(`${API_BASE_URL}/api/profile`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${user.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, email })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Ошибка обновления профиля');
+        }
+        
+        if (user) {
+            user.username = username;
+            user.email = email;
+            localStorage.setItem('user', JSON.stringify(user));
+        }
+        
+        await loadProfileData();
+        
+        const firstLetter = username.charAt(0).toUpperCase();
+        const avatarData = {
+            type: 'initials',
+            value: firstLetter
+        };
+        await saveAvatar(avatarData);
+        
+        closeEditModal();
+        showNotification('Профиль успешно обновлен', 'success');
+        
+    } catch (error) {
+        console.error('Ошибка обновления профиля:', error);
+        showNotification(error.message || 'Ошибка обновления профиля', 'error');
+    }
+}
+
+async function changePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+    const errorElement = document.getElementById('passwordError');
+    
+    errorElement.style.display = 'none';
+    
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+        errorElement.textContent = 'Заполните все поля';
+        errorElement.style.display = 'block';
+        return;
+    }
+    
+    if (newPassword.length < 8) {
+        errorElement.textContent = 'Пароль должен содержать не менее 8 символов';
+        errorElement.style.display = 'block';
+        return;
+    }
+    
+    if (newPassword !== confirmNewPassword) {
+        errorElement.textContent = 'Пароли не совпадают';
+        errorElement.style.display = 'block';
+        return;
+    }
+    
+    if (newPassword === currentPassword) {
+        errorElement.textContent = 'Новый пароль должен отличаться от текущего';
+        errorElement.style.display = 'block';
+        return;
+    }
+    
+    try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        const response = await fetch(`${API_BASE_URL}/api/profile/password`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${user.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                current_password: currentPassword,
+                new_password: newPassword
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Ошибка смены пароля');
+        }
+        
+        closePasswordModal();
+        showNotification('Пароль успешно изменен', 'success');
+        
+    } catch (error) {
+        console.error('Ошибка смены пароля:', error);
+        errorElement.textContent = error.message || 'Неверный текущий пароль';
+        errorElement.style.display = 'block';
+    }
+}
+
+function showDeleteModal() {
+    document.getElementById('deleteModal').classList.add('active');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+    document.getElementById('confirmPassword').value = '';
+}
+
+async function deleteAccount() {
+    const password = document.getElementById('confirmPassword').value.trim();
+    
+    if (!password) {
+        showNotification('Введите пароль для подтверждения', 'error');
+        return;
+    }
+    
+    if (!confirm('ВНИМАНИЕ! Это действие необратимо. Все ваши данные будут удалены. Продолжить?')) {
+        return;
+    }
+    
+    try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        const response = await fetch(`${API_BASE_URL}/api/profile`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${user.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Ошибка удаления аккаунта');
+        }
+        
+        localStorage.removeItem('user');
+        localStorage.removeItem('cart');
+        localStorage.removeItem('favorites');
+        if (user.id) {
+            localStorage.removeItem(`twoFactorEnabled_${user.id}`);
+            localStorage.removeItem(`userAvatar_${user.id}`);
+        }
+        
+        closeDeleteModal();
+        showNotification('Аккаунт успешно удален', 'info');
+        
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Ошибка удаления аккаунта:', error);
+        showNotification(error.message || 'Неверный пароль', 'error');
+    }
+}
+
+function viewOrder(orderId) {
+    showNotification(`Просмотр заказа #${orderId}`, 'info');
+}
+
+function goToProduct(productId) {
+    window.location.href = `catalog.html#product-${productId}`;
+}
+
+function refreshOrders() {
+    const content = document.getElementById('orders-content');
+    content.innerHTML = `
+        <div class="loading">
+            <i class="fas fa-spinner"></i>
+            <p>Загрузка заказов...</p>
+        </div>
+    `;
+    setTimeout(() => loadOrders(), 500);
+}
+
+function refreshFavorites() {
+    const content = document.getElementById('favorites-content');
+    content.innerHTML = `
+        <div class="loading">
+            <i class="fas fa-spinner"></i>
+            <p>Загрузка избранного...</p>
+        </div>
+    `;
+    setTimeout(() => loadFavorites(), 500);
+}
+
+function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    document.getElementById('cartCount').textContent = totalItems;
+}
+
+function updateFavoritesCount() {
+    const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    document.getElementById('favoritesCount').textContent = favorites.length;
+    document.getElementById('favoritesCountTab').textContent = favorites.length;
+}
+
+function showNotification(message, type = 'info') {
+    let container = document.querySelector('.notifications-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'notifications-container';
+        document.body.appendChild(container);
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" style="background: none; border: none; cursor: pointer; padding: 0.5rem; color: var(--color-text-tertiary);">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    container.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 3000);
+}
+
+// Делаем функции глобальными
+window.openAvatarUploadModal = openAvatarUploadModal;
+window.closeAvatarModal = closeAvatarModal;
+window.confirmRemoveAvatar = confirmRemoveAvatar;
+window.closeConfirmRemoveAvatarModal = closeConfirmRemoveAvatarModal;
+window.uploadAvatar = uploadAvatar;
+window.removeAvatar = removeAvatar;
+window.showTab = showTab;
+window.openEditModal = openEditModal;
+window.closeEditModal = closeEditModal;
+window.saveProfile = saveProfile;
+window.openPasswordModal = openPasswordModal;
+window.closePasswordModal = closePasswordModal;
+window.changePassword = changePassword;
+window.openTwoFactorModal = openTwoFactorModal;
+window.closeTwoFactorModal = closeTwoFactorModal;
+window.enableTwoFactor = enableTwoFactor;
+window.disableTwoFactor = disableTwoFactor;
+window.generateNewBackupCodes = generateNewBackupCodes;
+window.showDeleteModal = showDeleteModal;
+window.closeDeleteModal = closeDeleteModal;
+window.deleteAccount = deleteAccount;
+window.refreshOrders = refreshOrders;
+window.refreshFavorites = refreshFavorites;
+window.viewOrder = viewOrder;
+window.goToProduct = goToProduct;
+window.addToCartFromFavorites = addToCartFromFavorites;
+window.removeFromFavorites = removeFromFavorites;
+window.clearFavorites = clearFavorites;
+window.logout = logout;
+</script>
+</body>
+</html>

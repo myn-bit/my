@@ -16,5 +16,14 @@
     "role": "user",
     "is_banned": false,
     "created_at": "2026-01-24T12:37:18.454Z"
+  },
+  {
+    "id": 3,
+    "username": "admin2",
+    "email": "admin2@pcstore.ru",
+    "password": "$2a$10$8xQrGdjKpqiHdRXlTml612OsgZMyqjfC1QVY9Y1j5Eli5H6z9qYUyH",
+    "role": "admin",
+    "is_banned": false,
+    "created_at": "2026-01-24T14:22:18.348Z"
   }
 ]

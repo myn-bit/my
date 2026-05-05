@@ -3,201 +3,524 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход - PC Store</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Вход в систему - PC Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.15) 0%, transparent 50%);
+            z-index: 0;
+        }
+        
         .auth-container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 30px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 380px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 35px 30px;
+            box-shadow: 
+                0 20px 40px -10px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 1;
+            animation: containerAppear 0.6s ease-out;
+        }
+        
+        @keyframes containerAppear {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
         
         .auth-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
         
-        .auth-header h1 {
-            color: #333;
-            margin-bottom: 10px;
+        .auth-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            color: #1a1a2e;
+            text-decoration: none;
+            transition: transform 0.3s ease;
         }
         
-        .auth-form .form-group {
-            margin-bottom: 20px;
+        .auth-logo:hover {
+            transform: scale(1.03);
         }
         
-        .auth-form label {
-            display: block;
+        .logo-icon {
+            font-size: 24px;
+            color: #4f46e5;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .auth-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a2e;
             margin-bottom: 5px;
-            color: #555;
-            font-weight: 500;
         }
         
-        .auth-form input {
+        .auth-subtitle {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 22px;
+        }
+        
+        .auth-form {
+            margin-bottom: 22px;
+        }
+        
+        .form-group {
+            margin-bottom: 18px;
+            position: relative;
+        }
+        
+        .form-group i.fas {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 14px;
+            transition: color 0.3s ease;
+            z-index: 2;
+        }
+        
+        .form-input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+            padding: 12px 40px 12px 40px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #1a1a2e;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
         }
         
-        .auth-form input:focus {
+        .form-input::placeholder {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        
+        .form-input:focus {
             outline: none;
-            border-color: #3b82f6;
+            border-color: #4f46e5;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
         
-        .btn-login {
+        .form-input:focus + i.fas {
+            color: #4f46e5;
+        }
+        
+        .password-eye {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0;
+            transition: color 0.2s ease;
+            z-index: 2;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .password-eye:hover {
+            color: #4f46e5;
+        }
+        
+        .btn-auth {
             width: 100%;
-            padding: 12px;
-            background: #3b82f6;
+            padding: 13px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            margin-top: 10px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 5px;
+            font-family: 'Inter', sans-serif;
         }
         
-        .btn-login:hover {
-            background: #2563eb;
+        .btn-auth:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+        
+        .btn-auth:active {
+            transform: translateY(0);
         }
         
         .auth-footer {
             text-align: center;
-            margin-top: 20px;
-            color: #666;
+            padding-top: 22px;
+            border-top: 1px solid #e2e8f0;
         }
         
-        .auth-footer a {
-            color: #3b82f6;
+        .footer-text {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        
+        .auth-link {
+            color: #4f46e5;
             text-decoration: none;
+            font-weight: 600;
+            margin-left: 3px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .auth-link::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 0;
+            height: 1.5px;
+            background: #4f46e5;
+            transition: width 0.2s ease;
+        }
+        
+        .auth-link:hover::after {
+            width: 100%;
+        }
+        
+        .auth-link:hover {
+            color: #4338ca;
+        }
+        
+        .home-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 13px;
+            margin-top: 12px;
+            transition: color 0.2s ease;
+        }
+        
+        .home-link:hover {
+            color: #4f46e5;
         }
         
         .message {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 16px;
+            border-radius: 10px;
             text-align: center;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+            display: none;
+            font-size: 13px;
         }
         
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .message.success {
+            background: #f0fdf4;
+            border: 1.5px solid #86efac;
+            color: #166534;
+            display: block;
         }
         
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .message.error {
+            background: #fef2f2;
+            border: 1.5px solid #fca5a5;
+            color: #991b1b;
+            display: block;
+        }
+        
+        .message.info {
+            background: #eff6ff;
+            border: 1.5px solid #93c5fd;
+            color: #1e40af;
+            display: block;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-8px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .decoration {
+            position: absolute;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .decoration-1 {
+            width: 160px;
+            height: 160px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+            border-radius: 50%;
+            top: 10%;
+            left: 10%;
+            filter: blur(35px);
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        .decoration-2 {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border-radius: 50%;
+            bottom: 10%;
+            right: 10%;
+            filter: blur(35px);
+            animation: float 15s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            33% {
+                transform: translate(20px, -20px) rotate(120deg);
+            }
+            66% {
+                transform: translate(-15px, 15px) rotate(240deg);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 25px 20px;
+                margin: 5px;
+                max-width: 340px;
+            }
+            
+            .auth-title {
+                font-size: 20px;
+            }
+            
+            .auth-subtitle {
+                font-size: 12px;
+            }
+            
+            .form-input {
+                padding: 11px 38px 11px 38px;
+                font-size: 12px;
+            }
+            
+            .form-input::placeholder {
+                font-size: 12px;
+            }
+            
+            .btn-auth {
+                padding: 12px;
+                font-size: 13px;
+            }
+            
+            .footer-text {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
+    
     <div class="auth-container">
         <div class="auth-header">
-            <h1><i class="fas fa-sign-in-alt"></i> Вход в систему</h1>
-            <p>Войдите в свой аккаунт</p>
+            <a href="index.html" class="auth-logo">
+                <i class="fas fa-desktop logo-icon"></i>
+                <span class="logo-text">PC<span style="color: #4f46e5;">Store</span></span>
+            </a>
+            <h1 class="auth-title">Добро пожаловать!</h1>
+            <p class="auth-subtitle">Войдите в свой аккаунт</p>
         </div>
         
-        <div id="message" class="message" style="display: none;"></div>
+        <div id="message" class="message"></div>
         
         <form class="auth-form" id="loginForm">
             <div class="form-group">
-                <label for="email"><i class="fas fa-envelope"></i> Email</label>
-                <input type="email" id="email" name="email" required 
-                       placeholder="Введите ваш email">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="email" name="email" class="form-input" 
+                       placeholder="Ваш email" required>
             </div>
             
             <div class="form-group">
-                <label for="password"><i class="fas fa-lock"></i> Пароль</label>
-                <input type="password" id="password" name="password" required 
-                       placeholder="Введите пароль">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" name="password" class="form-input" 
+                       placeholder="Пароль" required>
+                <button type="button" class="password-eye" id="togglePassword">
+                    <i class="fas fa-eye"></i>
+                </button>
             </div>
             
-            <button type="submit" class="btn-login">
+            <button type="submit" class="btn-auth" id="submitBtn">
                 <i class="fas fa-sign-in-alt"></i> Войти
             </button>
         </form>
         
         <div class="auth-footer">
-            <p>Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
-            <p><a href="index.html"><i class="fas fa-home"></i> Вернуться на главную</a></p>
+            <p class="footer-text">
+                Нет аккаунта?
+                <a href="register.html" class="auth-link">Зарегистрироваться</a>
+            </p>
+            <a href="index.html" class="home-link">
+                <i class="fas fa-home"></i> Вернуться на главную
+            </a>
         </div>
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const messageDiv = document.getElementById('message');
+            const submitBtn = document.getElementById('submitBtn');
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
             
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+            });
             
-            // Показываем загрузку
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход...';
-            submitBtn.disabled = true;
-            
-            try {
-                // Отправляем запрос на сервер (проверка в SQLite)
-                const response = await fetch('http://localhost:3001/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password
-                    })
-                });
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
                 
-                const data = await response.json();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
                 
-                if (data.success) {
-                    showMessage('✅ Вход выполнен успешно!', 'success');
-                    
-                    // Сохраняем пользователя в localStorage
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    
-                    // Перенаправляем в зависимости от роли
-                    setTimeout(() => {
-                        if (data.user.role === 'admin') {
-                            window.location.href = 'admin.html';
-                        } else {
-                            window.location.href = 'catalog.html';
-                        }
-                    }, 1500);
-                } else {
-                    showMessage('❌ ' + data.message, 'error');
+                if (!email || !password) {
+                    showMessage('Заполните все поля', 'error');
+                    return;
                 }
-            } catch (error) {
-                console.error('Ошибка входа:', error);
-                showMessage('❌ Ошибка подключения к серверу. Проверьте запущен ли backend сервер.', 'error');
-            } finally {
-                // Восстанавливаем кнопку
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
+                
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход...';
+                submitBtn.disabled = true;
+                
+                try {
+                    const response = await fetch('http://localhost:3001/api/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            password: password
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showMessage('✅ Вход выполнен успешно!', 'success');
+                        
+                        if (data.user && data.token) {
+                            data.user.token = data.token;
+                            localStorage.setItem('user', JSON.stringify(data.user));
+                            console.log('✅ Пользователь сохранен в localStorage:', data.user);
+                        }
+                        
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1500);
+                    } else {
+                        showMessage('❌ ' + data.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Ошибка входа:', error);
+                    showMessage('❌ Ошибка подключения к серверу', 'error');
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+            
+            function showMessage(text, type) {
+                messageDiv.textContent = text;
+                messageDiv.className = 'message ' + type;
+                
+                if (type === 'success') {
+                    setTimeout(() => {
+                        messageDiv.style.display = 'none';
+                    }, 3000);
+                }
+            }
+            
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user) {
+                showMessage(`Вы уже вошли как ${user.username}. <a href="index.html" style="color: #4f46e5;">Перейти на главную</a>`, 'info');
             }
         });
-        
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = text;
-            messageDiv.className = 'message ' + type;
-            messageDiv.style.display = 'block';
-            
-            // Автоскрытие для успешных сообщений
-            if (type === 'success') {
-                setTimeout(() => {
-                    messageDiv.style.display = 'none';
-                }, 3000);
-            }
-        }
     </script>
 </body>
 </html>
