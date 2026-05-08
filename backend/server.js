@@ -15,6 +15,24 @@ const logMiddleware = require('./logMiddleware');
 const app = express();
 const PORT = 3001;
 
+// Маркер инициализации базы данных
+const INIT_MARKER = path.join(__dirname, '.initialized');
+
+// Функция для проверки первого запуска
+function isFirstRun() {
+    return !fs.existsSync(INIT_MARKER);
+}
+
+// Функция для отметки о выполненной инициализации
+function markInitialized() {
+    fs.writeFileSync(INIT_MARKER, JSON.stringify({
+        initialized: true,
+        date: new Date().toISOString(),
+        version: '1.0.0'
+    }, null, 2));
+    console.log('✅ Создан маркер инициализации базы данных');
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -31,7 +49,6 @@ const JWT_SECRET = 'your-secret-key-change-in-production';
 
 // Генерирует уникальный бессрочный токен для каждого пользователя
 const generateToken = (user) => {
-    // Добавляем уникальную соль чтобы каждый раз был разный токен
     const salt = crypto.randomBytes(16).toString('hex');
     
     return jwt.sign(
@@ -40,11 +57,10 @@ const generateToken = (user) => {
             username: user.username, 
             email: user.email, 
             role: user.role,
-            salt: salt, // Уникальная соль для каждого токена
-            createdAt: Date.now() // Просто для информации, но не для истечения
+            salt: salt,
+            createdAt: Date.now()
         },
         JWT_SECRET
-        // Убрали expiresIn - токен БЕССРОЧНЫЙ!
     );
 };
 
@@ -93,7 +109,6 @@ const authenticateToken = (req, res, next) => {
     console.log(`🔐 Аутентификация: получен токен длиной ${token.length} символов`);
     
     try {
-        // ВАЖНО: verify без указания срока - токен НИКОГДА НЕ ИСТЕКАЕТ!
         const user = jwt.verify(token, JWT_SECRET);
         
         console.log(`✅ Аутентификация успешна: пользователь ${user.username} (ID: ${user.id}, роль: ${user.role})`);
@@ -138,7 +153,7 @@ const requireAdmin = (req, res, next) => {
     next();
 };
 
-// ========== ЭНДПОИНТЫ ДЛЯ АВАТАРА (ИСПРАВЛЕННАЯ ВЕРСИЯ) ==========
+// ========== ЭНДПОИНТЫ ДЛЯ АВАТАРА ==========
 
 // Получить аватар пользователя
 app.get('/api/profile/avatar', authenticateToken, (req, res) => {
@@ -170,33 +185,28 @@ app.get('/api/profile/avatar', authenticateToken, (req, res) => {
     });
 });
 
-// ИСПРАВЛЕННЫЙ ЭНДПОИНТ ДЛЯ ЗАГРУЗКИ АВАТАРА
+// Загрузка аватара
 app.post('/api/profile/avatar', authenticateToken, (req, res) => {
     const userId = req.user.id;
     
     console.log(`🖼️ Загрузка аватара для пользователя ID: ${userId}`);
     console.log('📦 Тело запроса:', JSON.stringify(req.body, null, 2));
     
-    // Проверяем разные возможные форматы данных
     let avatarValue = null;
     let avatarType = 'image';
     
-    // Формат 1: { type: 'image', value: 'base64...' }
     if (req.body.value) {
         avatarValue = req.body.value;
         avatarType = req.body.type || 'image';
     }
-    // Формат 2: { avatar: 'base64...' }
     else if (req.body.avatar) {
         avatarValue = req.body.avatar;
         avatarType = req.body.avatar_type || 'image';
     }
-    // Формат 3: { data: 'base64...' }
     else if (req.body.data) {
         avatarValue = req.body.data;
         avatarType = req.body.type || 'image';
     }
-    // Формат 4: прямая строка base64
     else if (typeof req.body === 'string' && req.body.length > 100) {
         avatarValue = req.body;
     }
@@ -217,7 +227,6 @@ app.post('/api/profile/avatar', authenticateToken, (req, res) => {
         });
     }
     
-    // Сохраняем информацию о аватаре в БД
     db.run(
         'UPDATE users SET avatar = ?, avatar_type = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
         [avatarValue, avatarType, userId],
@@ -255,7 +264,6 @@ app.delete('/api/profile/avatar', authenticateToken, (req, res) => {
     
     console.log(`🗑️ Удаление аватара пользователя ID: ${userId}`);
     
-    // Очищаем поле аватара в БД
     db.run(
         'UPDATE users SET avatar = NULL, avatar_type = "initials", updated_at = CURRENT_TIMESTAMP WHERE id = ?',
         [userId],
@@ -314,7 +322,7 @@ app.get('/', (req, res) => {
             ],
             avatar: [
                 'GET /api/profile/avatar - получить аватар',
-                'POST /api/profile/avatar - загрузить аватар (JSON с type и value)',
+                'POST /api/profile/avatar - загрузить аватар',
                 'DELETE /api/profile/avatar - удалить аватар'
             ],
             products: [
@@ -387,7 +395,6 @@ app.put('/api/profile/password', authenticateToken, (req, res) => {
         });
     }
     
-    // Проверка сложности пароля
     const hasLetters = /[a-zA-Zа-яА-Я]/.test(new_password);
     const hasNumbers = /\d/.test(new_password);
     
@@ -398,7 +405,6 @@ app.put('/api/profile/password', authenticateToken, (req, res) => {
         });
     }
     
-    // Получаем пользователя из БД
     db.get('SELECT * FROM users WHERE id = ?', [userId], (err, user) => {
         if (err) {
             console.error('❌ Ошибка получения пользователя:', err.message);
@@ -415,7 +421,6 @@ app.put('/api/profile/password', authenticateToken, (req, res) => {
             });
         }
         
-        // Проверяем текущий пароль
         const isCurrentPasswordValid = bcrypt.compareSync(current_password, user.password);
         
         if (!isCurrentPasswordValid) {
@@ -426,10 +431,8 @@ app.put('/api/profile/password', authenticateToken, (req, res) => {
             });
         }
         
-        // Хэшируем новый пароль
         const hashedNewPassword = bcrypt.hashSync(new_password, 10);
         
-        // Обновляем пароль в БД
         db.run('UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
             [hashedNewPassword, userId],
             function(err) {
@@ -499,7 +502,6 @@ app.delete('/api/profile', authenticateToken, (req, res) => {
         });
     }
     
-    // Получаем пользователя из БД
     db.get('SELECT * FROM users WHERE id = ?', [userId], (err, user) => {
         if (err) {
             console.error('❌ Ошибка получения пользователя:', err.message);
@@ -516,7 +518,6 @@ app.delete('/api/profile', authenticateToken, (req, res) => {
             });
         }
         
-        // Проверяем пароль
         const isPasswordValid = bcrypt.compareSync(password, user.password);
         
         if (!isPasswordValid) {
@@ -527,11 +528,9 @@ app.delete('/api/profile', authenticateToken, (req, res) => {
             });
         }
         
-        // Начинаем транзакцию для удаления всех данных пользователя
         db.serialize(() => {
             db.run('BEGIN TRANSACTION');
             
-            // Удаляем избранное пользователя
             db.run('DELETE FROM favorites WHERE user_id = ?', [userId], (err) => {
                 if (err) {
                     console.error('❌ Ошибка удаления избранного:', err.message);
@@ -544,7 +543,6 @@ app.delete('/api/profile', authenticateToken, (req, res) => {
                 
                 console.log(`✅ Избранное пользователя ID: ${userId} удалено`);
                 
-                // Удаляем заказы пользователя
                 db.all('SELECT id FROM orders WHERE user_id = ?', [userId], (err, orders) => {
                     if (err) {
                         console.error('❌ Ошибка получения заказов:', err.message);
@@ -555,14 +553,12 @@ app.delete('/api/profile', authenticateToken, (req, res) => {
                         });
                     }
                     
-                    // Удаляем товары из заказов
                     orders.forEach(order => {
                         db.run('DELETE FROM order_items WHERE order_id = ?', [order.id], (err) => {
                             if (err) console.error('Ошибка удаления товаров заказа:', err.message);
                         });
                     });
                     
-                    // Удаляем заказы
                     db.run('DELETE FROM orders WHERE user_id = ?', [userId], (err) => {
                         if (err) {
                             console.error('❌ Ошибка удаления заказов:', err.message);
@@ -575,7 +571,6 @@ app.delete('/api/profile', authenticateToken, (req, res) => {
                         
                         console.log(`✅ Заказы пользователя ID: ${userId} удалены`);
                         
-                        // Удаляем самого пользователя
                         db.run('DELETE FROM users WHERE id = ?', [userId], function(err) {
                             if (err) {
                                 console.error('❌ Ошибка удаления пользователя:', err.message);
@@ -711,7 +706,6 @@ app.post('/api/debug-token', (req, res) => {
         isEmpty: parts[1] === ''
     };
     
-    // Попробуем расшифровать токен
     if (parts[1] && parts[1].length > 10 && parts[1] !== 'undefined' && parts[1] !== 'null') {
         try {
             const decoded = jwt.decode(parts[1]);
@@ -732,7 +726,6 @@ app.post('/api/debug-token', (req, res) => {
             result.tokenInfo.isValidFormat = false;
         }
         
-        // Попробуем верифицировать
         try {
             const verified = jwt.verify(parts[1], JWT_SECRET);
             result.tokenInfo.verification = {
@@ -869,26 +862,6 @@ function addMissingColumns() {
                         console.error(`❌ Ошибка добавления колонки ${col.name}:`, err.message);
                     } else {
                         console.log(`✅ Колонка ${col.name} добавлена`);
-                        
-                        if (col.name === 'slug') {
-                            db.all('SELECT id, name FROM products WHERE slug IS NULL OR slug = ""', [], (err, products) => {
-                                if (!err && products.length > 0) {
-                                    products.forEach(product => {
-                                        const slug = product.name.toLowerCase()
-                                            .replace(/[^a-z0-9а-яё\s]/g, '-')
-                                            .replace(/\s+/g, '-')
-                                            .replace(/-+/g, '-')
-                                            .replace(/^-|-$/g, '');
-                                        
-                                        db.run('UPDATE products SET slug = ? WHERE id = ?', [slug, product.id], (err) => {
-                                            if (err) {
-                                                console.error(`❌ Ошибка обновления slug для товара ${product.id}:`, err.message);
-                                            }
-                                        });
-                                    });
-                                }
-                            });
-                        }
                     }
                 });
             }
@@ -923,7 +896,6 @@ function addMissingColumns() {
         });
     });
     
-    // Добавляем проверку для таблицы orders
     db.all(`PRAGMA table_info(orders)`, [], (err, columns) => {
         if (err) {
             console.error('❌ Ошибка проверки структуры таблицы orders:', err.message);
@@ -961,6 +933,10 @@ function addMissingColumns() {
 function initDatabase() {
     console.log('🔄 Инициализация базы данных...');
     
+    // Проверяем, первый ли это запуск
+    const firstRun = isFirstRun();
+    console.log(`🔍 Первый запуск: ${firstRun ? 'ДА' : 'НЕТ'}`);
+    
     // Таблица пользователей
     db.run(`CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -984,75 +960,60 @@ function initDatabase() {
             
             addMissingColumns();
             
-            // Добавляем тестовых пользователей
-const adminPassword = bcrypt.hashSync('admin123', 10);
-db.get('SELECT * FROM users WHERE email = ?', ['admin@pcstore.ru'], (err, row) => {
-    if (!err && !row) {
-        db.run(`INSERT INTO users (username, email, password, role) 
-                VALUES (?, ?, ?, ?)`, 
-            ['admin', 'admin@pcstore.ru', adminPassword, 'admin'],
-            function(err) {
-                if (err) {
-                    console.error('❌ Ошибка добавления администратора:', err.message);
-                } else {
-                    console.log('👑 Администратор создан (admin@pcstore.ru / admin123)');
-                }
+            // Добавляем тестовых пользователей ТОЛЬКО при первом запуске
+            if (firstRun) {
+                console.log('👤 Первый запуск: добавляем тестовых пользователей...');
+                
+                const adminPassword = bcrypt.hashSync('admin123', 10);
+                db.run(`INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`, 
+                    ['admin', 'admin@pcstore.ru', adminPassword, 'admin'],
+                    function(err) {
+                        if (err) {
+                            console.error('❌ Ошибка добавления администратора:', err.message);
+                        } else {
+                            console.log('👑 Администратор создан (admin@pcstore.ru / admin123)');
+                        }
+                    }
+                );
+
+                const admin2Password = bcrypt.hashSync('admin456', 10);
+                db.run(`INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`, 
+                    ['admin2', 'admin2@pcstore.ru', admin2Password, 'admin'],
+                    function(err) {
+                        if (err) {
+                            console.error('❌ Ошибка добавления второго администратора:', err.message);
+                        } else {
+                            console.log('👑 Второй администратор создан (admin2@pcstore.ru / admin456)');
+                        }
+                    }
+                );
+
+                const userPassword = bcrypt.hashSync('user123', 10);
+                db.run(`INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`, 
+                    ['user', 'user@pcstore.ru', userPassword, 'user'],
+                    function(err) {
+                        if (err) {
+                            console.error('❌ Ошибка добавления тестового пользователя:', err.message);
+                        } else {
+                            console.log('👤 Тестовый пользователь создан (user@pcstore.ru / user123)');
+                        }
+                    }
+                );
+
+                const modPassword = bcrypt.hashSync('mod123', 10);
+                db.run(`INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`, 
+                    ['moderator', 'moderator@pcstore.ru', modPassword, 'moderator'],
+                    function(err) {
+                        if (err) {
+                            console.error('❌ Ошибка добавления модератора:', err.message);
+                        } else {
+                            console.log('👤 Модератор создан (moderator@pcstore.ru / mod123)');
+                        }
+                    }
+                );
+            } else {
+                console.log('✅ Пользователи уже существуют, пропускаем добавление');
             }
-        );
-    }
-});
-
-            // Добавляем ВТОРОГО администратора
-            const admin2Password = bcrypt.hashSync('admin456', 10);
-            db.get('SELECT * FROM users WHERE email = ?', ['admin2@pcstore.ru'], (err, row) => {
-                if (!err && !row) {
-                    db.run(`INSERT INTO users (username, email, password, role) 
-                            VALUES (?, ?, ?, ?)`, 
-                        ['admin2', 'admin2@pcstore.ru', admin2Password, 'admin'],
-                        function(err) {
-                            if (err) {
-                                console.error('❌ Ошибка добавления второго администратора:', err.message);
-                            } else {
-                                console.log('👑 Второй администратор создан (admin2@pcstore.ru / admin456)');
-                            }
-                        }
-                    );
-                }
-            });
-
-            const userPassword = bcrypt.hashSync('user123', 10);
-            db.get('SELECT * FROM users WHERE email = ?', ['user@pcstore.ru'], (err, row) => {
-                if (!err && !row) {
-                    db.run(`INSERT INTO users (username, email, password, role) 
-                            VALUES (?, ?, ?, ?)`, 
-                        ['user', 'user@pcstore.ru', userPassword, 'user'],
-                        function(err) {
-                            if (err) {
-                                console.error('❌ Ошибка добавления тестового пользователя:', err.message);
-                            } else {
-                                console.log('👤 Тестовый пользователь создан (user@pcstore.ru / user123)');
-                            }
-                        }
-                    );
-                }
-            });
-
-            const modPassword = bcrypt.hashSync('mod123', 10);
-            db.get('SELECT * FROM users WHERE email = ?', ['moderator@pcstore.ru'], (err, row) => {
-                if (!err && !row) {
-                    db.run(`INSERT INTO users (username, email, password, role) 
-                            VALUES (?, ?, ?, ?)`, 
-                        ['moderator', 'moderator@pcstore.ru', modPassword, 'moderator'],
-                        function(err) {
-                            if (err) {
-                                console.error('❌ Ошибка добавления модератора:', err.message);
-                            } else {
-                                console.log('👤 Модератор создан (moderator@pcstore.ru / mod123)');
-                            }
-                        }
-                    );
-                }
-            });
         }
     });
     
@@ -1073,22 +1034,27 @@ db.get('SELECT * FROM users WHERE email = ?', ['admin@pcstore.ru'], (err, row) =
         } else {
             console.log('✅ Таблица categories создана/проверена');
             
-            const categories = [
-                ['Процессоры', 'processors', 'Процессоры Intel и AMD', 'fas fa-microchip', '#3b82f6'],
-                ['Видеокарты', 'video-cards', 'Видеокарты NVIDIA и AMD', 'fas fa-gamepad', '#ef4444'],
-                ['Материнские платы', 'motherboards', 'Материнские платы для ПК', 'fas fa-server', '#10b981'],
-                ['Оперативная память', 'ram', 'Оперативная память DDR4/DDR5', 'fas fa-memory', '#f59e0b'],
-                ['Накопители', 'storage', 'SSD и HDD накопители', 'fas fa-hdd', '#8b5cf6'],
-                ['Блоки питания', 'power-supplies', 'Блоки питания для ПК', 'fas fa-plug', '#6366f1'],
-                ['Корпуса', 'cases', 'Корпуса для компьютеров', 'fas fa-desktop', '#64748b'],
-                ['Охлаждение', 'cooling', 'Системы охлаждения', 'fas fa-wind', '#06b6d4']
-            ];
-            
             db.get('SELECT COUNT(*) as count FROM categories', [], (err, row) => {
-                if (!err && row.count === 0) {
-                    console.log('📂 Добавляем категории...');
-                    const stmt = db.prepare(`INSERT INTO categories (name, slug, description, icon, color) 
-                                            VALUES (?, ?, ?, ?, ?)`);
+                if (err) {
+                    console.error('Ошибка проверки категорий:', err.message);
+                    return;
+                }
+                
+                if (row.count === 0 && firstRun) {
+                    console.log('📂 Первый запуск: добавляем категории...');
+                    
+                    const categories = [
+                        ['Процессоры', 'processors', 'Процессоры Intel и AMD', 'fas fa-microchip', '#3b82f6'],
+                        ['Видеокарты', 'video-cards', 'Видеокарты NVIDIA и AMD', 'fas fa-gamepad', '#ef4444'],
+                        ['Материнские платы', 'motherboards', 'Материнские платы для ПК', 'fas fa-server', '#10b981'],
+                        ['Оперативная память', 'ram', 'Оперативная память DDR4/DDR5', 'fas fa-memory', '#f59e0b'],
+                        ['Накопители', 'storage', 'SSD и HDD накопители', 'fas fa-hdd', '#8b5cf6'],
+                        ['Блоки питания', 'power-supplies', 'Блоки питания для ПК', 'fas fa-plug', '#6366f1'],
+                        ['Корпуса', 'cases', 'Корпуса для компьютеров', 'fas fa-desktop', '#64748b'],
+                        ['Охлаждение', 'cooling', 'Системы охлаждения', 'fas fa-wind', '#06b6d4']
+                    ];
+                    
+                    const stmt = db.prepare(`INSERT INTO categories (name, slug, description, icon, color) VALUES (?, ?, ?, ?, ?)`);
                     
                     categories.forEach(([name, slug, description, icon, color]) => {
                         stmt.run([name, slug, description, icon, color], (err) => {
@@ -1098,6 +1064,10 @@ db.get('SELECT * FROM users WHERE email = ?', ['admin@pcstore.ru'], (err, row) =
                     
                     stmt.finalize();
                     console.log('✅ Категории добавлены');
+                } else if (row.count > 0) {
+                    console.log(`✅ В базе уже есть ${row.count} категорий, пропускаем добавление`);
+                } else if (row.count === 0 && !firstRun) {
+                    console.log('⚠️ Таблица категорий пуста, но это не первый запуск. Категории НЕ добавляются.');
                 }
             });
         }
@@ -1129,8 +1099,13 @@ db.get('SELECT * FROM users WHERE email = ?', ['admin@pcstore.ru'], (err, row) =
             console.log('✅ Таблица products создана/проверена');
             
             db.get('SELECT COUNT(*) as count FROM products', [], (err, row) => {
-                if (!err && row.count === 0) {
-                    console.log('🛒 Добавляем тестовые товары...');
+                if (err) {
+                    console.error('Ошибка проверки товаров:', err.message);
+                    return;
+                }
+                
+                if (row.count === 0 && firstRun) {
+                    console.log('🛒 Первый запуск: добавляем тестовые товары...');
                     
                     db.all('SELECT id, slug FROM categories', [], (err, categories) => {
                         if (err) {
@@ -1144,306 +1119,66 @@ db.get('SELECT * FROM users WHERE email = ?', ['admin@pcstore.ru'], (err, row) =
                         });
                         
                         const products = [
-                            // Процессоры (category_id: 1) - 35 товаров
+                            // Процессоры (category_id: 1) - 5 товаров
                             ['Intel Core i9-14900K', 'Процессор Intel Core i9-14900K, 24 ядра (8P+16E), до 6.0 ГГц, LGA 1700', 59990, 64990, 1, 5, 4.8, 124, 1, 1],
                             ['AMD Ryzen 9 7950X3D', 'Процессор AMD Ryzen 9 7950X3D, 16 ядер, 32 потока, до 5.7 ГГц, AM5', 54990, 59990, 1, 8, 4.9, 89, 1, 1],
                             ['Intel Core i7-14700K', 'Процессор Intel Core i7-14700K, 20 ядер (8P+12E), до 5.6 ГГц, LGA 1700', 39990, 44990, 1, 10, 4.7, 78, 0, 0],
                             ['AMD Ryzen 7 7800X3D', 'Процессор AMD Ryzen 7 7800X3D, 8 ядер, 16 потоков, до 5.0 ГГц, AM5', 36990, 39990, 1, 6, 4.8, 45, 0, 1],
                             ['Intel Core i5-14600K', 'Процессор Intel Core i5-14600K, 14 ядер (6P+8E), до 5.3 ГГц, LGA 1700', 28990, 31990, 1, 15, 4.6, 67, 0, 0],
-                            ['AMD Ryzen 5 7600X', 'Процессор AMD Ryzen 5 7600X, 6 ядер, 12 потоков, до 5.3 ГГц, AM5', 21990, 24990, 1, 18, 4.5, 92, 0, 0],
-                            ['Intel Core i3-14100', 'Процессор Intel Core i3-14100, 4 ядра, 8 потоков, до 4.7 ГГц, LGA 1700', 14990, 16990, 1, 25, 4.4, 56, 0, 1],
-                            ['AMD Ryzen 9 7900X', 'Процессор AMD Ryzen 9 7900X, 12 ядер, 24 потока, до 5.6 ГГц, AM5', 45990, 49990, 1, 7, 4.7, 41, 0, 0],
-                            ['Intel Core i9-13900KS', 'Процессор Intel Core i9-13900KS, 24 ядра, до 6.0 ГГц, LGA 1700', 64990, 69990, 1, 3, 4.9, 67, 1, 0],
-                            ['AMD Ryzen 7 7700X', 'Процессор AMD Ryzen 7 7700X, 8 ядер, 16 потоков, до 5.4 ГГц, AM5', 29990, 32990, 1, 12, 4.6, 78, 0, 1],
-                            ['Intel Core i5-13600KF', 'Процессор Intel Core i5-13600KF, 14 ядер, до 5.1 ГГц, без видеоядра', 25990, 28990, 1, 14, 4.5, 89, 0, 0],
-                            ['AMD Ryzen 5 5600X', 'Процессор AMD Ryzen 5 5600X, 6 ядер, 12 потоков, до 4.6 ГГц, AM4', 16990, 19990, 1, 20, 4.7, 156, 1, 0],
-                            ['Intel Core i7-13700K', 'Процессор Intel Core i7-13700K, 16 ядер, до 5.4 ГГц, LGA 1700', 37990, 42990, 1, 9, 4.8, 67, 0, 0],
-                            ['AMD Ryzen 9 5950X', 'Процессор AMD Ryzen 9 5950X, 16 ядер, 32 потока, до 4.9 ГГц, AM4', 54990, 59990, 1, 5, 4.9, 89, 1, 0],
-                            ['Intel Core i9-12900K', 'Процессор Intel Core i9-12900K, 16 ядер, до 5.2 ГГц, LGA 1700', 44990, 49990, 1, 8, 4.7, 112, 0, 0],
-                            ['AMD Ryzen 7 5800X3D', 'Процессор AMD Ryzen 7 5800X3D, 8 ядер, 16 потоков, 3D V-Cache', 32990, 37990, 1, 11, 4.8, 134, 1, 0],
-                            ['Intel Core i5-12600K', 'Процессор Intel Core i5-12600K, 10 ядер, до 4.9 ГГц, LGA 1700', 23990, 27990, 1, 16, 4.6, 98, 0, 0],
-                            ['AMD Ryzen 5 5600G', 'Процессор AMD Ryzen 5 5600G, 6 ядер, с видеоядером Vega 7', 18990, 21990, 1, 22, 4.4, 76, 0, 1],
-                            ['Intel Core i3-13100', 'Процессор Intel Core i3-13100, 4 ядра, 8 потоков, до 4.5 ГГц', 12990, 14990, 1, 30, 4.3, 45, 0, 0],
-                            ['AMD Ryzen 3 4100', 'Процессор AMD Ryzen 3 4100, 4 ядра, 8 потоков, до 4.0 ГГц', 7990, 9990, 1, 35, 4.2, 67, 0, 0],
-                            ['Intel Core i9-11900K', 'Процессор Intel Core i9-11900K, 8 ядер, до 5.3 ГГц, LGA 1200', 37990, 42990, 1, 6, 4.5, 89, 0, 0],
-                            ['AMD Ryzen 9 3950X', 'Процессор AMD Ryzen 9 3950X, 16 ядер, 32 потока, до 4.7 ГГц', 49990, 54990, 1, 4, 4.8, 56, 0, 0],
-                            ['Intel Core i7-12700K', 'Процессор Intel Core i7-12700K, 12 ядер, до 5.0 ГГц', 34990, 39990, 1, 8, 4.7, 78, 0, 0],
-                            ['AMD Ryzen Threadripper 3960X', 'Процессор AMD Threadripper 3960X, 24 ядра, sTRX4', 119990, 129990, 1, 2, 4.9, 23, 1, 0],
-                            ['Intel Xeon W-3375', 'Серверный процессор Intel Xeon W-3375, 38 ядер', 459990, 499990, 1, 1, 5.0, 12, 0, 0],
-                            ['AMD Ryzen 5 5500', 'Процессор AMD Ryzen 5 5500, 6 ядер, до 4.2 ГГц', 14990, 17990, 1, 25, 4.3, 89, 0, 1],
-                            ['Intel Core i5-12400F', 'Процессор Intel Core i5-12400F, 6 ядер, без видеоядра', 15990, 18990, 1, 18, 4.4, 112, 0, 0],
-                            ['AMD Ryzen 9 5900X', 'Процессор AMD Ryzen 9 5900X, 12 ядер, 24 потока', 38990, 44990, 1, 7, 4.8, 156, 1, 0],
-                            ['Intel Core i7-11700K', 'Процессор Intel Core i7-11700K, 8 ядер, до 5.0 ГГц', 28990, 33990, 1, 9, 4.5, 78, 0, 0],
-                            ['AMD Ryzen 7 5700X', 'Процессор AMD Ryzen 7 5700X, 8 ядер, 16 потоков', 24990, 28990, 1, 14, 4.6, 98, 0, 0],
-                            ['Intel Core i3-12100', 'Процессор Intel Core i3-12100, 4 ядра, 8 потоков', 11990, 13990, 1, 28, 4.3, 67, 0, 0],
-                            ['AMD Ryzen 3 5300G', 'Процессор AMD Ryzen 3 5300G, 4 ядра, с видеоядером', 10990, 12990, 1, 32, 4.2, 45, 0, 0],
-                            ['Intel Core i9-10900K', 'Процессор Intel Core i9-10900K, 10 ядер, до 5.3 ГГц', 32990, 37990, 1, 5, 4.6, 89, 0, 0],
-                            ['AMD Ryzen 5 4500', 'Процессор AMD Ryzen 5 4500, 6 ядер, до 4.1 ГГц', 12990, 15990, 1, 20, 4.3, 67, 0, 0],
-                            ['Intel Core i7-10700K', 'Процессор Intel Core i7-10700K, 8 ядер, до 5.1 ГГц', 24990, 29990, 1, 11, 4.5, 78, 0, 0],
                             
-                            // Видеокарты (category_id: 2) - 35 товаров
+                            // Видеокарты (category_id: 2) - 5 товаров
                             ['NVIDIA RTX 4090', 'Видеокарта NVIDIA GeForce RTX 4090, 24 ГБ GDDR6X, 16384 ядер', 189990, 209990, 2, 3, 4.7, 56, 1, 0],
                             ['AMD Radeon RX 7900 XTX', 'Видеокарта AMD Radeon RX 7900 XTX, 24 ГБ GDDR6, Navi 31', 119990, 129990, 2, 7, 4.6, 42, 0, 1],
                             ['NVIDIA RTX 4080 Super', 'Видеокарта NVIDIA GeForce RTX 4080 Super, 16 ГБ GDDR6X', 119990, 129990, 2, 5, 4.6, 33, 1, 0],
                             ['AMD Radeon RX 7800 XT', 'Видеокарта AMD Radeon RX 7800 XT, 16 ГБ GDDR6, Navi 32', 59990, 64990, 2, 12, 4.5, 28, 0, 1],
                             ['NVIDIA RTX 4070 Ti Super', 'Видеокарта NVIDIA GeForce RTX 4070 Ti Super, 16 ГБ GDDR6X', 84990, 89990, 2, 8, 4.5, 31, 1, 0],
-                            ['AMD Radeon RX 7700 XT', 'Видеокарта AMD Radeon RX 7700 XT, 12 ГБ GDDR6, Navi 32', 48990, 52990, 2, 15, 4.4, 19, 0, 1],
-                            ['NVIDIA RTX 4070 Super', 'Видеокарта NVIDIA GeForce RTX 4070 Super, 12 ГБ GDDR6X', 63990, 68990, 2, 10, 4.5, 27, 1, 0],
-                            ['AMD Radeon RX 7600', 'Видеокарта AMD Radeon RX 7600, 8 ГБ GDDR6, Navi 33', 29990, 32990, 2, 18, 4.3, 42, 0, 0],
-                            ['NVIDIA RTX 4060 Ti', 'Видеокарта NVIDIA GeForce RTX 4060 Ti, 16 ГБ GDDR6', 45990, 49990, 2, 14, 4.2, 38, 0, 0],
-                            ['AMD Radeon RX 6750 XT', 'Видеокарта AMD Radeon RX 6750 XT, 12 ГБ GDDR6, RDNA 2', 37990, 42990, 2, 9, 4.5, 56, 0, 0],
-                            ['NVIDIA RTX 3090 Ti', 'Видеокарта NVIDIA GeForce RTX 3090 Ti, 24 ГБ GDDR6X', 149990, 169990, 2, 4, 4.8, 23, 0, 0],
-                            ['AMD Radeon RX 6800 XT', 'Видеокарта AMD Radeon RX 6800 XT, 16 ГБ GDDR6, RDNA 2', 64990, 74990, 2, 6, 4.6, 34, 0, 0],
-                            ['NVIDIA RTX 3080 Ti', 'Видеокарта NVIDIA GeForce RTX 3080 Ti, 12 ГБ GDDR6X', 89990, 99990, 2, 5, 4.7, 45, 0, 0],
-                            ['AMD Radeon RX 6700 XT', 'Видеокарта AMD Radeon RX 6700 XT, 12 ГБ GDDR6', 42990, 47990, 2, 11, 4.4, 67, 0, 0],
-                            ['NVIDIA RTX 3070 Ti', 'Видеокарта NVIDIA GeForce RTX 3070 Ti, 8 ГБ GDDR6X', 55990, 61990, 2, 8, 4.5, 89, 0, 0],
-                            ['AMD Radeon RX 6600 XT', 'Видеокарта AMD Radeon RX 6600 XT, 8 ГБ GDDR6', 32990, 37990, 2, 13, 4.3, 78, 0, 0],
-                            ['NVIDIA RTX 3060 Ti', 'Видеокарта NVIDIA GeForce RTX 3060 Ti, 8 ГБ GDDR6', 38990, 44990, 2, 16, 4.4, 112, 0, 0],
-                            ['AMD Radeon RX 6650 XT', 'Видеокарта AMD Radeon RX 6650 XT, 8 ГБ GDDR6', 34990, 39990, 2, 12, 4.3, 56, 0, 0],
-                            ['NVIDIA RTX 3050', 'Видеокарта NVIDIA GeForce RTX 3050, 8 ГБ GDDR6', 28990, 32990, 2, 20, 4.2, 98, 0, 0],
-                            ['AMD Radeon RX 6400', 'Видеокарта AMD Radeon RX 6400, 4 ГБ GDDR6', 14990, 17990, 2, 25, 4.1, 45, 0, 0],
-                            ['NVIDIA GTX 1660 Super', 'Видеокарта NVIDIA GeForce GTX 1660 Super, 6 ГБ GDDR6', 23990, 27990, 2, 18, 4.3, 156, 0, 0],
-                            ['AMD Radeon RX 6500 XT', 'Видеокарта AMD Radeon RX 6500 XT, 4 ГБ GDDR6', 18990, 21990, 2, 22, 4.2, 67, 0, 0],
-                            ['NVIDIA RTX 2080 Ti', 'Видеокарта NVIDIA GeForce RTX 2080 Ti, 11 ГБ GDDR6', 79990, 89990, 2, 3, 4.6, 89, 0, 0],
-                            ['AMD Radeon VII', 'Видеокарта AMD Radeon VII, 16 ГБ HBM2', 89990, 99990, 2, 2, 4.5, 23, 0, 0],
-                            ['NVIDIA Titan RTX', 'Видеокарта NVIDIA Titan RTX, 24 ГБ GDDR6', 299990, 329990, 2, 1, 4.8, 12, 0, 0],
-                            ['AMD Radeon RX 5700 XT', 'Видеокарта AMD Radeon RX 5700 XT, 8 ГБ GDDR6', 45990, 51990, 2, 7, 4.4, 78, 0, 0],
-                            ['NVIDIA GTX 1080 Ti', 'Видеокарта NVIDIA GeForce GTX 1080 Ti, 11 ГБ GDDR5X', 54990, 59990, 2, 5, 4.6, 134, 0, 0],
-                            ['AMD Radeon RX 5600 XT', 'Видеокарта AMD Radeon RX 5600 XT, 6 ГБ GDDR6', 32990, 37990, 2, 9, 4.3, 89, 0, 0],
-                            ['NVIDIA RTX 2060 Super', 'Видеокарта NVIDIA GeForce RTX 2060 Super, 8 ГБ GDDR6', 37990, 42990, 2, 11, 4.4, 98, 0, 0],
-                            ['AMD Radeon RX 5500 XT', 'Видеокарта AMD Radeon RX 5500 XT, 8 ГБ GDDR6', 25990, 29990, 2, 14, 4.2, 67, 0, 0],
-                            ['NVIDIA GTX 1650 Super', 'Видеокарта NVIDIA GeForce GTX 1650 Super, 4 ГБ GDDR6', 19990, 22990, 2, 19, 4.1, 89, 0, 0],
-                            ['AMD Radeon RX 590', 'Видеокарта AMD Radeon RX 590, 8 ГБ GDDR5', 27990, 32990, 2, 8, 4.3, 112, 0, 0],
-                            ['NVIDIA GTX 1070 Ti', 'Видеокарта NVIDIA GeForce GTX 1070 Ti, 8 ГБ GDDR5', 39990, 45990, 2, 6, 4.5, 78, 0, 0],
-                            ['AMD Radeon RX 580', 'Видеокарта AMD Radeon RX 580, 8 ГБ GDDR5', 22990, 27990, 2, 12, 4.2, 156, 0, 0],
-                            ['NVIDIA GTX 1060 6GB', 'Видеокарта NVIDIA GeForce GTX 1060, 6 ГБ GDDR5', 24990, 29990, 2, 15, 4.3, 189, 0, 0],
                             
-                            // Материнские платы (category_id: 3) - 35 товаров
+                            // Материнские платы (category_id: 3) - 5 товаров
                             ['ASUS ROG Strix Z790-E', 'Материнская плата ASUS ROG Strix Z790-E Gaming WiFi, LGA 1700', 34990, 39990, 3, 12, 4.5, 31, 0, 0],
                             ['ASUS TUF Gaming B650-Plus', 'Материнская плата ASUS TUF Gaming B650-Plus WiFi, AM5', 19990, 21990, 3, 8, 4.4, 22, 0, 1],
                             ['Gigabyte B760M Aorus Elite', 'Материнская плата Gigabyte B760M Aorus Elite AX, LGA 1700', 15990, 17990, 3, 15, 4.3, 19, 0, 0],
                             ['MSI MAG B650 Tomahawk', 'Материнская плата MSI MAG B650 Tomahawk WiFi, AM5', 18990, 20990, 3, 10, 4.5, 24, 0, 1],
                             ['ASRock B550 Steel Legend', 'Материнская плата ASRock B550 Steel Legend, AM4', 12990, 14990, 3, 18, 4.4, 56, 0, 0],
-                            ['ASUS PRIME Z790-P', 'Материнская плата ASUS PRIME Z790-P, LGA 1700', 18990, 21990, 3, 14, 4.3, 34, 0, 0],
-                            ['Gigabyte X670E Aorus Master', 'Материнская плата Gigabyte X670E Aorus Master, AM5', 44990, 49990, 3, 5, 4.7, 18, 1, 0],
-                            ['MSI MPG Z690 Carbon WiFi', 'Материнская плата MSI MPG Z690 Carbon WiFi, LGA 1700', 29990, 34990, 3, 9, 4.6, 27, 0, 0],
-                            ['ASUS ROG Crosshair X670E Hero', 'Материнская плата ASUS ROG Crosshair X670E Hero, AM5', 54990, 59990, 3, 3, 4.8, 15, 1, 0],
-                            ['Gigabyte B660M DS3H', 'Материнская плата Gigabyte B660M DS3H, LGA 1700', 11990, 13990, 3, 22, 4.2, 78, 0, 0],
-                            ['MSI B550-A PRO', 'Материнская плата MSI B550-A PRO, AM4', 13990, 15990, 3, 16, 4.3, 89, 0, 0],
-                            ['ASRock Z690 Phantom Gaming', 'Материнская плата ASRock Z690 Phantom Gaming, LGA 1700', 23990, 27990, 3, 11, 4.4, 45, 0, 0],
-                            ['ASUS ProArt Z790-Creator', 'Материнская плата ASUS ProArt Z790-Creator, LGA 1700', 49990, 54990, 3, 4, 4.7, 23, 1, 0],
-                            ['Gigabyte B550 Aorus Elite', 'Материнская плата Gigabyte B550 Aorus Elite, AM4', 14990, 17990, 3, 13, 4.3, 67, 0, 0],
-                            ['MSI MAG Z790 Tomahawk', 'Материнская плата MSI MAG Z790 Tomahawk WiFi, LGA 1700', 27990, 31990, 3, 8, 4.5, 38, 0, 1],
-                            ['ASUS ROG Strix B550-F', 'Материнская плата ASUS ROG Strix B550-F Gaming, AM4', 17990, 20990, 3, 12, 4.4, 56, 0, 0],
-                            ['Gigabyte Z690 UD', 'Материнская плата Gigabyte Z690 UD, LGA 1700', 16990, 19990, 3, 15, 4.3, 42, 0, 0],
-                            ['MSI B760M Mortar WiFi', 'Материнская плата MSI B760M Mortar WiFi, LGA 1700', 19990, 22990, 3, 10, 4.4, 34, 0, 1],
-                            ['ASRock B760M Steel Legend', 'Материнская плата ASRock B760M Steel Legend, LGA 1700', 15990, 18990, 3, 14, 4.3, 29, 0, 0],
-                            ['ASUS Prime B660M-A', 'Материнская плата ASUS Prime B660M-A, LGA 1700', 13990, 16990, 3, 18, 4.2, 67, 0, 0],
-                            ['Gigabyte X570 Aorus Ultra', 'Материнская плата Gigabyte X570 Aorus Ultra, AM4', 23990, 27990, 3, 7, 4.5, 45, 0, 0],
-                            ['MSI MPG X570S Carbon Max', 'Материнская плата MSI MPG X570S Carbon Max WiFi, AM4', 26990, 30990, 3, 6, 4.6, 38, 0, 0],
-                            ['ASUS TUF Gaming X570-Plus', 'Материнская плата ASUS TUF Gaming X570-Plus, AM4', 18990, 22990, 3, 11, 4.4, 78, 0, 0],
-                            ['Gigabyte B650M Gaming X AX', 'Материнская плата Gigabyte B650M Gaming X AX, AM5', 16990, 19990, 3, 13, 4.3, 45, 0, 1],
-                            ['MSI PRO Z790-A WiFi', 'Материнская плата MSI PRO Z790-A WiFi, LGA 1700', 24990, 28990, 3, 9, 4.4, 56, 0, 0],
-                            ['ASRock X670E Taichi', 'Материнская плата ASRock X670E Taichi, AM5', 59990, 64990, 3, 2, 4.8, 12, 1, 0],
-                            ['ASUS ROG Maximus Z790 Hero', 'Материнская плата ASUS ROG Maximus Z790 Hero, LGA 1700', 69990, 74990, 3, 3, 4.9, 18, 1, 0],
-                            ['Gigabyte Z790 Aorus Elite AX', 'Материнская плата Gigabyte Z790 Aorus Elite AX, LGA 1700', 29990, 34990, 3, 7, 4.6, 34, 0, 0],
-                            ['MSI B450 Tomahawk Max', 'Материнская плата MSI B450 Tomahawk Max, AM4', 11990, 14990, 3, 20, 4.3, 112, 0, 0],
-                            ['ASRock B450M Pro4', 'Материнская плата ASRock B450M Pro4, AM4', 8990, 11990, 3, 25, 4.2, 156, 0, 0],
-                            ['ASUS Prime H610M-K', 'Материнская плата ASUS Prime H610M-K, LGA 1700', 7990, 9990, 3, 30, 4.1, 89, 0, 0],
-                            ['Gigabyte H610M H', 'Материнская плата Gigabyte H610M H, LGA 1700', 8490, 10990, 3, 28, 4.1, 67, 0, 0],
-                            ['MSI H510M-A PRO', 'Материнская плата MSI H510M-A PRO, LGA 1200', 7490, 9990, 3, 32, 4.0, 78, 0, 0],
-                            ['ASRock H670 Steel Legend', 'Материнская плата ASRock H670 Steel Legend, LGA 1700', 14990, 18990, 3, 16, 4.3, 45, 0, 0],
-                            ['ASUS ROG Strix Z690-F', 'Материнская плата ASUS ROG Strix Z690-F Gaming, LGA 1700', 32990, 37990, 3, 6, 4.7, 29, 0, 0],
                             
-                            // Оперативная память (category_id: 4) - 35 товаров
-                            ['G.Skill Trident Z5 RGB', 'Оперативная память G.Skill Trident Z5 RGB 32GB (2x16GB) DDR5-6000 CL36', 12990, 14990, 4, 15, 4.8, 67, 1, 1],
-                            ['Kingston Fury Beast', 'Оперативная память Kingston Fury Beast 32GB (2x16GB) DDR5-5600 CL36', 8990, 9990, 4, 18, 4.7, 41, 0, 0],
-                            ['Corsair Vengeance RGB', 'Оперативная память Corsair Vengeance RGB 32GB (2x16GB) DDR5-6000 CL30', 14990, 16990, 4, 9, 4.8, 52, 1, 0],
+                            // Оперативная память (category_id: 4) - 5 товаров
+                            ['G.Skill Trident Z5 RGB', 'Оперативная память G.Skill Trident Z5 RGB 32GB DDR5-6000 CL36', 12990, 14990, 4, 15, 4.8, 67, 1, 1],
+                            ['Kingston Fury Beast', 'Оперативная память Kingston Fury Beast 32GB DDR5-5600 CL36', 8990, 9990, 4, 18, 4.7, 41, 0, 0],
+                            ['Corsair Vengeance RGB', 'Оперативная память Corsair Vengeance RGB 32GB DDR5-6000 CL30', 14990, 16990, 4, 9, 4.8, 52, 1, 0],
                             ['Team Group T-Force Delta', 'Оперативная память Team Group T-Force Delta RGB 32GB DDR5-6000', 10990, 12990, 4, 20, 4.6, 38, 0, 1],
-                            ['Crucial Pro DDR5', 'Оперативная память Crucial Pro 32GB (2x16GB) DDR5-5600', 7990, 9990, 4, 25, 4.5, 78, 0, 0],
-                            ['G.Skill Ripjaws S5', 'Оперативная память G.Skill Ripjaws S5 32GB DDR5-6000', 11990, 13990, 4, 16, 4.6, 45, 0, 0],
-                            ['Kingston Fury Renegade', 'Оперативная память Kingston Fury Renegade 32GB DDR5-6400', 16990, 18990, 4, 7, 4.8, 29, 1, 0],
-                            ['Corsair Dominator Platinum', 'Оперативная память Corsair Dominator Platinum 32GB DDR5-6600', 24990, 27990, 4, 4, 4.9, 23, 1, 0],
-                            ['Team Group Xtreem ARGB', 'Оперативная память Team Group Xtreem ARGB 32GB DDR5-6200', 13990, 15990, 4, 12, 4.7, 34, 0, 1],
-                            ['G.Skill Trident Z Neo', 'Оперативная память G.Skill Trident Z Neo 32GB DDR4-3600', 10990, 12990, 4, 14, 4.6, 89, 0, 0],
-                            ['Kingston HyperX Predator', 'Оперативная память Kingston HyperX Predator 32GB DDR4-3200', 9990, 11990, 4, 19, 4.5, 112, 0, 0],
-                            ['Corsair Vengeance LPX', 'Оперативная память Corsair Vengeance LPX 32GB DDR4-3200', 9490, 11490, 4, 22, 4.5, 156, 0, 0],
-                            ['Crucial Ballistix RGB', 'Оперативная память Crucial Ballistix RGB 32GB DDR4-3600', 11990, 13990, 4, 11, 4.6, 78, 0, 0],
-                            ['Team Group Dark Za', 'Оперативная память Team Group Dark Za 32GB DDR4-3200', 8990, 10990, 4, 21, 4.4, 56, 0, 0],
-                            ['G.Skill Ripjaws V', 'Оперативная память G.Skill Ripjaws V 32GB DDR4-3600', 10490, 12490, 4, 17, 4.5, 98, 0, 0],
-                            ['Kingston Fury Impact', 'Оперативная память Kingston Fury Impact 32GB DDR4-3200 (ноутбучная)', 12990, 14990, 4, 8, 4.6, 45, 0, 0],
-                            ['Corsair Vengeance Pro SL', 'Оперативная память Corsair Vengeance Pro SL 32GB DDR4-3600 RGB', 13490, 15490, 4, 10, 4.7, 67, 0, 0],
-                            ['G.Skill Trident Z Royal', 'Оперативная память G.Skill Trident Z Royal 32GB DDR4-4000', 19990, 22990, 4, 5, 4.8, 38, 1, 0],
-                            ['Team Group Night Hawk', 'Оперативная память Team Group Night Hawk 32GB DDR4-3200', 9490, 11490, 4, 20, 4.4, 56, 0, 0],
-                            ['Crucial CT2K16G4DFRA32A', 'Оперативная память Crucial 32GB DDR4-3200', 8490, 10490, 4, 26, 4.3, 89, 0, 0],
-                            ['G.Skill Aegis', 'Оперативная память G.Skill Aegis 32GB DDR4-3000', 7990, 9990, 4, 30, 4.2, 112, 0, 0],
-                            ['Kingston ValueRAM', 'Оперативная память Kingston ValueRAM 32GB DDR4-2666', 7490, 9490, 4, 35, 4.1, 78, 0, 0],
-                            ['Corsair Vengeance RGB Pro', 'Оперативная память Corsair Vengeance RGB Pro 64GB DDR4-3600', 24990, 28990, 4, 6, 4.8, 45, 1, 0],
-                            ['G.Skill Trident Z5 RGB 64GB', 'Оперативная память G.Skill Trident Z5 RGB 64GB DDR5-6000', 24990, 27990, 4, 4, 4.9, 23, 1, 0],
-                            ['Kingston Fury Beast 64GB', 'Оперативная память Kingston Fury Beast 64GB DDR5-5600', 17990, 20990, 4, 8, 4.7, 34, 0, 0],
-                            ['Corsair Dominator Platinum 64GB', 'Оперативная память Corsair Dominator Platinum 64GB DDR5-6400', 44990, 49990, 4, 2, 4.9, 12, 1, 0],
-                            ['Team Group T-Force Delta 64GB', 'Оперативная память Team Group T-Force Delta 64GB DDR5-6000', 19990, 22990, 4, 7, 4.8, 29, 0, 0],
-                            ['G.Skill Ripjaws S5 64GB', 'Оперативная память G.Skill Ripjaws S5 64GB DDR5-5600', 16990, 19990, 4, 9, 4.7, 38, 0, 0],
-                            ['Crucial Pro 64GB DDR5', 'Оперативная память Crucial Pro 64GB DDR5-5200', 15990, 18990, 4, 11, 4.6, 45, 0, 0],
-                            ['G.Skill Trident Z Neo 64GB', 'Оперативная память G.Skill Trident Z Neo 64GB DDR4-3600', 18990, 21990, 4, 6, 4.8, 34, 0, 0],
-                            ['Corsair Vengeance RGB 64GB', 'Оперативная память Corsair Vengeance RGB 64GB DDR4-3200', 17990, 20990, 4, 8, 4.7, 45, 0, 0],
-                            ['Kingston Fury Renegade 64GB', 'Оперативная память Kingston Fury Renegade 64GB DDR4-3600', 19990, 22990, 4, 5, 4.8, 29, 0, 0],
-                            ['Team Group Xtreem ARGB 64GB', 'Оперативная память Team Group Xtreem ARGB 64GB DDR4-4000', 22990, 25990, 4, 3, 4.9, 18, 1, 0],
-                            ['G.Skill Ripjaws V 64GB', 'Оперативная память G.Skill Ripjaws V 64GB DDR4-3200', 16990, 19990, 4, 10, 4.7, 56, 0, 0],
-                            ['Crucial Ballistix 64GB', 'Оперативная память Crucial Ballistix 64GB DDR4-3600', 17490, 20490, 4, 9, 4.7, 45, 0, 0],
+                            ['Crucial Pro DDR5', 'Оперативная память Crucial Pro 32GB DDR5-5600', 7990, 9990, 4, 25, 4.5, 78, 0, 0],
                             
-                            // Накопители (category_id: 5) - 35 товаров
+                            // Накопители (category_id: 5) - 5 товаров
                             ['Samsung 990 Pro 2TB', 'SSD накопитель Samsung 990 Pro 2TB NVMe M.2, PCIe 4.0', 15990, 17990, 5, 20, 4.9, 94, 1, 0],
                             ['WD Black SN850X', 'SSD накопитель WD Black SN850X 2TB NVMe M.2, PCIe 4.0', 14990, 16990, 5, 25, 4.8, 67, 1, 0],
                             ['Crucial P5 Plus', 'SSD накопитель Crucial P5 Plus 1TB NVMe M.2, PCIe 4.0', 6990, 7990, 5, 30, 4.7, 89, 0, 0],
                             ['Kingston KC3000', 'SSD накопитель Kingston KC3000 2TB NVMe M.2, PCIe 4.0', 13990, 15990, 5, 12, 4.7, 45, 0, 1],
                             ['Samsung 980 Pro', 'SSD накопитель Samsung 980 Pro 1TB NVMe M.2, PCIe 4.0', 8990, 10990, 5, 28, 4.8, 156, 0, 0],
-                            ['WD Blue SN570', 'SSD накопитель WD Blue SN570 1TB NVMe M.2, PCIe 3.0', 5990, 7990, 5, 35, 4.6, 189, 0, 0],
-                            ['Crucial P3', 'SSD накопитель Crucial P3 1TB NVMe M.2, PCIe 3.0', 5490, 7490, 5, 40, 4.5, 134, 0, 0],
-                            ['Kingston NV2', 'SSD накопитель Kingston NV2 1TB NVMe M.2, PCIe 4.0', 6490, 8490, 5, 38, 4.6, 98, 0, 0],
-                            ['Samsung 970 Evo Plus', 'SSD накопитель Samsung 970 Evo Plus 1TB NVMe M.2, PCIe 3.0', 7990, 9990, 5, 25, 4.7, 112, 0, 0],
-                            ['WD Green SN350', 'SSD накопитель WD Green SN350 1TB NVMe M.2, PCIe 3.0', 5490, 7490, 5, 42, 4.4, 89, 0, 0],
-                            ['Crucial MX500', 'SSD накопитель Crucial MX500 1TB SATA 2.5"', 6990, 8990, 5, 32, 4.6, 156, 0, 0],
-                            ['Samsung 870 Evo', 'SSD накопитель Samsung 870 Evo 1TB SATA 2.5"', 7990, 9990, 5, 29, 4.7, 134, 0, 0],
-                            ['WD Blue 3D NAND', 'SSD накопитель WD Blue 3D NAND 1TB SATA 2.5"', 7490, 9490, 5, 31, 4.6, 98, 0, 0],
-                            ['Kingston A400', 'SSD накопитель Kingston A400 960GB SATA 2.5"', 4990, 6990, 5, 45, 4.3, 189, 0, 0],
-                            ['Samsung 990 Pro 4TB', 'SSD накопитель Samsung 990 Pro 4TB NVMe M.2, PCIe 4.0', 34990, 39990, 5, 8, 4.9, 45, 1, 0],
-                            ['WD Black SN850X 4TB', 'SSD накопитель WD Black SN850X 4TB NVMe M.2, PCIe 4.0', 32990, 37990, 5, 10, 4.8, 38, 0, 0],
-                            ['Crucial P5 Plus 4TB', 'SSD накопитель Crucial P5 Plus 4TB NVMe M.2, PCIe 4.0', 29990, 34990, 5, 12, 4.7, 29, 0, 0],
-                            ['Kingston KC3000 4TB', 'SSD накопитель Kingston KC3000 4TB NVMe M.2, PCIe 4.0', 31990, 36990, 5, 9, 4.8, 34, 0, 0],
-                            ['Samsung 980 Pro 2TB', 'SSD накопитель Samsung 980 Pro 2TB NVMe M.2, PCIe 4.0', 14990, 17990, 5, 18, 4.8, 78, 0, 0],
-                            ['WD Black SN770', 'SSD накопитель WD Black SN770 2TB NVMe M.2, PCIe 4.0', 12990, 14990, 5, 22, 4.7, 67, 0, 0],
-                            ['Crucial P3 Plus 2TB', 'SSD накопитель Crucial P3 Plus 2TB NVMe M.2, PCIe 4.0', 11990, 13990, 5, 24, 4.6, 56, 0, 0],
-                            ['Kingston NV2 2TB', 'SSD накопитель Kingston NV2 2TB NVMe M.2, PCIe 4.0', 10990, 12990, 5, 26, 4.5, 45, 0, 0],
-                            ['WD Blue HDD 4TB', 'HDD накопитель WD Blue 4TB 5400 RPM 256MB', 8990, 11990, 5, 15, 4.4, 89, 0, 0],
-                            ['Seagate BarraCuda 4TB', 'HDD накопитель Seagate BarraCuda 4TB 5400 RPM 256MB', 8490, 11490, 5, 17, 4.3, 78, 0, 0],
-                            ['Toshiba P300 3TB', 'HDD накопитель Toshiba P300 3TB 7200 RPM 64MB', 7990, 10990, 5, 20, 4.4, 67, 0, 0],
-                            ['WD Black HDD 6TB', 'HDD накопитель WD Black 6TB 7200 RPM 256MB', 16990, 19990, 5, 8, 4.6, 45, 0, 0],
-                            ['Seagate IronWolf 8TB', 'HDD накопитель Seagate IronWolf 8TB 7200 RPM 256MB', 21990, 24990, 5, 6, 4.7, 34, 0, 0],
-                            ['WD Red Plus 4TB', 'HDD накопитель WD Red Plus 4TB 5400 RPM 256MB', 12990, 15990, 5, 11, 4.5, 56, 0, 0],
-                            ['Samsung 990 Pro 1TB', 'SSD накопитель Samsung 990 Pro 1TB NVMe M.2, PCIe 4.0', 10990, 12990, 5, 30, 4.8, 112, 0, 0],
-                            ['WD Black SN850X 1TB', 'SSD накопитель WD Black SN850X 1TB NVMe M.2, PCIe 4.0', 10490, 12490, 5, 32, 4.7, 98, 0, 0],
-                            ['Crucial P5 Plus 512GB', 'SSD накопитель Crucial P5 Plus 512GB NVMe M.2, PCIe 4.0', 4990, 6990, 5, 45, 4.5, 134, 0, 0],
-                            ['Kingston KC3000 1TB', 'SSD накопитель Kingston KC3000 1TB NVMe M.2, PCIe 4.0', 9990, 11990, 5, 35, 4.7, 89, 0, 0],
-                            ['Samsung 980 500GB', 'SSD накопитель Samsung 980 500GB NVMe M.2, PCIe 3.0', 4990, 6990, 5, 42, 4.4, 156, 0, 0],
-                            ['WD Blue SN570 500GB', 'SSD накопитель WD Blue SN570 500GB NVMe M.2, PCIe 3.0', 3990, 5990, 5, 48, 4.3, 189, 0, 0],
-                            ['Crucial P3 2TB', 'SSD накопитель Crucial P3 2TB NVMe M.2, PCIe 3.0', 10990, 12990, 5, 28, 4.6, 78, 0, 0],
                             
-                            // Блоки питания (category_id: 6) - 35 товаров
+                            // Блоки питания (category_id: 6) - 5 товаров
                             ['Corsair RM1000x', 'Блок питания Corsair RM1000x 1000W 80+ Gold, fully modular', 18990, 21990, 6, 9, 4.7, 28, 0, 1],
                             ['Seasonic Focus GX-850', 'Блок питания Seasonic Focus GX-850 850W 80+ Gold', 12990, 14990, 6, 15, 4.8, 42, 0, 0],
                             ['be quiet! Straight Power 11', 'Блок питания be quiet! Straight Power 11 750W 80+ Platinum', 15990, 17990, 6, 7, 4.9, 37, 1, 0],
                             ['ASUS ROG Thor 1200P', 'Блок питания ASUS ROG Thor 1200P 1200W 80+ Platinum', 29990, 34990, 6, 4, 4.6, 19, 1, 1],
                             ['Corsair RM850x', 'Блок питания Corsair RM850x 850W 80+ Gold', 13990, 16990, 6, 12, 4.7, 56, 0, 0],
-                            ['Seasonic Prime TX-1000', 'Блок питания Seasonic Prime TX-1000 1000W 80+ Titanium', 24990, 28990, 6, 5, 4.9, 23, 1, 0],
-                            ['be quiet! Dark Power 13', 'Блок питания be quiet! Dark Power 13 1000W 80+ Titanium', 27990, 31990, 6, 3, 4.8, 18, 1, 0],
-                            ['ASUS TUF Gaming 750W', 'Блок питания ASUS TUF Gaming 750W 80+ Bronze', 8990, 11990, 6, 18, 4.4, 67, 0, 0],
-                            ['Cooler Master MWE Gold 850', 'Блок питания Cooler Master MWE Gold 850W 80+ Gold', 10990, 13990, 6, 14, 4.6, 45, 0, 0],
-                            ['FSP Hydro G Pro 1000W', 'Блок питания FSP Hydro G Pro 1000W 80+ Gold', 17990, 20990, 6, 8, 4.7, 34, 0, 0],
-                            ['NZXT C850', 'Блок питания NZXT C850 850W 80+ Gold', 14990, 17990, 6, 10, 4.7, 38, 0, 0],
-                            ['Gigabyte UD850GM', 'Блок питания Gigabyte UD850GM 850W 80+ Gold', 11990, 14990, 6, 16, 4.5, 56, 0, 0],
-                            ['EVGA SuperNOVA 1000 G6', 'Блок питания EVGA SuperNOVA 1000 G6 1000W 80+ Gold', 19990, 22990, 6, 7, 4.8, 29, 0, 0],
-                            ['Thermaltake Toughpower GF3', 'Блок питания Thermaltake Toughpower GF3 1200W 80+ Gold', 21990, 24990, 6, 5, 4.7, 34, 0, 0],
-                            ['Deepcool PQ850M', 'Блок питания Deepcool PQ850M 850W 80+ Gold', 10490, 13490, 6, 17, 4.6, 45, 0, 0],
-                            ['Corsair CX650M', 'Блок питания Corsair CX650M 650W 80+ Bronze', 6990, 8990, 6, 25, 4.3, 89, 0, 0],
-                            ['Seasonic S12III 650W', 'Блок питания Seasonic S12III 650W 80+ Bronze', 6490, 8490, 6, 28, 4.2, 78, 0, 0],
-                            ['be quiet! System Power 9 600W', 'Блок питания be quiet! System Power 9 600W 80+ Bronze', 7490, 9490, 6, 22, 4.4, 67, 0, 0],
-                            ['ASUS Prime 750W', 'Блок питания ASUS Prime 750W 80+ Bronze', 8490, 10990, 6, 20, 4.3, 56, 0, 0],
-                            ['Cooler Master Elite V3 600W', 'Блок питания Cooler Master Elite V3 600W 80+', 4990, 6990, 6, 35, 4.1, 112, 0, 0],
-                            ['FSP Hexa 85+ 550W', 'Блок питания FSP Hexa 85+ 550W 80+ Bronze', 5490, 7490, 6, 32, 4.2, 89, 0, 0],
-                            ['Gigabyte P550B', 'Блок питания Gigabyte P550B 550W 80+ Bronze', 5990, 7990, 6, 30, 4.3, 78, 0, 0],
-                            ['Corsair RM750x', 'Блок питания Corsair RM750x 750W 80+ Gold', 12990, 15990, 6, 13, 4.7, 67, 0, 0],
-                            ['Seasonic Focus GX-750', 'Блок питания Seasonic Focus GX-750 750W 80+ Gold', 11990, 14990, 6, 15, 4.6, 56, 0, 0],
-                            ['be quiet! Pure Power 11 700W', 'Блок питания be quiet! Pure Power 11 700W 80+ Gold', 13990, 16990, 6, 11, 4.7, 45, 0, 0],
-                            ['ASUS ROG Strix 850W', 'Блок питания ASUS ROG Strix 850W 80+ Gold', 16990, 19990, 6, 9, 4.8, 38, 0, 0],
-                            ['Cooler Master V850 Gold', 'Блок питания Cooler Master V850 Gold 850W 80+ Gold', 14990, 17990, 6, 12, 4.7, 34, 0, 0],
-                            ['FSP Hydro GE 850W', 'Блок питания FSP Hydro GE 850W 80+ Gold', 13490, 16490, 6, 14, 4.6, 45, 0, 0],
-                            ['NZXT C750', 'Блок питания NZXT C750 750W 80+ Gold', 13990, 16990, 6, 13, 4.7, 56, 0, 0],
-                            ['Gigabyte AORUS P850W', 'Блок питания Gigabyte AORUS P850W 850W 80+ Gold', 15990, 18990, 6, 10, 4.8, 29, 0, 0],
-                            ['EVGA 600 W1', 'Блок питания EVGA 600 W1 600W 80+', 5990, 7990, 6, 31, 4.2, 98, 0, 0],
-                            ['Thermaltake Smart BX1 650W', 'Блок питания Thermaltake Smart BX1 650W 80+ Bronze', 6990, 8990, 6, 27, 4.3, 78, 0, 0],
-                            ['Deepcool DQ850-M-V2L', 'Блок питания Deepcool DQ850-M-V2L 850W 80+ Gold', 12490, 15490, 6, 16, 4.6, 45, 0, 0],
-                            ['Corsair HX1500i', 'Блок питания Corsair HX1500i 1500W 80+ Platinum', 34990, 39990, 6, 2, 4.9, 15, 1, 0],
-                            ['Seasonic Prime PX-1600', 'Блок питания Seasonic Prime PX-1600 1600W 80+ Platinum', 44990, 49990, 6, 1, 4.9, 12, 1, 0],
                             
-                            // Корпуса (category_id: 7) - 35 товаров
+                            // Корпуса (category_id: 7) - 5 товаров
                             ['NZXT H9 Flow', 'Корпус NZXT H9 Flow Black, Mid-Tower, стеклянные панели', 15990, 17990, 7, 14, 4.6, 19, 1, 1],
                             ['Lian Li O11 Dynamic EVO', 'Корпус Lian Li O11 Dynamic EVO, Mid-Tower, двустороннее стекло', 17990, 19990, 7, 8, 4.8, 27, 1, 0],
                             ['Fractal Design North', 'Корпус Fractal Design North, Mid-Tower, деревянная отделка', 14990, 16990, 7, 11, 4.7, 33, 0, 1],
                             ['Phanteks Eclipse G360A', 'Корпус Phanteks Eclipse G360A, Mid-Tower, ARGB вентиляторы', 8990, 10990, 7, 22, 4.5, 41, 0, 0],
                             ['Corsair 4000D Airflow', 'Корпус Corsair 4000D Airflow, Mid-Tower, меш-фасад', 11990, 13990, 7, 18, 4.7, 78, 0, 0],
-                            ['be quiet! Silent Base 802', 'Корпус be quiet! Silent Base 802, Mid-Tower, звукоизоляция', 16990, 19990, 7, 9, 4.8, 45, 0, 0],
-                            ['Cooler Master MasterBox TD500', 'Корпус Cooler Master MasterBox TD500 Mesh, ARGB вентиляторы', 10990, 12990, 7, 16, 4.6, 56, 0, 0],
-                            ['Fractal Design Meshify 2', 'Корпус Fractal Design Meshify 2, Mid-Tower, меш-фасад', 13990, 16990, 7, 13, 4.7, 67, 0, 0],
-                            ['NZXT H510 Flow', 'Корпус NZXT H510 Flow, Mid-Tower, меш-фасад', 9990, 11990, 7, 20, 4.5, 89, 0, 0],
-                            ['Lian Li Lancool 216', 'Корпус Lian Li Lancool 216, Mid-Tower, два 160мм вентилятора', 12990, 14990, 7, 15, 4.7, 45, 0, 0],
-                            ['Phanteks Enthoo Pro 2', 'Корпус Phanteks Enthoo Pro 2, Full-Tower, поддержка серверных плат', 19990, 22990, 7, 7, 4.8, 34, 0, 0],
-                            ['Corsair iCUE 5000D', 'Корпус Corsair iCUE 5000D Airflow, Mid-Tower, RGB освещение', 18990, 21990, 7, 8, 4.8, 38, 0, 0],
-                            ['be quiet! Pure Base 500DX', 'Корпус be quiet! Pure Base 500DX, Mid-Tower, ARGB подсветка', 13490, 15490, 7, 14, 4.7, 56, 0, 0],
-                            ['Cooler Master HAF 700 EVO', 'Корпус Cooler Master HAF 700 EVO, Full-Tower, экстремальное охлаждение', 29990, 34990, 7, 3, 4.9, 23, 1, 0],
-                            ['Fractal Design Torrent', 'Корпус Fractal Design Torrent, Mid-Tower, два 180мм вентилятора', 17990, 20990, 7, 9, 4.8, 45, 0, 0],
-                            ['NZXT H7 Flow', 'Корпус NZXT H7 Flow, Mid-Tower, улучшенная вентиляция', 13990, 16990, 7, 12, 4.7, 56, 0, 0],
-                            ['Lian Li PC-O11 Dynamic', 'Корпус Lian Li PC-O11 Dynamic, Mid-Tower, стеклянные панели', 16990, 19990, 7, 10, 4.8, 67, 0, 0],
-                            ['Phanteks P600S', 'Корпус Phanteks P600S, Mid-Tower, звукоизоляция', 15990, 18990, 7, 11, 4.7, 45, 0, 0],
-                            ['Corsair 7000D Airflow', 'Корпус Corsair 7000D Airflow, Full-Tower, максимальная расширяемость', 24990, 28990, 7, 5, 4.9, 29, 1, 0],
-                            ['be quiet! Dark Base Pro 901', 'Корпус be quiet! Dark Base Pro 901, Full-Tower, модульная конструкция', 27990, 31990, 7, 4, 4.9, 23, 1, 0],
-                            ['Cooler Master Cosmos C700M', 'Корпус Cooler Master Cosmos C700M, Full-Tower, премиум-дизайн', 34990, 39990, 7, 2, 4.9, 18, 1, 0],
-                            ['Fractal Design Define 7', 'Корпус Fractal Design Define 7, Mid-Tower, звукоизоляция', 14990, 17990, 7, 13, 4.7, 56, 0, 0],
-                            ['NZXT H510 Elite', 'Корпус NZXT H510 Elite, Mid-Tower, RGB подсветка', 12990, 15990, 7, 15, 4.6, 78, 0, 0],
-                            ['Lian Li Lancool III', 'Корпус Lian Li Lancool III, Mid-Tower, меш-фасад', 16990, 19990, 7, 10, 4.8, 45, 0, 0],
-                            ['Phanteks Eclipse P500A', 'Корпус Phanteks Eclipse P500A, Mid-Tower, RGB вентиляторы', 14990, 17990, 7, 12, 4.7, 56, 0, 0],
-                            ['Corsair Carbide Series 275R', 'Корпус Corsair Carbide Series 275R, Mid-Tower, минимализм', 9990, 12990, 7, 19, 4.5, 89, 0, 0],
-                            ['be quiet! Shadow Base 800', 'Корпус be quiet! Shadow Base 800, Mid-Tower, затемненное стекло', 17990, 20990, 7, 9, 4.7, 38, 0, 0],
-                            ['Cooler Master MasterCase H500', 'Корпус Cooler Master MasterCase H500, Mid-Tower, два 200мм вентилятора', 13990, 16990, 7, 14, 4.7, 67, 0, 0],
-                            ['Fractal Design Pop Air', 'Корпус Fractal Design Pop Air, Mid-Tower, цветные варианты', 10990, 13990, 7, 17, 4.6, 56, 0, 0],
-                            ['NZXT H5 Flow', 'Корпус NZXT H5 Flow, Mid-Tower, компактный', 8990, 11990, 7, 21, 4.5, 78, 0, 0],
-                            ['Lian Li Lancool 205 Mesh', 'Корпус Lian Li Lancool 205 Mesh, Mid-Tower, меш-фасад', 9490, 12490, 7, 20, 4.5, 67, 0, 0],
-                            ['Phanteks Enthoo 719', 'Корпус Phanteks Enthoo 719, Full-Tower, поддержка двойной системы', 21990, 25990, 7, 6, 4.8, 34, 0, 0],
-                            ['Corsair Obsidian Series 1000D', 'Корпус Corsair Obsidian Series 1000D, Super-Tower, экстремальная сборка', 49990, 54990, 7, 1, 4.9, 12, 1, 0],
-                            ['be quiet! Silent Base 601', 'Корпус be quiet! Silent Base 601, Mid-Tower, звукоизоляция', 14990, 17990, 7, 13, 4.7, 45, 0, 0],
-                            ['Cooler Master NR200', 'Корпус Cooler Master NR200, Mini-ITX, для компактных сборок', 8990, 11990, 7, 22, 4.6, 89, 0, 0],
                             
-                            // Охлаждение (category_id: 8) - 35 товаров
+                            // Охлаждение (category_id: 8) - 5 товаров
                             ['Noctua NH-D15', 'Кулер для процессора Noctua NH-D15, 2 вентилятора NF-A15', 9990, 11990, 8, 15, 4.9, 156, 1, 0],
                             ['be quiet! Dark Rock Pro 4', 'Кулер для процессора be quiet! Dark Rock Pro 4', 8990, 10990, 8, 18, 4.8, 134, 1, 0],
                             ['Cooler Master Hyper 212', 'Кулер для процессора Cooler Master Hyper 212 EVO V2', 2990, 3990, 8, 35, 4.5, 189, 0, 0],
                             ['Arctic Liquid Freezer II 360', 'СЖО Arctic Liquid Freezer II 360, 360мм радиатор', 10990, 12990, 8, 12, 4.8, 89, 0, 1],
-                            ['Corsair iCUE H150i Elite', 'СЖО Corsair iCUE H150i Elite CAPELLIX, 360мм, RGB', 14990, 17990, 8, 10, 4.7, 78, 1, 0],
-                            ['NZXT Kraken Z73', 'СЖО NZXT Kraken Z73, 360мм, LCD дисплей', 19990, 22990, 8, 8, 4.8, 56, 1, 0],
-                            ['Deepcool AK620', 'Кулер для процессора Deepcool AK620, 2 вентилятора', 6990, 8990, 8, 22, 4.7, 67, 0, 0],
-                            ['Noctua NH-U12A', 'Кулер для процессора Noctua NH-U12A, 2 вентилятора NF-A12x25', 8990, 10990, 8, 16, 4.8, 98, 0, 0],
-                            ['be quiet! Pure Rock 2', 'Кулер для процессора be quiet! Pure Rock 2', 4490, 5990, 8, 28, 4.6, 112, 0, 0],
-                            ['Cooler Master MasterLiquid ML240L', 'СЖО Cooler Master MasterLiquid ML240L V2 RGB, 240мм', 6990, 8990, 8, 20, 4.6, 89, 0, 0],
-                            ['Arctic Cooling P12 PWM PST', 'Вентилятор корпусный Arctic Cooling P12 PWM PST 5-pack', 3990, 5990, 8, 30, 4.7, 156, 0, 0],
-                            ['Corsair LL120 RGB 3-pack', 'Вентилятор Corsair LL120 RGB 120mm 3-pack с контроллером', 9990, 11990, 8, 15, 4.6, 78, 0, 0],
-                            ['Noctua NF-A14 PWM', 'Вентилятор Noctua NF-A14 PWM 140mm', 1990, 2990, 8, 40, 4.8, 189, 0, 0],
-                            ['be quiet! Silent Wings 3', 'Вентилятор be quiet! Silent Wings 3 140mm PWM', 2490, 3490, 8, 35, 4.7, 134, 0, 0],
-                            ['Lian Li UNI FAN SL-Infinity', 'Вентилятор Lian Li UNI FAN SL-Infinity 120mm 3-pack', 12990, 14990, 8, 12, 4.8, 56, 0, 1],
-                            ['Thermalright Peerless Assassin', 'Кулер для процессора Thermalright Peerless Assassin 120 SE', 5990, 7990, 8, 24, 4.7, 89, 0, 0],
-                            ['Deepcool LT720', 'СЖО Deepcool LT720, 360мм, LCD дисплей', 12990, 15990, 8, 9, 4.8, 45, 0, 1],
-                            ['NZXT Kraken X63', 'СЖО NZXT Kraken X63, 280мм, RGB', 12990, 14990, 8, 11, 4.7, 67, 0, 0],
-                            ['Corsair H100i Elite', 'СЖО Corsair H100i Elite CAPELLIX, 240мм, RGB', 11990, 13990, 8, 13, 4.7, 78, 0, 0],
-                            ['Arctic Liquid Freezer II 280', 'СЖО Arctic Liquid Freezer II 280, 280мм радиатор', 9990, 11990, 8, 14, 4.8, 56, 0, 0],
-                            ['Noctua NH-L9i', 'Низкопрофильный кулер Noctua NH-L9i для Mini-ITX', 4990, 6990, 8, 25, 4.7, 89, 0, 0],
-                            ['be quiet! Dark Rock TF 2', 'Низкопрофильный кулер be quiet! Dark Rock TF 2', 7990, 9990, 8, 18, 4.7, 45, 0, 0],
-                            ['Cooler Master MASTERFAN MF120', 'Вентилятор Cooler Master MASTERFAN MF120 Halo 3-pack', 6990, 8990, 8, 22, 4.6, 67, 0, 0],
-                            ['Deepcool FC120', 'Вентилятор Deepcool FC120 120mm 3-pack RGB', 4990, 6990, 8, 28, 4.5, 89, 0, 0],
-                            ['Lian Li UNI FAN AL120', 'Вентилятор Lian Li UNI FAN AL120 120mm 3-pack', 10990, 12990, 8, 14, 4.7, 56, 0, 0],
-                            ['Thermalright Phantom Spirit', 'Кулер для процессора Thermalright Phantom Spirit 120 SE', 6490, 8490, 8, 21, 4.7, 78, 0, 0],
-                            ['EK-AIO Basic 360', 'СЖО EK-AIO Basic 360, 360мм радиатор', 11990, 13990, 8, 10, 4.8, 45, 0, 0],
-                            ['Fractal Design Celsius+ S36', 'СЖО Fractal Design Celsius+ S36 Dynamic, 360мм', 13990, 16990, 8, 8, 4.7, 34, 0, 0],
-                            ['ID-COOLING SE-224-XTS', 'Кулер для процессора ID-COOLING SE-224-XTS', 2990, 4990, 8, 32, 4.5, 112, 0, 0],
-                            ['Scythe Fuma 2', 'Кулер для процессора Scythe Fuma 2', 6990, 8990, 8, 19, 4.7, 89, 0, 0],
-                            ['Vetroo V5', 'Кулер для процессора Vetroo V5 с RGB подсветкой', 3990, 5990, 8, 26, 4.6, 134, 0, 0],
-                            ['Cooler Master Hyper 212 Black', 'Кулер для процессора Cooler Master Hyper 212 Black Edition', 3490, 5490, 8, 30, 4.5, 156, 0, 0],
-                            ['Arctic Freezer 34 eSports DUO', 'Кулер для процессора Arctic Freezer 34 eSports DUO', 4990, 6990, 8, 24, 4.6, 98, 0, 0],
-                            ['Noctua NH-D15S', 'Кулер для процессора Noctua NH-D15S (одновентиляторная версия)', 8490, 10490, 8, 17, 4.8, 78, 0, 0],
-                            ['be quiet! Shadow Rock 3', 'Кулер для процессора be quiet! Shadow Rock 3', 6990, 8990, 8, 20, 4.7, 67, 0, 0]
+                            ['Corsair iCUE H150i Elite', 'СЖО Corsair iCUE H150i Elite CAPELLIX, 360мм, RGB', 14990, 17990, 8, 10, 4.7, 78, 1, 0]
                         ];
                         
                         const stmt = db.prepare(`INSERT INTO products 
-                            (name, description, price, old_price, category_id, stock, image_url, rating, reviews_count, is_featured, is_new) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+                            (name, description, price, old_price, category_id, stock, rating, reviews_count, is_featured, is_new) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
                         
                         products.forEach(product => {
                             stmt.run(product, (err) => {
@@ -1454,70 +1189,20 @@ db.get('SELECT * FROM users WHERE email = ?', ['admin@pcstore.ru'], (err, row) =
                         stmt.finalize();
                         console.log('✅ Тестовые товары добавлены');
                     });
+                } else if (row.count > 0) {
+                    console.log(`✅ В базе уже есть ${row.count} товаров, пропускаем добавление`);
+                } else if (row.count === 0 && !firstRun) {
+                    console.log('⚠️ Таблица товаров пуста, но это не первый запуск. Товары НЕ добавляются.');
+                    console.log('💡 Чтобы добавить тестовые товары, удалите файл .initialized и перезапустите сервер');
                 }
             });
         }
     });
     
-    // Таблица заказов
-    db.run(`CREATE TABLE IF NOT EXISTS orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        total_amount REAL NOT NULL,
-        status TEXT DEFAULT 'pending',
-        shipping_address TEXT,
-        payment_method TEXT DEFAULT 'card',
-        notes TEXT,
-        order_number TEXT,
-        city TEXT,
-        postal_code TEXT,
-        delivery_method TEXT DEFAULT 'courier',
-        delivery_cost REAL DEFAULT 0,
-        comments TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    )`, (err) => {
-        if (err) {
-            console.error('❌ Ошибка создания таблицы orders:', err.message);
-        } else {
-            console.log('✅ Таблица orders создана/проверена');
-        }
-    });
-    
-    // Таблица элементов заказа
-    db.run(`CREATE TABLE IF NOT EXISTS order_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        order_id INTEGER NOT NULL,
-        product_id INTEGER NOT NULL,
-        quantity INTEGER NOT NULL,
-        price REAL NOT NULL,
-        FOREIGN KEY (order_id) REFERENCES orders (id),
-        FOREIGN KEY (product_id) REFERENCES products (id)
-    )`, (err) => {
-        if (err) {
-            console.error('❌ Ошибка создания таблицы order_items:', err.message);
-        } else {
-            console.log('✅ Таблица order_items создана/проверена');
-        }
-    });
-    
-    // Таблица избранного
-    db.run(`CREATE TABLE IF NOT EXISTS favorites (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        product_id INTEGER NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id),
-        FOREIGN KEY (product_id) REFERENCES products (id),
-        UNIQUE(user_id, product_id)
-    )`, (err) => {
-        if (err) {
-            console.error('❌ Ошибка создания таблицы favorites:', err.message);
-        } else {
-            console.log('✅ Таблица favorites создана/проверена');
-        }
-    });
+    // Отмечаем, что инициализация выполнена
+    if (firstRun) {
+        markInitialized();
+    }
     
     console.log('🎉 Инициализация базы данных завершена');
 }
@@ -1532,7 +1217,6 @@ app.post('/api/orders', authenticateToken, (req, res) => {
         const orderData = req.body;
         const userId = req.user.id;
         
-        // РАСЧИТЫВАЕМ СУММУ ПРАВИЛЬНО
         let calculatedSubtotal = 0;
         let itemsCount = 0;
         
@@ -1557,7 +1241,6 @@ app.post('/api/orders', authenticateToken, (req, res) => {
         console.log(`  Итого (расчет): ${calculatedTotal} ₽`);
         console.log(`  Итого (в запросе): ${receivedTotal} ₽`);
         
-        // Проверяем разницу (допускаем 1 рубль из-за округления)
         const difference = Math.abs(calculatedTotal - receivedTotal);
         
         if (difference > 1) {
@@ -1568,7 +1251,6 @@ app.post('/api/orders', authenticateToken, (req, res) => {
             console.log('✅ Суммы совпадают (разница < 1 рубля)');
         }
         
-        // Проверяем обязательные поля
         if (!orderData.items || orderData.items.length === 0) {
             console.log('❌ ОШИБКА: корзина пуста');
             return res.status(400).json({
@@ -1585,17 +1267,13 @@ app.post('/api/orders', authenticateToken, (req, res) => {
             });
         }
         
-        // Используем расчетную сумму
         const finalTotal = orderData.total_amount || calculatedTotal;
         
-        // Начинаем транзакцию
         db.serialize(() => {
             db.run('BEGIN TRANSACTION');
             
-            // Генерируем номер заказа
             const orderNumber = 'ORD-' + Date.now().toString().slice(-8);
             
-            // Определяем, какие колонки есть в таблице orders
             const orderQuery = `
                 INSERT INTO orders (
                     user_id, order_number, total_amount, status, 
@@ -1622,11 +1300,9 @@ app.post('/api/orders', authenticateToken, (req, res) => {
             
             db.run(orderQuery, orderParams, function(err) {
                 if (err) {
-                    // Если ошибка из-за структуры таблицы, пробуем альтернативный запрос
                     if (err.message.includes('no such column') || err.message.includes('has no column')) {
                         console.log('⚠️  Проблема со структурой таблицы, пробую альтернативный запрос...');
                         
-                        // Альтернативный запрос с минимальным набором полей
                         const altQuery = `
                             INSERT INTO orders (
                                 user_id, total_amount, shipping_address, payment_method, created_at
@@ -1674,13 +1350,11 @@ app.post('/api/orders', authenticateToken, (req, res) => {
                 }
             });
             
-            // Функция для добавления товаров заказа
             function processOrderItems(orderId, totalAmount, orderNumber) {
                 let itemsProcessed = 0;
                 let hasError = false;
                 
                 orderData.items.forEach((item, index) => {
-                    // Проверяем структуру таблицы order_items
                     const itemQuery = `
                         INSERT INTO order_items (order_id, product_id, quantity, price)
                         VALUES (?, ?, ?, ?)
@@ -1695,7 +1369,6 @@ app.post('/api/orders', authenticateToken, (req, res) => {
                     
                     db.run(itemQuery, itemParams, (err) => {
                         if (err) {
-                            // Если ошибка из-за структуры, пробуем альтернативный запрос
                             if (err.message.includes('no such column') || err.message.includes('has no column')) {
                                 console.log('⚠️  Проблема со структурой order_items, пробую альтернативный запрос...');
                                 
@@ -1762,7 +1435,6 @@ app.post('/api/orders', authenticateToken, (req, res) => {
                             console.log(`🚚 Доставка: ${orderData.shipping_address}`);
                             console.log(`💳 Оплата: ${orderData.payment_method}`);
                             
-                            // Логируем успешный заказ
                             const orderLogData = {
                                 orderId: orderId,
                                 orderNumber: orderNumber,
@@ -1791,7 +1463,7 @@ app.post('/api/orders', authenticateToken, (req, res) => {
                                     payment_method: orderData.payment_method,
                                     created_at: new Date().toISOString()
                                 },
-                                clearCart: true // Флаг для фронтенда
+                                clearCart: true
                             });
                         });
                     }
@@ -2811,19 +2483,16 @@ app.post('/api/register', (req, res) => {
             const userId = this.lastID;
             console.log(`✅ Пользователь зарегистрирован: ${username} (ID: ${userId})`);
             
-            // Получаем данные пользователя
             db.get('SELECT id, username, email, role FROM users WHERE id = ?', [userId], (err, user) => {
                 if (err) {
                     return res.status(500).json({ success: false, message: 'Ошибка получения данных пользователя' });
                 }
                 
-                // Генерируем БЕССРОЧНЫЙ токен
                 const token = generateToken(user);
                 
                 console.log(`🔐 Сгенерирован БЕССРОЧНЫЙ токен длиной ${token.length} символов`);
                 console.log(`🔐 Токен НИКОГДА НЕ ИСТЕЧЕТ!`);
                 
-                // Сохраняем токен внутри объекта пользователя
                 const userWithToken = {
                     id: user.id,
                     username: user.username,
@@ -2894,7 +2563,6 @@ app.post('/api/login', (req, res) => {
         
         console.log(`✅ Успешный вход: ${user.username} (ID: ${user.id}, роль: ${user.role})`);
         
-        // Генерируем БЕССРОЧНЫЙ токен
         const userData = {
             id: user.id,
             username: user.username,
@@ -2908,7 +2576,6 @@ app.post('/api/login', (req, res) => {
         console.log(`🔐 Токен: ${token.substring(0, 50)}...`);
         console.log(`🔐 Токен НИКОГДА НЕ ИСТЕЧЕТ!`);
         
-        // Сохраняем токен внутри объекта пользователя
         const userWithToken = {
             id: user.id,
             username: user.username,
@@ -3502,13 +3169,11 @@ app.post('/api/orders/create', authenticateToken, (req, res) => {
     }
 });
 
-// ========== ИСПРАВЛЕННЫЙ ЭНДПОИНТ ДЛЯ ПОЛУЧЕНИЯ ЗАКАЗОВ ПОЛЬЗОВАТЕЛЯ ==========
 app.get('/api/orders/my', authenticateToken, (req, res) => {
     const userId = req.user.id;
     
     console.log(`📋 Запрос заказов пользователя ID: ${userId}`);
     
-    // Универсальный запрос - генерирует номер заказа на лету
     const query = `
         SELECT 
             o.*, 
@@ -4233,46 +3898,21 @@ app.listen(PORT, () => {
 📁 Логи будут сохранены в: ${logger.logDir}
 🔐 JWT авторизация: ВКЛЮЧЕНА
 🔑 Токены: БЕССРОЧНЫЕ (НИКОГДА НЕ ИСТЕКАЮТ)
-🎲 Каждый вход генерирует УНИКАЛЬНЫЙ токен
+💾 Данные сохраняются между перезапусками
 
 📡 Основные API эндпоинты:
    • Тест сервера:        http://localhost:${PORT}/api/test
    • Регистрация:         POST http://localhost:${PORT}/api/register
    • Вход:                POST http://localhost:${PORT}/api/login
-   • Проверка токена:     GET http://localhost:${PORT}/api/verify
-   • Профиль:             GET http://localhost:${PORT}/api/profile
-   • Аватар:              POST http://localhost:${PORT}/api/profile/avatar
-   • Мои заказы:          GET http://localhost:${PORT}/api/orders/my
 
-🔍 Диагностические эндпоинты:
-   • Получить токен:      GET http://localhost:${PORT}/api/get-token/1
-   • Диагностика:         POST http://localhost:${PORT}/api/debug-token
-   • Проверить токен:     GET http://localhost:${PORT}/api/verify
+👤 Тестовые аккаунты (создаются только при первом запуске):
+   Администратор: admin@pcstore.ru / admin123
+   Пользователь:  user@pcstore.ru / user123
 
-👑 Админ эндпоинты (требуют токен администратора):
-   • Пользователи:        GET http://localhost:${PORT}/api/admin/users
-   • Товары:              GET http://localhost:${PORT}/api/admin/products
-   • Категории:           GET http://localhost:${PORT}/api/admin/categories
-   • Заказы:              GET http://localhost:${PORT}/api/admin/orders
-   • Статистика:          GET http://localhost:${PORT}/api/admin/stats
-
-👤 Тестовые аккаунты:
-   Администратор:
-     Email: admin@pcstore.ru
-     Пароль: admin123
-   
-   Пользователь:
-     Email: user@pcstore.ru
-     Пароль: user123
-   
-   Модератор:
-     Email: moderator@pcstore.ru
-     Пароль: mod123
-
-🎯 ОСОБЕННОСТЬ: 
-   • Токены БЕССРОЧНЫЕ - больше никогда не будет ошибки jwt expired!
-   • Заказы отображаются с автоматической генерацией номеров
-   • Аватары загружаются через JSON - поддерживаются разные форматы
+💡 Подсказка:
+   • Данные сохраняются в database.db
+   • Для сброса базы удалите database.db и .initialized
+   • Для повторного добавления тестовых товаров удалите .initialized
 ===================================================
 `);
     
@@ -4286,5 +3926,4 @@ app.listen(PORT, () => {
     }, 2000);
 });
 
-// Экспортируем для тестирования
 module.exports = { app, db, initDatabase, addMissingColumns };
