@@ -3463,7 +3463,9 @@
                 price: price,
                 category_id: category_id || null,
                 stock: stock,
-                image_url: image_url
+                image_url: image_url,
+                rating: 0,           
+                reviews_count: 0
             })
         });
         
@@ -3639,13 +3641,12 @@
             const price = parseFloat(document.getElementById('editProductPrice').value);
             const category_id = parseInt(document.getElementById('editProductCategory').value);
             const stock = parseInt(document.getElementById('editProductStock').value) || 10;
+            const image_url_input = document.getElementById('editProductImage').value.trim();
             
-            // АВТО-ГЕНЕРАЦИЯ URL ИЗОБРАЖЕНИЯ
-            let image_url = document.getElementById('editProductImage').value.trim();
-            if (!image_url) {
-                // Если URL не указан, используем локальный путь
-                image_url = `products/${name}.jpg`;
-            }
+            // ЕСЛИ ПОЛЬЗОВАТЕЛЬ НЕ УКАЗАЛ URL — ИСПОЛЬЗУЕМ ЛОКАЛЬНЫЙ ПУТЬ
+            const image_url = image_url_input || `products/${name}.jpg`;
+            
+            console.log('📸 Обновляем image_url:', image_url);
             
             if (!name || !price) {
                 showNotification('❌ Заполните обязательные поля', 'error');
@@ -3665,19 +3666,21 @@
                         'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify({
-                        name,
-                        description,
-                        price,
+                        name: name,
+                        description: description,
+                        price: price,
                         category_id: category_id || null,
-                        stock,
-                        image_url: image_url  // Используем сгенерированный URL
+                        stock: stock,
+                        image_url: image_url
+                        // рейтинг НЕ передаём, чтобы не сбрасывать существующий
                     })
                 });
                 
                 const data = await response.json();
+                console.log('📸 Ответ сервера:', data);
                 
                 if (data.success) {
-                    showNotification('✅ Товар обновлен', 'success');
+                    showNotification('✅ Товар обновлен!', 'success');
                     closeModal();
                     loadProducts();
                 } else {

@@ -1966,7 +1966,7 @@
 
     function calculateRatingStats(reviews) {
         if (reviews.length === 0) {
-            return { averageRating: 4.5, reviewCount: 0, ratingDistribution: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0} };
+            return { averageRating: 0, reviewCount: 0, ratingDistribution: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0} };
         }
         const total = reviews.reduce((sum, review) => sum + review.rating, 0);
         const averageRating = total / reviews.length;
@@ -1978,6 +1978,11 @@
     }
 
     function generateRatingStars(rating) {
+        // Если рейтинг 0 — показываем пустые звёзды
+        if (rating === 0) {
+            return '<i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>';
+        }
+        
         const fullStars = Math.floor(rating);
         const hasHalfStar = rating % 1 >= 0.5;
         let starsHTML = '';

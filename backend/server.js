@@ -1873,12 +1873,22 @@ app.post('/api/admin/products', authenticateToken, requireAdmin, (req, res) => {
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
     
+    // ИСПРАВЛЕННЫЙ ЗАПРОС — rating = 0, reviews_count = 0
     const query = `
-        INSERT INTO products (name, slug, description, price, category_id, stock, image_url, is_active)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO products (name, slug, description, price, category_id, stock, image_url, is_active, rating, reviews_count)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0)
     `;
     
-    db.run(query, [name, slug, description || '', parseFloat(price), category_id || null, parseInt(stock), image_url || 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', is_active ? 1 : 0], function(err) {
+    db.run(query, [
+        name, 
+        slug, 
+        description || '', 
+        parseFloat(price), 
+        category_id || null, 
+        parseInt(stock), 
+        image_url || 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 
+        is_active ? 1 : 0
+    ], function(err) {
         if (err) {
             console.error('❌ Ошибка создания товара:', err.message);
             return res.status(500).json({ 
