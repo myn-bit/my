@@ -1518,13 +1518,18 @@
 
     const API_BASE_URL = 'http://localhost:3001/api';
 
-    // ОДНО ФОТО ДЛЯ ВСЕХ ТОВАРОВ
     const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=600&h=600&fit=crop&crop=center';
 
     function getProductImage(product) {
-        // Всегда возвращаем одно и то же фото
-        return DEFAULT_IMAGE;
+    // 1. Используем image_url из БД
+    if (product.image_url && product.image_url.trim() !== '') {
+        // КОДИРУЕМ ПРОБЕЛЫ И СПЕЦСИМВОЛЫ
+        return encodeURI(product.image_url);
     }
+    // 2. Если нет - дефолтное
+    return DEFAULT_IMAGE;
+}
+
 
     // ===== ИНИЦИАЛИЗАЦИЯ =====
     document.addEventListener('DOMContentLoaded', function() {
@@ -1882,6 +1887,7 @@
         grid.innerHTML = '';
 
         products.forEach(product => {
+            
             const card = document.createElement('div');
             card.className = 'product-card';
             
@@ -1890,7 +1896,7 @@
             const ratingHTML = generateRatingStars(averageRating);
             
             // ВСЕГДА ИСПОЛЬЗУЕМ ОДНО И ТО ЖЕ ФОТО
-            const productImage = DEFAULT_IMAGE;
+            const productImage = getProductImage(product);
 
             const isFavorite = favorites.includes(product.id);
             const favoriteIcon = isFavorite ? 'fas fa-heart' : 'far fa-heart';
@@ -1995,7 +2001,7 @@
             document.getElementById('modalProductTitle').textContent = product.name;
             
             // ВСЕГДА ИСПОЛЬЗУЕМ ОДНО И ТО ЖЕ ФОТО В МОДАЛЬНОМ ОКНЕ
-            document.getElementById('mainProductImage').src = DEFAULT_IMAGE;
+            document.getElementById('mainProductImage').src = getProductImage(product);
             
             const specsContainer = document.getElementById('modalSpecs');
             specsContainer.innerHTML = '';

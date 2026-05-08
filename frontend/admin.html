@@ -3399,8 +3399,14 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">URL изображения</label>
-                            <input type="url" id="newProductImage" class="form-control" placeholder="https://example.com/image.jpg">
+                            <label class="form-label">
+                                <i class="fas fa-image"></i> URL изображения
+                            </label>
+                            <input type="text" id="newProductImage" class="form-control" placeholder="Оставьте пустым для авто-подбора">
+                            <small style="color: var(--color-text-tertiary); margin-top: 0.5rem; display: block;">
+                                <i class="fas fa-info-circle"></i> 
+                                Оставьте пустым — фото будет искаться в папке <code>products/НАЗВАНИЕ.jpg</code>
+                            </small>
                         </div>
                     </form>
                 `,
@@ -3422,60 +3428,61 @@
         }
 
         async function addProduct() {
-            if (isDemoMode) {
-                showNotification('❌ Функция недоступна в демо-режиме', 'warning');
-                return;
-            }
-            
-            const name = document.getElementById('newProductName').value.trim();
-            const description = document.getElementById('newProductDescription').value.trim();
-            const price = parseFloat(document.getElementById('newProductPrice').value);
-            const category_id = parseInt(document.getElementById('newProductCategory').value);
-            const stock = parseInt(document.getElementById('newProductStock').value) || 10;
-            const image_url = document.getElementById('newProductImage').value.trim();
-            
-            if (!name || !price) {
-                showNotification('❌ Заполните обязательные поля', 'error');
-                return;
-            }
-            
-            if (price <= 0) {
-                showNotification('❌ Цена должна быть больше 0', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE}/admin/products`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({
-                        name,
-                        description,
-                        price,
-                        category_id: category_id || null,
-                        stock,
-                        image_url: image_url || null
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('✅ Товар добавлен', 'success');
-                    closeModal();
-                    loadProducts();
-                    loadStats();
-                } else {
-                    showNotification(data.message || '❌ Ошибка добавления', 'error');
-                }
-            } catch (error) {
-                console.error('Ошибка добавления товара:', error);
-                showNotification('❌ Ошибка добавления товара', 'error');
-            }
+    if (isDemoMode) {
+        showNotification('❌ Функция недоступна в демо-режиме', 'warning');
+        return;
+    }
+    
+    const name = document.getElementById('newProductName').value.trim();
+    const description = document.getElementById('newProductDescription').value.trim();
+    const price = parseFloat(document.getElementById('newProductPrice').value);
+    const category_id = parseInt(document.getElementById('newProductCategory').value);
+    const stock = parseInt(document.getElementById('newProductStock').value) || 10;
+    const image_url_input = document.getElementById('newProductImage').value.trim();
+    
+    // ЕСЛИ ПОЛЬЗОВАТЕЛЬ НЕ УКАЗАЛ URL — ИСПОЛЬЗУЕМ ЛОКАЛЬНЫЙ ПУТЬ
+    const image_url = image_url_input || `products/${name}.jpg`;
+    
+    console.log('📸 Сохраняем image_url:', image_url);
+    
+    if (!name || !price) {
+        showNotification('❌ Заполните обязательные поля', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/admin/products`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                name: name,
+                description: description,
+                price: price,
+                category_id: category_id || null,
+                stock: stock,
+                image_url: image_url
+            })
+        });
+        
+        const data = await response.json();
+        console.log('📸 Ответ сервера:', data);
+        
+        if (data.success) {
+            showNotification('✅ Товар добавлен! Фото: ' + image_url, 'success');
+            closeModal();
+            loadProducts();
+            loadStats();
+        } else {
+            showNotification(data.message || '❌ Ошибка добавления', 'error');
         }
+    } catch (error) {
+        console.error('Ошибка добавления товара:', error);
+        showNotification('❌ Ошибка добавления товара', 'error');
+    }
+}
 
         function viewProduct(productId) {
             const product = products.find(p => p.id === productId);
@@ -3632,7 +3639,13 @@
             const price = parseFloat(document.getElementById('editProductPrice').value);
             const category_id = parseInt(document.getElementById('editProductCategory').value);
             const stock = parseInt(document.getElementById('editProductStock').value) || 10;
-            const image_url = document.getElementById('editProductImage').value.trim();
+            
+            // АВТО-ГЕНЕРАЦИЯ URL ИЗОБРАЖЕНИЯ
+            let image_url = document.getElementById('editProductImage').value.trim();
+            if (!image_url) {
+                // Если URL не указан, используем локальный путь
+                image_url = `products/${name}.jpg`;
+            }
             
             if (!name || !price) {
                 showNotification('❌ Заполните обязательные поля', 'error');
@@ -3657,7 +3670,7 @@
                         price,
                         category_id: category_id || null,
                         stock,
-                        image_url: image_url || null
+                        image_url: image_url  // Используем сгенерированный URL
                     })
                 });
                 
