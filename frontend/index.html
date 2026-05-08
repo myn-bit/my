@@ -141,6 +141,25 @@
             font-size: 0.75rem;
         }
         
+        .product-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--color-text-secondary);
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .stat-item i {
+            font-size: 0.75rem;
+        }
+        
         .product-price {
             display: flex;
             align-items: center;
@@ -265,6 +284,25 @@
                 transform: translateX(0);
                 opacity: 1;
             }
+        }
+        
+        .loading-container {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--color-border);
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         @media (max-width: 768px) {
@@ -419,12 +457,22 @@
             </div>
         </section>
 
-        <!-- Товары -->
+        <!-- Популярные товары -->
         <section class="section">
             <div class="container">
-                <h2 class="section-title text-center">Популярные товары</h2>
+                <h2 class="section-title text-center">
+                    <i class="fas fa-fire" style="color: #FF6B35;"></i> 
+                    Популярные товары
+                </h2>
+                <p class="text-center" style="color: var(--color-text-secondary); margin-bottom: 2rem;">
+                    Самые популярные товары на основе отзывов и заказов
+                </p>
                 <div class="products-grid" id="productsGrid">
                     <!-- Товары будут загружены через JavaScript -->
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                        <p>Загрузка популярных товаров...</p>
+                    </div>
                 </div>
                 <div class="text-center">
                     <a href="catalog.html" class="btn btn-primary btn-lg">
@@ -504,82 +552,33 @@
     // Конфигурация API
     const API_BASE_URL = 'http://localhost:3001/api';
     
-    // База данных УНИКАЛЬНЫХ фотографий для каждого конкретного товара
-    const productImages = {
-        // === ПРОЦЕССОРЫ INTEL ===
-        'Intel Core i9-14900K': 'https://images.unsplash.com/photo-1555618254-6c0e1b84b3b5?w=600&h=600&fit=crop&crop=center',
-        'Intel Core i7-14700K': 'https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&h=600&fit=crop&crop=center',
-        'Intel Core i5-14600K': 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&h=600&fit=crop&crop=center',
-        'Intel Core i3-14100': 'https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&h=600&fit=crop&crop=center',
-        'Intel Core i9-13900KS': 'https://images.unsplash.com/photo-1555664424-778a1e5c1c48?w=600&h=600&fit=crop&crop=center',
-        
-        // === ПРОЦЕССОРЫ AMD ===
-        'AMD Ryzen 9 7950X3D': 'https://images.unsplash.com/photo-1555618563-1b8f8e2d8b8a?w=600&h=600&fit=crop&crop=center',
-        'AMD Ryzen 7 7800X3D': 'https://images.unsplash.com/photo-1555618254-6c0e1b84b3b5?w=600&h=600&fit=crop&crop=center',
-        'AMD Ryzen 5 7600X': 'https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&h=600&fit=crop&crop=center',
-        'AMD Ryzen 9 7900X': 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&h=600&fit=crop&crop=center',
-        
-        // === ВИДЕОКАРТЫ NVIDIA ===
-        'NVIDIA RTX 4090': 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&h=600&fit=crop&crop=center',
-        'NVIDIA RTX 4080 Super': 'https://images.unsplash.com/photo-1591488320449-011701bb6704?w=600&h=600&fit=crop&crop=center',
-        'NVIDIA RTX 4070 Ti Super': 'https://images.unsplash.com/photo-1624705002806-5d72df19c3ad?w=600&h=600&fit=crop&crop=center',
-        'NVIDIA RTX 4070 Super': 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=600&h=600&fit=crop&crop=center',
-        
-        // === ВИДЕОКАРТЫ AMD RADEON ===
-        'AMD Radeon RX 7900 XTX': 'https://images.unsplash.com/photo-1624705002806-5d72df19c3ad?w=600&h=600&fit=crop&crop=center',
-        'AMD Radeon RX 7800 XT': 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=600&h=600&fit=crop&crop=center',
-        'AMD Radeon RX 7700 XT': 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&h=600&fit=crop&crop=center',
-        
-        // === МАТЕРИНСКИЕ ПЛАТЫ ASUS ===
-        'ASUS ROG Strix Z790-E': 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=600&fit=crop&crop=center',
-        'ASUS TUF Gaming B650-Plus': 'https://images.unsplash.com/photo-1563770660941-20978e870e26?w=600&h=600&fit=crop&crop=center',
-        'ASUS PRIME Z790-P': 'https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=600&h=600&fit=crop&crop=center',
-        
-        // === МАТЕРИНСКИЕ ПЛАТЫ MSI ===
-        'MSI MAG B650 Tomahawk': 'https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=600&h=600&fit=crop&crop=center',
-        'MSI MPG Z690 Carbon WiFi': 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=600&fit=crop&crop=center',
-        'MSI B550-A PRO': 'https://images.unsplash.com/photo-1563770660941-20978e870e26?w=600&h=600&fit=crop&crop=center',
-        
-        // === ОПЕРАТИВНАЯ ПАМЯТЬ ===
-        'G.Skill Trident Z5 RGB': 'https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&h=600&fit=crop&crop=center',
-        'Kingston Fury Beast': 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&h=600&fit=crop&crop=center',
-        'Corsair Vengeance RGB': 'https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&h=600&fit=crop&crop=center',
-        
-        // === SSD НАКОПИТЕЛИ ===
-        'Samsung 990 Pro 2TB': 'https://images.unsplash.com/photo-1531492746076-161ca9bcad58?w=600&h=600&fit=crop&crop=center',
-        'WD Black SN850X': 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=600&h=600&fit=crop&crop=center',
-        'Crucial P5 Plus': 'https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&h=600&fit=crop&crop=center',
-        
-        // === БЛОКИ ПИТАНИЯ ===
-        'Corsair RM1000x': 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&h=600&fit=crop&crop=center',
-        'Seasonic Focus GX-850': 'https://images.unsplash.com/photo-1624705002806-5d72df19c3ad?w=600&h=600&fit=crop&crop=center',
-        'be quiet! Straight Power 11': 'https://images.unsplash.com/photo-1591488320449-011701bb6704?w=600&h=600&fit=crop&crop=center',
-        
-        // === КОРПУСА ===
-        'NZXT H9 Flow': 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=600&h=600&fit=crop&crop=center',
-        'Lian Li O11 Dynamic EVO': 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&h=600&fit=crop&crop=center',
-        'Fractal Design North': 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=600&h=600&fit=crop&crop=center',
-        
-        // === ОХЛАЖДЕНИЕ ===
-        'Noctua NH-D15': 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=600&h=600&fit=crop&crop=center',
-        'be quiet! Dark Rock Pro 4': 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&h=600&fit=crop&crop=center',
-        'Arctic Liquid Freezer II 360': 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&h=600&fit=crop&crop=center',
-        
-        // Фото по умолчанию
-        'default': 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=600&h=600&fit=crop&crop=center'
-    };
+    // Дефолтное изображение если у товара нет фото
+    const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=600&h=600&fit=crop&crop=center';
 
-    // Функция для получения уникального фото товара
+    // Функция для получения фото товара
     function getProductImage(product) {
-        const productName = product.name;
-        
-        // Проверяем, есть ли точное совпадение в нашей базе
-        if (productImages[productName]) {
-            return productImages[productName];
+        // 1. Пробуем получить image_url из данных товара
+        if (product.image_url && product.image_url.trim() !== '') {
+            return product.image_url;
         }
         
-        // Если точного совпадения нет, используем фото по умолчанию
-        return productImages['default'];
+        // 2. Пробуем получить image из данных товара (альтернативное поле)
+        if (product.image && product.image.trim() !== '') {
+            return product.image;
+        }
+        
+        // 3. Пробуем получить photos (массив фотографий)
+        if (product.photos && Array.isArray(product.photos) && product.photos.length > 0) {
+            return product.photos[0];
+        }
+        
+        // 4. Пробуем получить photo_url
+        if (product.photo_url && product.photo_url.trim() !== '') {
+            return product.photo_url;
+        }
+        
+        // 5. Если ничего не найдено - дефолтное изображение
+        return DEFAULT_IMAGE;
     }
 
     // Функция для получения отзывов товара
@@ -641,8 +640,8 @@
         // Инициализируем выпадающее меню пользователя
         initUserDropdown();
         
-        // Загружаем товары
-        loadProducts();
+        // Загружаем популярные товары
+        loadPopularProducts();
         
         // Обновляем счетчики
         updateCartCount();
@@ -838,25 +837,81 @@
         }
     }
     
-    // Загрузка популярных товаров
-    async function loadProducts() {
+    // Загрузка популярных товаров на основе отзывов и заказов
+    async function loadPopularProducts() {
         try {
-            const response = await fetch(`${API_BASE_URL}/products?limit=8`);
+            const response = await fetch(`${API_BASE_URL}/products`);
             const data = await response.json();
             
             if (data.success && data.products) {
                 const container = document.getElementById('productsGrid');
                 container.innerHTML = '';
                 
-                data.products.forEach(product => {
-                    // Получаем отзывы из localStorage
+                // Получаем заказы из localStorage
+                const orders = JSON.parse(localStorage.getItem('orders')) || [];
+                
+                console.log('📊 Найдено заказов:', orders.length);
+                
+                // Вычисляем рейтинг популярности для каждого товара
+                const productsWithPopularity = data.products.map(product => {
+                    // 1. Считаем отзывы
                     const reviews = getProductReviews(product.id);
                     const { averageRating, reviewCount } = calculateRatingStats(reviews);
                     
-                    // Генерируем звезды рейтинга
-                    const ratingHTML = generateRatingStars(averageRating);
+                    // 2. Считаем количество заказов этого товара
+                    let orderCount = 0;
+                    let totalOrdered = 0;
                     
-                    // Получаем уникальное фото для товара
+                    orders.forEach(order => {
+                        if (order.items && Array.isArray(order.items)) {
+                            order.items.forEach(item => {
+                                if (item.productId === product.id) {
+                                    orderCount++;
+                                    totalOrdered += item.quantity || 1;
+                                }
+                            });
+                        }
+                    });
+                    
+                    // 3. Вычисляем общий рейтинг популярности
+                    // Формула: (количество отзывов * 10) + (средний рейтинг * 20) + (количество заказов * 15) + (общее количество * 2)
+                    const popularityScore = (reviewCount * 10) + (averageRating * 20) + (orderCount * 15) + (totalOrdered * 2);
+                    
+                    return {
+                        ...product,
+                        reviews,
+                        averageRating,
+                        reviewCount,
+                        orderCount,
+                        totalOrdered,
+                        popularityScore
+                    };
+                });
+                
+                // Сортируем по популярности (от большего к меньшему)
+                const sortedProducts = productsWithPopularity.sort((a, b) => b.popularityScore - a.popularityScore);
+                
+                // Берем топ-8 популярных товаров
+                const popularProducts = sortedProducts.slice(0, 8);
+                
+                console.log('🏆 ТОП-8 популярных товаров:');
+                popularProducts.forEach((product, index) => {
+                    console.log(`${index + 1}. ${product.name} - Оценка: ${product.popularityScore.toFixed(2)} (Отзывы: ${product.reviewCount}, Заказы: ${product.orderCount}, Средний рейтинг: ${product.averageRating.toFixed(1)})`);
+                });
+                
+                // Если нет данных для определения популярности, показываем все товары
+                if (popularProducts.every(p => p.popularityScore === 0)) {
+                    console.log('⚠️ Нет данных о популярности. Показываем первые 8 товаров.');
+                    popularProducts.length = 0;
+                    popularProducts.push(...data.products.slice(0, 8));
+                }
+                
+                // Отображаем популярные товары
+                popularProducts.forEach((product, index) => {
+                    // Генерируем звезды рейтинга
+                    const ratingHTML = generateRatingStars(product.averageRating);
+                    
+                    // Получаем фото из данных товара
                     const productImage = getProductImage(product);
                     
                     // Проверяем, есть ли товар в избранном
@@ -874,19 +929,30 @@
                                  alt="${product.name}" 
                                  class="product-real-image"
                                  loading="lazy"
-                                 onerror="this.src='${productImages['default']}'">
+                                 onerror="this.src='${DEFAULT_IMAGE}'">
                         </div>
                         <div class="product-content">
                             <h3 class="product-title">${product.name}</h3>
                             <p class="product-description">${product.description?.substring(0, 80) || 'Качественный компьютерный компонент'}...</p>
                             
+                            <div class="product-stats">
+                                <div class="stat-item" title="Количество отзывов">
+                                    <i class="fas fa-comment" style="color: var(--color-info);"></i>
+                                    <span>${product.reviewCount} отзывов</span>
+                                </div>
+                                <div class="stat-item" title="Количество заказов">
+                                    <i class="fas fa-shopping-bag" style="color: var(--color-success);"></i>
+                                    <span>${product.orderCount} заказов</span>
+                                </div>
+                            </div>
+                            
                             <div class="product-meta">
                                 <div class="product-rating">
                                     <div class="rating-stars">
                                         ${ratingHTML}
-                                        <span class="rating-value">${averageRating.toFixed(1)}</span>
+                                        <span class="rating-value">${product.averageRating.toFixed(1)}</span>
                                     </div>
-                                    <div class="rating-count">(${reviewCount})</div>
+                                    <div class="rating-count">(${product.reviewCount})</div>
                                 </div>
                             </div>
                             
@@ -912,8 +978,18 @@
                 });
             }
         } catch (error) {
-            console.error('Ошибка загрузки товаров:', error);
-            showNotification('Ошибка загрузки товаров', 'error');
+            console.error('❌ Ошибка загрузки популярных товаров:', error);
+            const container = document.getElementById('productsGrid');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: var(--color-error);">
+                    <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p>Не удалось загрузить популярные товары</p>
+                    <button class="btn btn-primary mt-3" onclick="loadPopularProducts()">
+                        <i class="fas fa-redo"></i> Попробовать снова
+                    </button>
+                </div>
+            `;
+            showNotification('Ошибка загрузки популярных товаров', 'error');
         }
     }
     
@@ -1083,6 +1159,11 @@
         if (e.key === 'user') {
             location.reload();
         }
+        
+        // Обновляем популярные товары при изменении заказов или отзывов
+        if (e.key === 'orders' || e.key === 'reviews') {
+            loadPopularProducts();
+        }
     });
     
     // Переопределяем стандартный localStorage.setItem для немедленного обновления
@@ -1099,12 +1180,20 @@
                 window.dispatchEvent(event);
             }
         }
+        
+        // Диспатчим событие для заказов и отзывов
+        if (key === 'orders' || key === 'reviews') {
+            const event = new Event('storage');
+            event.key = key;
+            window.dispatchEvent(event);
+        }
     };
     
     // Делаем функции глобальными
     window.addToCart = addToCart;
     window.toggleFavorite = toggleFavorite;
     window.showNotification = showNotification;
+    window.loadPopularProducts = loadPopularProducts;
 </script>
 </body>
 </html>

@@ -240,6 +240,9 @@
             align-items: center;
             justify-content: center;
             color: white;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
         }
 
         .user-info {
@@ -1005,6 +1008,8 @@
             font-weight: bold;
             font-size: 0.8rem;
             flex-shrink: 0;
+            overflow: hidden;
+            background-size: cover;
         }
 
         .user-info-cell {
@@ -1544,7 +1549,7 @@
 
     <script>
         // ==================== КОНФИГУРАЦИЯ ====================
-        const API_BASE = 'http://localhost:3001';
+        const API_BASE = 'http://localhost:3001/api';
         const AUTH_TOKEN_KEY = 'admin_auth_token';
         
         // Глобальные переменные
@@ -1650,7 +1655,7 @@
             const password = 'admin123';
             
             try {
-                const response = await fetch(`${API_BASE}/api/login`, {
+                const response = await fetch(`${API_BASE}/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1695,7 +1700,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/api/login`, {
+                const response = await fetch(`${API_BASE}/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1974,7 +1979,7 @@
 
         async function loadStats() {
             try {
-                const response = await fetch(`${API_BASE}/api/admin/stats`, {
+                const response = await fetch(`${API_BASE}/admin/stats`, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`
                     }
@@ -1998,7 +2003,7 @@
 
         async function loadUsers() {
             try {
-                const response = await fetch(`${API_BASE}/api/admin/users`, {
+                const response = await fetch(`${API_BASE}/admin/users`, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`
                     }
@@ -2020,7 +2025,7 @@
 
         async function loadProducts() {
             try {
-                const response = await fetch(`${API_BASE}/api/admin/products`, {
+                const response = await fetch(`${API_BASE}/admin/products`, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`
                     }
@@ -2042,7 +2047,7 @@
 
         async function loadCategories() {
             try {
-                const response = await fetch(`${API_BASE}/api/categories`);
+                const response = await fetch(`${API_BASE}/categories`);
                 
                 if (!response.ok) throw new Error('Ошибка загрузки категорий');
                 
@@ -2058,7 +2063,7 @@
 
         async function loadOrders() {
             try {
-                const response = await fetch(`${API_BASE}/api/admin/orders`, {
+                const response = await fetch(`${API_BASE}/admin/orders`, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`
                     }
@@ -2094,7 +2099,7 @@
                                     <i class="fas fa-user-plus"></i> Добавить пользователя
                                 </button>
                             ` : ''}
-                        </td>
+                        <tr>
                     </tr>
                 `;
                 return;
@@ -2158,7 +2163,7 @@
                                     </button>
                                 ` : ''}
                             </div>
-                        </td>
+                         </td>
                     </tr>
                 `;
             }).join('');
@@ -2299,7 +2304,7 @@
 
             try {
                 // Получаем данные пользователя
-                const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+                const response = await fetch(`${API_BASE}/admin/users/${userId}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${authToken}`,
@@ -2352,7 +2357,7 @@
                 // Получаем статистику
                 let userStats = null;
                 try {
-                    const statsResponse = await fetch(`${API_BASE}/api/admin/users/${userId}/stats`, {
+                    const statsResponse = await fetch(`${API_BASE}/admin/users/${userId}/stats`, {
                         headers: {
                             'Authorization': `Bearer ${authToken}`
                         }
@@ -2844,11 +2849,12 @@
         // Переключение вкладок
         function switchTab(modalId, tabName) {
             const modal = document.getElementById(modalId);
+            if (!modal) return;
             
             // Обновляем вкладки
             modal.querySelectorAll('.edit-user-tab').forEach(tab => {
                 tab.classList.remove('active');
-                if (tab.dataset.tab === tabName) {
+                if (tab.getAttribute('data-tab') === tabName) {
                     tab.classList.add('active');
                 }
             });
@@ -2857,7 +2863,8 @@
             modal.querySelectorAll('.edit-user-tab-content').forEach(content => {
                 content.classList.remove('active');
             });
-            modal.querySelector(`#tab-${tabName}-${modalId}`).classList.add('active');
+            const targetContent = modal.querySelector(`#tab-${tabName}-${modalId}`);
+            if (targetContent) targetContent.classList.add('active');
         }
 
         // Проверка сложности пароля
@@ -2887,12 +2894,15 @@
         }
 
         function updateRequirement(element, met) {
+            if (!element) return;
             if (met) {
                 element.classList.add('met');
-                element.querySelector('i').className = 'fas fa-check-circle';
+                const icon = element.querySelector('i');
+                if (icon) icon.className = 'fas fa-check-circle';
             } else {
                 element.classList.remove('met');
-                element.querySelector('i').className = 'fas fa-circle';
+                const icon = element.querySelector('i');
+                if (icon) icon.className = 'fas fa-circle';
             }
         }
 
@@ -2902,10 +2912,10 @@
             const message = document.getElementById(`passwordMatchMessage-${modalId}`);
             
             if (confirm && password !== confirm) {
-                message.style.display = 'block';
+                if (message) message.style.display = 'block';
                 return false;
             } else {
-                message.style.display = 'none';
+                if (message) message.style.display = 'none';
                 return true;
             }
         }
@@ -2974,7 +2984,7 @@
                     updateData.force_password_change = forcePasswordChange;
                 }
 
-                const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+                const response = await fetch(`${API_BASE}/admin/users/${userId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3010,7 +3020,7 @@
                 if (isDemoMode) {
                     user = users.find(u => u.id === userId);
                 } else {
-                    const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+                    const response = await fetch(`${API_BASE}/admin/users/${userId}`, {
                         headers: {
                             'Authorization': `Bearer ${authToken}`
                         }
@@ -3208,7 +3218,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/api/admin/users`, {
+                const response = await fetch(`${API_BASE}/admin/users`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3249,7 +3259,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/api/admin/users/${userId}/ban`, {
+                const response = await fetch(`${API_BASE}/admin/users/${userId}/ban`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3283,7 +3293,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/api/admin/users/${userId}/unban`, {
+                const response = await fetch(`${API_BASE}/admin/users/${userId}/unban`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${authToken}`
@@ -3315,7 +3325,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+                const response = await fetch(`${API_BASE}/admin/users/${userId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${authToken}`
@@ -3435,7 +3445,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/api/admin/products`, {
+                const response = await fetch(`${API_BASE}/admin/products`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3635,7 +3645,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/api/admin/products/${productId}`, {
+                const response = await fetch(`${API_BASE}/admin/products/${productId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3677,7 +3687,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/api/admin/products/${productId}`, {
+                const response = await fetch(`${API_BASE}/admin/products/${productId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${authToken}`
@@ -3708,7 +3718,7 @@
                 if (isDemoMode) {
                     order = orders.find(o => o.id === orderId);
                 } else {
-                    const response = await fetch(`${API_BASE}/api/admin/orders/${orderId}`, {
+                    const response = await fetch(`${API_BASE}/admin/orders/${orderId}`, {
                         headers: {
                             'Authorization': `Bearer ${authToken}`
                         }
@@ -3846,7 +3856,7 @@
             const statusText = getOrderStatusText(status);
             
             try {
-                const response = await fetch(`${API_BASE}/api/admin/orders/${orderId}/status`, {
+                const response = await fetch(`${API_BASE}/admin/orders/${orderId}/status`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3901,7 +3911,7 @@
             return re.test(email);
         }
 
-        function escapeHtml(text) {
+                function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
@@ -3968,9 +3978,9 @@
         }
 
         function showNotification(message, type = 'info') {
-            const oldNotifications = document.querySelectorAll('.notification');
-            oldNotifications.forEach(n => n.remove());
-
+            const container = document.querySelector('.notifications-container');
+            if (!container) return;
+            
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             
@@ -3989,7 +3999,7 @@
                 </button>
             `;
 
-            document.body.appendChild(notification);
+            container.appendChild(notification);
 
             setTimeout(() => {
                 if (notification.parentNode) {
@@ -4005,7 +4015,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h3 class="modal-title">
-                                <i class="fas ${config.title.includes('➕') ? 'fa-plus-circle' : 'fa-info-circle'}" style="margin-right: 0.5rem;"></i>
+                                <i class="fas ${config.title.includes('➕') ? 'fa-plus-circle' : config.title.includes('✏️') ? 'fa-edit' : 'fa-info-circle'}" style="margin-right: 0.5rem;"></i>
                                 ${config.title}
                             </h3>
                             <button class="modal-close" onclick="closeModal('${modalId}')">&times;</button>
@@ -4023,19 +4033,24 @@
             `;
             
             const container = document.getElementById('modalsContainer');
+            if (!container) return { show: () => {}, hide: () => {} };
             container.insertAdjacentHTML('beforeend', modalHTML);
             
             const modal = document.getElementById(modalId);
             
             return {
                 show: () => {
-                    modal.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
+                    if (modal) {
+                        modal.style.display = 'flex';
+                        document.body.style.overflow = 'hidden';
+                    }
                 },
                 hide: () => {
-                    modal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                    setTimeout(() => modal.remove(), 300);
+                    if (modal) {
+                        modal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                        setTimeout(() => modal.remove(), 300);
+                    }
                 }
             };
         }
@@ -4049,12 +4064,12 @@
                     setTimeout(() => modal.remove(), 300);
                 }
             } else {
-                const modal = document.querySelector('.modal');
-                if (modal) {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
                     modal.style.display = 'none';
                     document.body.style.overflow = 'auto';
                     setTimeout(() => modal.remove(), 300);
-                }
+                });
             }
         }
 
@@ -4078,6 +4093,33 @@
                 console.error('Ошибка обновления счетчика избранного:', error);
             }
         }
+
+        // ==================== ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ ONCLICK ====================
+        window.loadAllData = loadAllData;
+        window.logout = logout;
+        window.closeModal = closeModal;
+        window.editUser = editUser;
+        window.saveUserChanges = saveUserChanges;
+        window.banUser = banUser;
+        window.unbanUser = unbanUser;
+        window.deleteUser = deleteUser;
+        window.showAddUserModal = showAddUserModal;
+        window.addUser = addUser;
+        window.showAddProductModal = showAddProductModal;
+        window.addProduct = addProduct;
+        window.editProduct = editProduct;
+        window.saveProduct = saveProduct;
+        window.deleteProduct = deleteProduct;
+        window.viewOrder = viewOrder;
+        window.updateOrderStatus = updateOrderStatus;
+        window.exportUsers = exportUsers;
+        window.importProducts = importProducts;
+        window.viewUser = viewUser;
+        window.viewProduct = viewProduct;
+        window.showOrderStatusModal = showOrderStatusModal;
+        window.switchTab = switchTab;
+        window.checkPasswordStrength = checkPasswordStrength;
+        window.checkPasswordMatch = checkPasswordMatch;
     </script>
 </body>
 </html>
