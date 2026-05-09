@@ -7,6 +7,295 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ===== НАВИГАЦИОННАЯ ПАНЕЛЬ (как в settings.html) ===== */
+        .navbar {
+            background: var(--color-bg-card);
+            border-bottom: 1px solid var(--color-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            transition: all var(--transition-normal);
+        }
+
+        .navbar-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--color-text);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .navbar-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.5rem;
+        }
+
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-normal);
+        }
+
+        .nav-link i {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+            color: var(--color-text-secondary);
+        }
+
+        .nav-link:hover {
+            background: var(--color-bg-secondary);
+            color: var(--color-primary);
+        }
+
+        .nav-link:hover i {
+            color: var(--color-primary);
+        }
+
+        .nav-link.active {
+            color: var(--color-primary);
+            background: var(--color-bg-secondary);
+        }
+
+        .nav-link.active i {
+            color: var(--color-primary);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 3px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            border-radius: var(--radius-sm);
+        }
+
+        .cart-badge {
+            background: var(--color-error);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            margin-left: 0.25rem;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            color: var(--color-text);
+            text-decoration: none;
+            transition: all var(--transition-normal);
+        }
+
+        .action-btn i {
+            color: var(--color-text);
+        }
+
+        .action-btn:hover {
+            background: var(--color-bg-tertiary);
+            border-color: var(--color-primary);
+            transform: translateY(-2px);
+        }
+
+        .action-btn:hover i {
+            color: var(--color-primary);
+        }
+
+        .action-btn .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            margin: 0;
+        }
+
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-avatar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+        }
+
+        .user-avatar:hover {
+            border-color: var(--color-primary);
+            background: var(--color-bg-tertiary);
+        }
+
+        .user-avatar:hover .user-name,
+        .user-avatar:hover i {
+            color: var(--color-primary);
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.3;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--color-text);
+            transition: color var(--transition-normal);
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+        }
+
+        .user-avatar i {
+            color: var(--color-text);
+            transition: color var(--transition-normal);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            min-width: 220px;
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all var(--transition-normal);
+            z-index: 1001;
+        }
+
+        .dropdown-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--color-text);
+            text-decoration: none;
+            transition: all var(--transition-normal);
+        }
+
+        .dropdown-item:hover {
+            background: var(--color-bg-secondary);
+            color: var(--color-primary);
+        }
+
+        .dropdown-item:hover i {
+            color: var(--color-primary);
+        }
+
+        .dropdown-item i {
+            width: 18px;
+            color: var(--color-text-tertiary);
+            transition: color var(--transition-normal);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--color-border);
+            margin: 0.5rem 0;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--color-text);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
         /* Стили для главной страницы */
         .hero {
             background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
@@ -242,9 +531,9 @@
         /* Уведомления */
         .notifications-container {
             position: fixed;
-            top: 20px;
+            top: 80px;
             right: 20px;
-            z-index: 10000;
+            z-index: 99999;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -304,8 +593,152 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Футер */
+        .footer {
+            background: var(--color-bg-card);
+            border-top: 1px solid var(--color-border);
+            padding: 3rem 2rem 1rem;
+            margin-top: 4rem;
+        }
         
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-section h3 {
+            color: var(--color-text);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .footer-section p {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-links a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color var(--transition-normal);
+        }
+        
+        .footer-links a:hover {
+            color: var(--color-primary);
+        }
+        
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 2rem auto 0;
+            padding-top: 2rem;
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+            color: var(--color-text-tertiary);
+            font-size: 0.85rem;
+        }
+
+        /* Кнопка переключения темы */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--color-bg-card);
+            border: 2px solid var(--color-border);
+            color: var(--color-text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            z-index: 999;
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            border-color: var(--color-primary);
+        }
+        
+        .theme-toggle .fa-sun {
+            display: block;
+        }
+        
+        .theme-toggle .fa-moon {
+            display: none;
+        }
+        
+        [data-theme="dark"] .theme-toggle .fa-sun {
+            display: none;
+        }
+        
+        [data-theme="dark"] .theme-toggle .fa-moon {
+            display: block;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 1024px) {
+            .navbar-nav {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--color-bg-card);
+                flex-direction: column;
+                padding: 1rem;
+                border-bottom: 1px solid var(--color-border);
+                box-shadow: var(--shadow-lg);
+            }
+            
+            .navbar-nav.active {
+                display: flex;
+            }
+            
+            .nav-item {
+                width: 100%;
+            }
+            
+            .nav-link {
+                width: 100%;
+            }
+            
+            .nav-link.active::after {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .user-info {
+                display: none;
+            }
+        }
+
         @media (max-width: 768px) {
+            .navbar-container {
+                padding: 0.75rem 1rem;
+            }
+
             .hero-title {
                 font-size: 2.5rem;
             }
@@ -326,6 +759,11 @@
             .btn-favorite {
                 width: 100%;
             }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -333,7 +771,6 @@
     <!-- Навигационная панель -->
     <nav class="navbar">
         <div class="navbar-container">
-            <!-- Логотип -->
             <a href="index.html" class="navbar-brand">
                 <div class="navbar-logo">
                     <i class="fas fa-desktop"></i>
@@ -341,12 +778,10 @@
                 <span class="logo-text">PCStore</span>
             </a>
 
-            <!-- Кнопка мобильного меню -->
             <button class="menu-toggle" id="menuToggle">
                 <i class="fas fa-bars"></i>
             </button>
 
-            <!-- Основное меню -->
             <ul class="navbar-nav" id="navbarNav">
                 <li class="nav-item">
                     <a href="index.html" class="nav-link active">
@@ -387,15 +822,12 @@
                 </li>
             </ul>
 
-            <!-- Панель действий -->
             <div class="nav-actions">
-                <!-- Избранное -->
                 <a href="favorites.html" class="action-btn" id="favoritesBtn">
                     <i class="fas fa-heart"></i>
                     <span class="cart-badge" id="favoritesCount">0</span>
                 </a>
                 
-                <!-- Аккаунт пользователя -->
                 <div class="user-dropdown">
                     <div class="user-avatar" id="userAvatar">
                         <div class="avatar">
@@ -408,7 +840,6 @@
                         <i class="fas fa-chevron-down"></i>
                     </div>
                     
-                    <!-- Выпадающее меню -->
                     <div class="dropdown-menu" id="userDropdown">
                         <a href="login.html" class="dropdown-item" id="loginBtn">
                             <i class="fas fa-sign-in-alt"></i>
@@ -444,7 +875,6 @@
 
     <!-- Основной контент -->
     <main class="main-content">
-        <!-- Герой секция -->
         <section class="hero">
             <div class="hero-content">
                 <h1 class="hero-title">PC Store</h1>
@@ -457,7 +887,6 @@
             </div>
         </section>
 
-        <!-- Популярные товары -->
         <section class="section">
             <div class="container">
                 <h2 class="section-title text-center">
@@ -468,7 +897,6 @@
                     Самые популярные товары на основе отзывов и заказов
                 </p>
                 <div class="products-grid" id="productsGrid">
-                    <!-- Товары будут загружены через JavaScript -->
                     <div class="loading-container">
                         <div class="spinner"></div>
                         <p>Загрузка популярных товаров...</p>
@@ -483,25 +911,12 @@
         </section>
     </main>
 
-    <!-- Футер -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
                 <h3>PC Store</h3>
                 <p>Лучший магазин компьютерных комплектующих с 2024 года</p>
-                <div class="d-flex gap-2 mt-3">
-                    <a href="#" class="action-btn">
-                        <i class="fab fa-vk"></i>
-                    </a>
-                    <a href="#" class="action-btn">
-                        <i class="fab fa-telegram"></i>
-                    </a>
-                    <a href="#" class="action-btn">
-                        <i class="fab fa-youtube"></i>
-                    </a>
-                </div>
             </div>
-            
             <div class="footer-section">
                 <h3>Категории</h3>
                 <ul class="footer-links">
@@ -511,7 +926,6 @@
                     <li><a href="catalog.html?category=ram">Оперативная память</a></li>
                 </ul>
             </div>
-            
             <div class="footer-section">
                 <h3>Помощь</h3>
                 <ul class="footer-links">
@@ -521,7 +935,6 @@
                     <li><a href="#">Контакты</a></li>
                 </ul>
             </div>
-            
             <div class="footer-section">
                 <h3>Аккаунт</h3>
                 <ul class="footer-links">
@@ -533,130 +946,83 @@
                 </ul>
             </div>
         </div>
-        
         <div class="footer-bottom">
             <p>&copy; 2024 PC Store. Все права защищены.</p>
         </div>
     </footer>
 
-    <!-- Кнопка переключения темы -->
     <button class="theme-toggle" id="themeToggle">
         <i class="fas fa-sun"></i>
         <i class="fas fa-moon"></i>
     </button>
 
-    <!-- Контейнер для уведомлений -->
     <div class="notifications-container"></div>
 
     <script>
-    // Конфигурация API
     const API_BASE_URL = 'http://localhost:3001/api';
-    
-    // Дефолтное изображение если у товара нет фото
     const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=600&h=600&fit=crop&crop=center';
 
-    // Функция для получения фото товара
     function getProductImage(product) {
-        // 1. Пробуем получить image_url из данных товара
         if (product.image_url && product.image_url.trim() !== '') {
-            return product.image_url;
+            return encodeURI(product.image_url);
         }
-        
-        // 2. Пробуем получить image из данных товара (альтернативное поле)
         if (product.image && product.image.trim() !== '') {
-            return product.image;
+            return encodeURI(product.image);
         }
-        
-        // 3. Пробуем получить photos (массив фотографий)
         if (product.photos && Array.isArray(product.photos) && product.photos.length > 0) {
             return product.photos[0];
         }
-        
-        // 4. Пробуем получить photo_url
         if (product.photo_url && product.photo_url.trim() !== '') {
-            return product.photo_url;
+            return encodeURI(product.photo_url);
         }
-        
-        // 5. Если ничего не найдено - дефолтное изображение
         return DEFAULT_IMAGE;
     }
 
-    // Функция для получения отзывов товара
     function getProductReviews(productId) {
         try {
             const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
             return reviews.filter(review => review.productId === productId);
         } catch (error) {
-            console.error('Ошибка получения отзывов:', error);
             return [];
         }
     }
 
-    // Функция для расчета статистики рейтинга
     function calculateRatingStats(reviews) {
         if (reviews.length === 0) {
-            return {
-                averageRating: 4.5,
-                reviewCount: 0
-            };
+            return { averageRating: 0, reviewCount: 0 };
         }
-        
         const total = reviews.reduce((sum, review) => sum + review.rating, 0);
-        const averageRating = total / reviews.length;
-        
-        return {
-            averageRating: averageRating,
-            reviewCount: reviews.length
-        };
+        return { averageRating: total / reviews.length, reviewCount: reviews.length };
     }
 
-    // Функция для генерации звезд рейтинга
     function generateRatingStars(rating) {
+        if (rating === 0) {
+            return '<i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>';
+        }
         const fullStars = Math.floor(rating);
         const hasHalfStar = rating % 1 >= 0.5;
         let starsHTML = '';
-        
         for (let i = 1; i <= 5; i++) {
-            if (i <= fullStars) {
-                starsHTML += '<i class="fas fa-star"></i>';
-            } else if (i === fullStars + 1 && hasHalfStar) {
-                starsHTML += '<i class="fas fa-star-half-alt"></i>';
-            } else {
-                starsHTML += '<i class="far fa-star"></i>';
-            }
+            if (i <= fullStars) starsHTML += '<i class="fas fa-star"></i>';
+            else if (i === fullStars + 1 && hasHalfStar) starsHTML += '<i class="fas fa-star-half-alt"></i>';
+            else starsHTML += '<i class="far fa-star"></i>';
         }
-        
         return starsHTML;
     }
     
-    // Инициализация при загрузке страницы
     document.addEventListener('DOMContentLoaded', function() {
-        // Проверяем авторизацию
         initAuth();
-        
-        // Инициализируем мобильное меню
         initMobileMenu();
-        
-        // Инициализируем выпадающее меню пользователя
         initUserDropdown();
-        
-        // Загружаем популярные товары
         loadPopularProducts();
-        
-        // Обновляем счетчики
         updateCartCount();
         updateFavoritesCount();
-        
-        // Настраиваем тему
         setupThemeToggle();
     });
     
-    // Инициализация авторизации
     function initAuth() {
         try {
             const userJson = localStorage.getItem('user');
-            
-            // Находим элементы
             const userName = document.querySelector('.user-name');
             const userRole = document.querySelector('.user-role');
             const avatar = document.querySelector('.avatar');
@@ -666,155 +1032,97 @@
             
             if (userJson) {
                 const user = JSON.parse(userJson);
-                
                 if (user && user.token) {
-                    // Обновляем имя и роль
                     if (userName) userName.textContent = user.username || 'Пользователь';
                     if (userRole) userRole.textContent = user.role === 'admin' ? 'Администратор' : 'Пользователь';
-                    
-                    // Скрываем/show кнопки
                     if (loginBtn) loginBtn.style.display = 'none';
                     if (logoutBtn) logoutBtn.style.display = 'block';
-                    
-                    // Скрываем админ-панель если не админ
                     if (adminLink) {
-                        if (user.role !== 'admin') {
-                            adminLink.parentElement.style.display = 'none';
-                        } else {
-                            adminLink.parentElement.style.display = 'block';
-                        }
+                        adminLink.parentElement.style.display = user.role === 'admin' ? 'block' : 'none';
                     }
-                    
-                    // Загружаем и устанавливаем аватар
                     loadUserAvatar(user);
-                    
-                    console.log('✅ Пользователь авторизован:', user.username);
                     return;
                 }
             }
             
-            // Если пользователь не авторизован
             if (userName) userName.textContent = 'Гость';
             if (userRole) userRole.textContent = 'Войти в аккаунт';
             if (loginBtn) loginBtn.style.display = 'block';
             if (logoutBtn) logoutBtn.style.display = 'none';
-            
-            // Ставим стандартную иконку
             if (avatar) {
                 avatar.innerHTML = '<i class="fas fa-user"></i>';
                 avatar.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
                 avatar.style.backgroundImage = 'none';
             }
-            
-            // Скрываем админ-панель для неавторизованных
-            if (adminLink) {
-                adminLink.parentElement.style.display = 'none';
-            }
-            
+            if (adminLink) adminLink.parentElement.style.display = 'none';
         } catch (error) {
             console.error('❌ Ошибка в initAuth:', error);
         }
     }
 
-    // Функция для загрузки аватара пользователя
     function loadUserAvatar(user) {
         if (!user || !user.id) return;
-        
         const avatar = document.querySelector('.avatar');
         if (!avatar) return;
-        
         try {
-            // Пытаемся загрузить аватар из localStorage с привязкой к ID пользователя
             const savedAvatar = localStorage.getItem(`userAvatar_${user.id}`);
-            
             if (savedAvatar) {
                 const avatarData = JSON.parse(savedAvatar);
                 updateAvatarFromData(avatar, avatarData);
             } else {
-                // Если нет аватара, ставим инициалы
                 const initials = user.username ? user.username.charAt(0).toUpperCase() : 'U';
-                const avatarData = {
-                    type: 'initials',
-                    value: initials
-                };
-                updateAvatarFromData(avatar, avatarData);
-                // Сохраняем для этого пользователя
-                localStorage.setItem(`userAvatar_${user.id}`, JSON.stringify(avatarData));
+                updateAvatarFromData(avatar, { type: 'initials', value: initials });
+                localStorage.setItem(`userAvatar_${user.id}`, JSON.stringify({ type: 'initials', value: initials }));
             }
         } catch (error) {
             console.error('Ошибка загрузки аватара:', error);
-            // В случае ошибки ставим инициалы
-            const initials = user.username ? user.username.charAt(0).toUpperCase() : 'U';
-            avatar.innerHTML = initials;
-            avatar.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
-            avatar.style.backgroundImage = 'none';
         }
     }
 
-    // Функция для обновления аватара из данных
     function updateAvatarFromData(avatarElement, avatarData) {
         if (!avatarElement) return;
-        
         try {
             if (avatarData.type === 'image') {
-                // Если сохранено изображение
                 avatarElement.innerHTML = '';
                 avatarElement.style.background = `url('${avatarData.value}') center/cover no-repeat`;
-                avatarElement.style.backgroundColor = 'transparent';
                 avatarElement.style.backgroundImage = `url('${avatarData.value}')`;
             } else {
-                // Если сохранены инициалы
                 avatarElement.innerHTML = avatarData.value;
                 avatarElement.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
                 avatarElement.style.backgroundImage = 'none';
             }
         } catch (e) {
-            console.error('Ошибка при установке аватара:', e);
             avatarElement.innerHTML = '<i class="fas fa-user"></i>';
             avatarElement.style.background = 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))';
         }
     }
     
-    // Инициализация мобильного меню
     function initMobileMenu() {
         const menuToggle = document.getElementById('menuToggle');
         const navbarNav = document.getElementById('navbarNav');
-        
         if (menuToggle && navbarNav) {
-            menuToggle.addEventListener('click', function() {
-                navbarNav.classList.toggle('active');
-            });
-            
-            // Закрыть меню при клике на ссылку
+            menuToggle.addEventListener('click', () => navbarNav.classList.toggle('active'));
             document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', () => {
-                    navbarNav.classList.remove('active');
-                });
+                link.addEventListener('click', () => navbarNav.classList.remove('active'));
             });
         }
     }
     
-    // Инициализация выпадающего меню пользователя
     function initUserDropdown() {
         const userAvatar = document.getElementById('userAvatar');
         const userDropdown = document.getElementById('userDropdown');
         const logoutBtn = document.getElementById('logoutBtn');
-        
         if (userAvatar && userDropdown) {
             userAvatar.addEventListener('click', function(e) {
                 e.stopPropagation();
                 userDropdown.classList.toggle('active');
             });
-            
-            // Закрытие при клике вне меню
             document.addEventListener('click', function(e) {
                 if (!userAvatar.contains(e.target) && !userDropdown.contains(e.target)) {
                     userDropdown.classList.remove('active');
                 }
             });
         }
-        
-        // Обработка выхода из системы
         if (logoutBtn) {
             logoutBtn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -823,21 +1131,14 @@
         }
     }
     
-    // Функция выхода из системы
     function logout() {
         if (confirm('Вы уверены, что хотите выйти?')) {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            
-            // При выходе удаляем только данные сессии, но сохраняем аватар для этого пользователя
             localStorage.removeItem('user');
             localStorage.removeItem('cart');
-            
-            // Перенаправляем на главную
             window.location.href = 'index.html';
         }
     }
     
-    // Загрузка популярных товаров на основе отзывов и заказов
     async function loadPopularProducts() {
         try {
             const response = await fetch(`${API_BASE_URL}/products`);
@@ -847,21 +1148,13 @@
                 const container = document.getElementById('productsGrid');
                 container.innerHTML = '';
                 
-                // Получаем заказы из localStorage
                 const orders = JSON.parse(localStorage.getItem('orders')) || [];
                 
-                console.log('📊 Найдено заказов:', orders.length);
-                
-                // Вычисляем рейтинг популярности для каждого товара
                 const productsWithPopularity = data.products.map(product => {
-                    // 1. Считаем отзывы
                     const reviews = getProductReviews(product.id);
                     const { averageRating, reviewCount } = calculateRatingStats(reviews);
                     
-                    // 2. Считаем количество заказов этого товара
-                    let orderCount = 0;
-                    let totalOrdered = 0;
-                    
+                    let orderCount = 0, totalOrdered = 0;
                     orders.forEach(order => {
                         if (order.items && Array.isArray(order.items)) {
                             order.items.forEach(item => {
@@ -873,233 +1166,121 @@
                         }
                     });
                     
-                    // 3. Вычисляем общий рейтинг популярности
-                    // Формула: (количество отзывов * 10) + (средний рейтинг * 20) + (количество заказов * 15) + (общее количество * 2)
                     const popularityScore = (reviewCount * 10) + (averageRating * 20) + (orderCount * 15) + (totalOrdered * 2);
                     
-                    return {
-                        ...product,
-                        reviews,
-                        averageRating,
-                        reviewCount,
-                        orderCount,
-                        totalOrdered,
-                        popularityScore
-                    };
+                    return { ...product, reviews, averageRating, reviewCount, orderCount, totalOrdered, popularityScore };
                 });
                 
-                // Сортируем по популярности (от большего к меньшему)
                 const sortedProducts = productsWithPopularity.sort((a, b) => b.popularityScore - a.popularityScore);
-                
-                // Берем топ-8 популярных товаров
                 const popularProducts = sortedProducts.slice(0, 8);
                 
-                console.log('🏆 ТОП-8 популярных товаров:');
-                popularProducts.forEach((product, index) => {
-                    console.log(`${index + 1}. ${product.name} - Оценка: ${product.popularityScore.toFixed(2)} (Отзывы: ${product.reviewCount}, Заказы: ${product.orderCount}, Средний рейтинг: ${product.averageRating.toFixed(1)})`);
-                });
-                
-                // Если нет данных для определения популярности, показываем все товары
                 if (popularProducts.every(p => p.popularityScore === 0)) {
-                    console.log('⚠️ Нет данных о популярности. Показываем первые 8 товаров.');
                     popularProducts.length = 0;
                     popularProducts.push(...data.products.slice(0, 8));
                 }
                 
-                // Отображаем популярные товары
-                popularProducts.forEach((product, index) => {
-                    // Генерируем звезды рейтинга
+                popularProducts.forEach(product => {
                     const ratingHTML = generateRatingStars(product.averageRating);
-                    
-                    // Получаем фото из данных товара
                     const productImage = getProductImage(product);
-                    
-                    // Проверяем, есть ли товар в избранном
                     const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
                     const isFavorite = favorites.includes(product.id);
-                    const favoriteIcon = isFavorite ? 'fas fa-heart' : 'far fa-heart';
-                    const favoriteClass = isFavorite ? 'active' : '';
                     
                     const productCard = document.createElement('div');
                     productCard.className = 'product-card';
                     productCard.setAttribute('onclick', `window.location.href='catalog.html?product=${product.id}'`);
                     productCard.innerHTML = `
                         <div class="product-image-container">
-                            <img src="${productImage}" 
-                                 alt="${product.name}" 
-                                 class="product-real-image"
-                                 loading="lazy"
-                                 onerror="this.src='${DEFAULT_IMAGE}'">
+                            <img src="${productImage}" alt="${product.name}" class="product-real-image" loading="lazy" onerror="this.src='${DEFAULT_IMAGE}'">
                         </div>
                         <div class="product-content">
                             <h3 class="product-title">${product.name}</h3>
                             <p class="product-description">${product.description?.substring(0, 80) || 'Качественный компьютерный компонент'}...</p>
-                            
                             <div class="product-stats">
-                                <div class="stat-item" title="Количество отзывов">
-                                    <i class="fas fa-comment" style="color: var(--color-info);"></i>
-                                    <span>${product.reviewCount} отзывов</span>
-                                </div>
-                                <div class="stat-item" title="Количество заказов">
-                                    <i class="fas fa-shopping-bag" style="color: var(--color-success);"></i>
-                                    <span>${product.orderCount} заказов</span>
-                                </div>
+                                <div class="stat-item"><i class="fas fa-comment" style="color: var(--color-info);"></i><span>${product.reviewCount} отзывов</span></div>
+                                <div class="stat-item"><i class="fas fa-shopping-bag" style="color: var(--color-success);"></i><span>${product.orderCount} заказов</span></div>
                             </div>
-                            
                             <div class="product-meta">
                                 <div class="product-rating">
-                                    <div class="rating-stars">
-                                        ${ratingHTML}
-                                        <span class="rating-value">${product.averageRating.toFixed(1)}</span>
-                                    </div>
+                                    <div class="rating-stars">${ratingHTML}<span class="rating-value">${product.averageRating.toFixed(1)}</span></div>
                                     <div class="rating-count">(${product.reviewCount})</div>
                                 </div>
                             </div>
-                            
                             <div class="product-price">
-                                <span class="current-price">
-                                    <i class="fas fa-shopping-cart cart-icon-price"></i>
-                                    ${product.price?.toLocaleString('ru-RU') || '0'} ₽
-                                </span>
+                                <span class="current-price"><i class="fas fa-shopping-cart cart-icon-price"></i>${product.price?.toLocaleString('ru-RU') || '0'} ₽</span>
                             </div>
-                            
                             <div class="product-actions">
-                                <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${product.id})" ${product.stock <= 0 ? 'disabled' : ''}>
-                                    <i class="fas fa-cart-plus"></i> В корзину
-                                </button>
-                                <button class="btn-favorite ${favoriteClass}" onclick="event.stopPropagation(); toggleFavorite(${product.id}, this)">
-                                    <i class="${favoriteIcon}"></i>
-                                </button>
+                                <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${product.id})" ${product.stock <= 0 ? 'disabled' : ''}><i class="fas fa-cart-plus"></i> В корзину</button>
+                                <button class="btn-favorite ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${product.id}, this)"><i class="${isFavorite ? 'fas fa-heart' : 'far fa-heart'}"></i></button>
                             </div>
                         </div>
                     `;
-                    
                     container.appendChild(productCard);
                 });
             }
         } catch (error) {
             console.error('❌ Ошибка загрузки популярных товаров:', error);
-            const container = document.getElementById('productsGrid');
-            container.innerHTML = `
+            document.getElementById('productsGrid').innerHTML = `
                 <div style="text-align: center; padding: 2rem; color: var(--color-error);">
                     <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
                     <p>Не удалось загрузить популярные товары</p>
-                    <button class="btn btn-primary mt-3" onclick="loadPopularProducts()">
-                        <i class="fas fa-redo"></i> Попробовать снова
-                    </button>
-                </div>
-            `;
-            showNotification('Ошибка загрузки популярных товаров', 'error');
+                    <button class="btn btn-primary mt-3" onclick="loadPopularProducts()"><i class="fas fa-redo"></i> Попробовать снова</button>
+                </div>`;
         }
     }
     
-    // Добавление товара в корзину
     async function addToCart(productId) {
         try {
             const response = await fetch(`${API_BASE_URL}/products/${productId}`);
             const data = await response.json();
-            
-            if (!data.success || !data.product) {
-                showNotification('Товар не найден', 'error');
-                return;
-            }
-            
+            if (!data.success || !data.product) { showNotification('Товар не найден', 'error'); return; }
             const product = data.product;
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
             const existingItem = cart.find(item => item.productId === productId);
-            
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({
-                    productId: productId,
-                    productName: product.name,
-                    price: product.price || 0,
-                    quantity: 1
-                });
-            }
-            
+            if (existingItem) existingItem.quantity += 1;
+            else cart.push({ productId, productName: product.name, price: product.price || 0, quantity: 1 });
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartCount();
             showNotification(`${product.name} добавлен в корзину`, 'success');
-            
-        } catch (error) {
-            console.error('Ошибка добавления в корзину:', error);
-            showNotification('Ошибка добавления товара', 'error');
-        }
+        } catch (error) { showNotification('Ошибка добавления товара', 'error'); }
     }
     
-    // Переключение избранного
     function toggleFavorite(productId, buttonElement) {
         try {
             let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-            
             if (!favorites.includes(productId)) {
                 favorites.push(productId);
-                localStorage.setItem('favorites', JSON.stringify(favorites));
-                updateFavoritesCount();
-                
-                if (buttonElement) {
-                    buttonElement.classList.add('active');
-                    const icon = buttonElement.querySelector('i');
-                    if (icon) {
-                        icon.className = 'fas fa-heart';
-                    }
-                }
+                if (buttonElement) { buttonElement.classList.add('active'); buttonElement.querySelector('i').className = 'fas fa-heart'; }
                 showNotification('Товар добавлен в избранное', 'success');
             } else {
                 favorites = favorites.filter(id => id !== productId);
-                localStorage.setItem('favorites', JSON.stringify(favorites));
-                updateFavoritesCount();
-                
-                if (buttonElement) {
-                    buttonElement.classList.remove('active');
-                    const icon = buttonElement.querySelector('i');
-                    if (icon) {
-                        icon.className = 'far fa-heart';
-                    }
-                }
+                if (buttonElement) { buttonElement.classList.remove('active'); buttonElement.querySelector('i').className = 'far fa-heart'; }
                 showNotification('Товар удален из избранного', 'info');
             }
-            
-        } catch (error) {
-            console.error('Ошибка работы с избранным:', error);
-            showNotification('Ошибка работы с избранным', 'error');
-        }
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            updateFavoritesCount();
+        } catch (error) { showNotification('Ошибка работы с избранным', 'error'); }
     }
     
-    // Обновление счетчика корзины
     function updateCartCount() {
         try {
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const cartCount = document.getElementById('cartCount');
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            if (cartCount) cartCount.textContent = totalItems;
-        } catch (error) {
-            console.error('Ошибка обновления счетчика корзины:', error);
-        }
+            if (cartCount) cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+        } catch (error) {}
     }
     
-    // Обновление счетчика избранного
     function updateFavoritesCount() {
         try {
             const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-            const favoritesCount = document.getElementById('favoritesCount');
-            if (favoritesCount) favoritesCount.textContent = favorites.length;
-        } catch (error) {
-            console.error('Ошибка обновления счетчика избранного:', error);
-        }
+            const favCount = document.getElementById('favoritesCount');
+            if (favCount) favCount.textContent = favorites.length;
+        } catch (error) {}
     }
     
-    // Настройка переключения темы
     function setupThemeToggle() {
         const themeToggle = document.getElementById('themeToggle');
         const savedTheme = localStorage.getItem('theme');
-        
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        }
-        
+        if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
         if (themeToggle) {
             themeToggle.addEventListener('click', function() {
                 const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -1110,7 +1291,6 @@
         }
     }
     
-    // Показать уведомление
     function showNotification(message, type = 'info') {
         const container = document.querySelector('.notifications-container');
         const notification = document.createElement('div');
@@ -1120,76 +1300,26 @@
                 <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
                 <span>${message}</span>
             </div>
-            <button onclick="this.parentElement.remove()" style="background: none; border: none; cursor: pointer; padding: 0.5rem; color: var(--color-text-tertiary);">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        
+            <button onclick="this.parentElement.remove()" style="background: none; border: none; cursor: pointer; padding: 0.5rem; color: var(--color-text-tertiary);"><i class="fas fa-times"></i></button>`;
         if (container) {
             container.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.remove();
-                }
-            }, 3000);
+            setTimeout(() => { if (notification.parentNode) notification.remove(); }, 3000);
         }
     }
     
-    // Слушаем изменения localStorage для синхронизации между вкладками
     window.addEventListener('storage', function(e) {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        
-        if (user && user.id) {
-            const avatarKey = `userAvatar_${user.id}`;
-            if (e.key === avatarKey) {
-                // Обновляем аватар
-                const avatar = document.querySelector('.avatar');
-                if (avatar && e.newValue) {
-                    try {
-                        const avatarData = JSON.parse(e.newValue);
-                        updateAvatarFromData(avatar, avatarData);
-                    } catch (error) {
-                        console.error('Ошибка обновления аватара:', error);
-                    }
-                }
-            }
-        }
-        
-        if (e.key === 'user') {
-            location.reload();
-        }
-        
-        // Обновляем популярные товары при изменении заказов или отзывов
-        if (e.key === 'orders' || e.key === 'reviews') {
-            loadPopularProducts();
-        }
+        if (e.key === 'user') location.reload();
+        if (e.key === 'orders' || e.key === 'reviews') loadPopularProducts();
     });
     
-    // Переопределяем стандартный localStorage.setItem для немедленного обновления
     const originalSetItem = localStorage.setItem;
     localStorage.setItem = function(key, value) {
         originalSetItem.apply(this, arguments);
-        
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (user && user.id) {
-            const avatarKey = `userAvatar_${user.id}`;
-            if (key === avatarKey || key === 'user') {
-                const event = new Event('storage');
-                event.key = key;
-                window.dispatchEvent(event);
-            }
-        }
-        
-        // Диспатчим событие для заказов и отзывов
-        if (key === 'orders' || key === 'reviews') {
-            const event = new Event('storage');
-            event.key = key;
-            window.dispatchEvent(event);
+        if (['user', 'orders', 'reviews'].includes(key)) {
+            window.dispatchEvent(new Event('storage'));
         }
     };
     
-    // Делаем функции глобальными
     window.addToCart = addToCart;
     window.toggleFavorite = toggleFavorite;
     window.showNotification = showNotification;

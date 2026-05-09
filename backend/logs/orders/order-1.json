@@ -1,13 +1,13 @@
 {
   "orderId": 1,
-  "orderNumber": "ORD-64298784",
+  "orderNumber": "ORD-26663645",
   "userId": 1,
   "username": "admin",
-  "totalAmount": 18490,
+  "totalAmount": 14099,
   "itemsCount": 1,
   "shippingAddress": "фвфвфвфц",
   "deliveryMethod": "courier",
   "paymentMethod": "card",
-  "timestamp": "2026-05-08T18:18:18.797Z",
-  "loggedAt": "2026-05-08 21:18:18"
+  "timestamp": "2026-05-09T11:37:43.654Z",
+  "loggedAt": "2026-05-09 14:37:43"
 }
