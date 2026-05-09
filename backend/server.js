@@ -937,6 +937,9 @@ function initDatabase() {
     const firstRun = isFirstRun();
     console.log(`🔍 Первый запуск: ${firstRun ? 'ДА' : 'НЕТ'}`);
     
+    // СНАЧАЛА создаём ВСЕ таблицы
+    console.log('📋 Создание таблиц...');
+    
     // Таблица пользователей
     db.run(`CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -953,68 +956,8 @@ function initDatabase() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`, (err) => {
-        if (err) {
-            console.error('❌ Ошибка создания таблицы users:', err.message);
-        } else {
-            console.log('✅ Таблица users создана/проверена');
-            
-            addMissingColumns();
-            
-            // Добавляем тестовых пользователей ТОЛЬКО при первом запуске
-            if (firstRun) {
-                console.log('👤 Первый запуск: добавляем тестовых пользователей...');
-                
-                const adminPassword = bcrypt.hashSync('admin123', 10);
-                db.run(`INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`, 
-                    ['admin', 'admin@pcstore.ru', adminPassword, 'admin'],
-                    function(err) {
-                        if (err) {
-                            console.error('❌ Ошибка добавления администратора:', err.message);
-                        } else {
-                            console.log('👑 Администратор создан (admin@pcstore.ru / admin123)');
-                        }
-                    }
-                );
-
-                const admin2Password = bcrypt.hashSync('admin456', 10);
-                db.run(`INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`, 
-                    ['admin2', 'admin2@pcstore.ru', admin2Password, 'admin'],
-                    function(err) {
-                        if (err) {
-                            console.error('❌ Ошибка добавления второго администратора:', err.message);
-                        } else {
-                            console.log('👑 Второй администратор создан (admin2@pcstore.ru / admin456)');
-                        }
-                    }
-                );
-
-                const userPassword = bcrypt.hashSync('user123', 10);
-                db.run(`INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`, 
-                    ['user', 'user@pcstore.ru', userPassword, 'user'],
-                    function(err) {
-                        if (err) {
-                            console.error('❌ Ошибка добавления тестового пользователя:', err.message);
-                        } else {
-                            console.log('👤 Тестовый пользователь создан (user@pcstore.ru / user123)');
-                        }
-                    }
-                );
-
-                const modPassword = bcrypt.hashSync('mod123', 10);
-                db.run(`INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`, 
-                    ['moderator', 'moderator@pcstore.ru', modPassword, 'moderator'],
-                    function(err) {
-                        if (err) {
-                            console.error('❌ Ошибка добавления модератора:', err.message);
-                        } else {
-                            console.log('👤 Модератор создан (moderator@pcstore.ru / mod123)');
-                        }
-                    }
-                );
-            } else {
-                console.log('✅ Пользователи уже существуют, пропускаем добавление');
-            }
-        }
+        if (err) console.error('❌ Ошибка создания таблицы users:', err.message);
+        else console.log('✅ Таблица users создана/проверена');
     });
     
     // Таблица категорий
@@ -1029,48 +972,8 @@ function initDatabase() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`, (err) => {
-        if (err) {
-            console.error('❌ Ошибка создания таблицы categories:', err.message);
-        } else {
-            console.log('✅ Таблица categories создана/проверена');
-            
-            db.get('SELECT COUNT(*) as count FROM categories', [], (err, row) => {
-                if (err) {
-                    console.error('Ошибка проверки категорий:', err.message);
-                    return;
-                }
-                
-                if (row.count === 0 && firstRun) {
-                    console.log('📂 Первый запуск: добавляем категории...');
-                    
-                    const categories = [
-                        ['Процессоры', 'processors', 'Процессоры Intel и AMD', 'fas fa-microchip', '#3b82f6'],
-                        ['Видеокарты', 'video-cards', 'Видеокарты NVIDIA и AMD', 'fas fa-gamepad', '#ef4444'],
-                        ['Материнские платы', 'motherboards', 'Материнские платы для ПК', 'fas fa-server', '#10b981'],
-                        ['Оперативная память', 'ram', 'Оперативная память DDR4/DDR5', 'fas fa-memory', '#f59e0b'],
-                        ['Накопители', 'storage', 'SSD и HDD накопители', 'fas fa-hdd', '#8b5cf6'],
-                        ['Блоки питания', 'power-supplies', 'Блоки питания для ПК', 'fas fa-plug', '#6366f1'],
-                        ['Корпуса', 'cases', 'Корпуса для компьютеров', 'fas fa-desktop', '#64748b'],
-                        ['Охлаждение', 'cooling', 'Системы охлаждения', 'fas fa-wind', '#06b6d4']
-                    ];
-                    
-                    const stmt = db.prepare(`INSERT INTO categories (name, slug, description, icon, color) VALUES (?, ?, ?, ?, ?)`);
-                    
-                    categories.forEach(([name, slug, description, icon, color]) => {
-                        stmt.run([name, slug, description, icon, color], (err) => {
-                            if (err) console.error(`Ошибка добавления категории ${name}:`, err.message);
-                        });
-                    });
-                    
-                    stmt.finalize();
-                    console.log('✅ Категории добавлены');
-                } else if (row.count > 0) {
-                    console.log(`✅ В базе уже есть ${row.count} категорий, пропускаем добавление`);
-                } else if (row.count === 0 && !firstRun) {
-                    console.log('⚠️ Таблица категорий пуста, но это не первый запуск. Категории НЕ добавляются.');
-                }
-            });
-        }
+        if (err) console.error('❌ Ошибка создания таблицы categories:', err.message);
+        else console.log('✅ Таблица categories создана/проверена');
     });
     
     // Таблица товаров
@@ -1093,111 +996,158 @@ function initDatabase() {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (category_id) REFERENCES categories (id)
     )`, (err) => {
-        if (err) {
-            console.error('❌ Ошибка создания таблицы products:', err.message);
-        } else {
-            console.log('✅ Таблица products создана/проверена');
-            
-            db.get('SELECT COUNT(*) as count FROM products', [], (err, row) => {
-                if (err) {
-                    console.error('Ошибка проверки товаров:', err.message);
-                    return;
-                }
-                
-                if (row.count === 0 && firstRun) {
-                    console.log('🛒 Первый запуск: добавляем тестовые товары...');
-                    
-                    db.all('SELECT id, slug FROM categories', [], (err, categories) => {
-                        if (err) {
-                            console.error('Ошибка получения категорий:', err.message);
-                            return;
-                        }
-                        
-                        const categoryMap = {};
-                        categories.forEach(cat => {
-                            categoryMap[cat.slug] = cat.id;
-                        });
-                        
-                        const products = [
-                            // Процессоры (category_id: 1) - 5 товаров
-                            ['Intel Core i9-14900K', 'Процессор Intel Core i9-14900K, 24 ядра (8P+16E), до 6.0 ГГц, LGA 1700', 59990, 64990, 1, 5, 4.8, 124, 1, 1],
-                            ['AMD Ryzen 9 7950X3D', 'Процессор AMD Ryzen 9 7950X3D, 16 ядер, 32 потока, до 5.7 ГГц, AM5', 54990, 59990, 1, 8, 4.9, 89, 1, 1],
-                            ['Intel Core i7-14700K', 'Процессор Intel Core i7-14700K, 20 ядер (8P+12E), до 5.6 ГГц, LGA 1700', 39990, 44990, 1, 10, 4.7, 78, 0, 0],
-                            ['AMD Ryzen 7 7800X3D', 'Процессор AMD Ryzen 7 7800X3D, 8 ядер, 16 потоков, до 5.0 ГГц, AM5', 36990, 39990, 1, 6, 4.8, 45, 0, 1],
-                            ['Intel Core i5-14600K', 'Процессор Intel Core i5-14600K, 14 ядер (6P+8E), до 5.3 ГГц, LGA 1700', 28990, 31990, 1, 15, 4.6, 67, 0, 0],
-                            
-                            // Видеокарты (category_id: 2) - 5 товаров
-                            ['NVIDIA RTX 4090', 'Видеокарта NVIDIA GeForce RTX 4090, 24 ГБ GDDR6X, 16384 ядер', 189990, 209990, 2, 3, 4.7, 56, 1, 0],
-                            ['AMD Radeon RX 7900 XTX', 'Видеокарта AMD Radeon RX 7900 XTX, 24 ГБ GDDR6, Navi 31', 119990, 129990, 2, 7, 4.6, 42, 0, 1],
-                            ['NVIDIA RTX 4080 Super', 'Видеокарта NVIDIA GeForce RTX 4080 Super, 16 ГБ GDDR6X', 119990, 129990, 2, 5, 4.6, 33, 1, 0],
-                            ['AMD Radeon RX 7800 XT', 'Видеокарта AMD Radeon RX 7800 XT, 16 ГБ GDDR6, Navi 32', 59990, 64990, 2, 12, 4.5, 28, 0, 1],
-                            ['NVIDIA RTX 4070 Ti Super', 'Видеокарта NVIDIA GeForce RTX 4070 Ti Super, 16 ГБ GDDR6X', 84990, 89990, 2, 8, 4.5, 31, 1, 0],
-                            
-                            // Материнские платы (category_id: 3) - 5 товаров
-                            ['ASUS ROG Strix Z790-E', 'Материнская плата ASUS ROG Strix Z790-E Gaming WiFi, LGA 1700', 34990, 39990, 3, 12, 4.5, 31, 0, 0],
-                            ['ASUS TUF Gaming B650-Plus', 'Материнская плата ASUS TUF Gaming B650-Plus WiFi, AM5', 19990, 21990, 3, 8, 4.4, 22, 0, 1],
-                            ['Gigabyte B760M Aorus Elite', 'Материнская плата Gigabyte B760M Aorus Elite AX, LGA 1700', 15990, 17990, 3, 15, 4.3, 19, 0, 0],
-                            ['MSI MAG B650 Tomahawk', 'Материнская плата MSI MAG B650 Tomahawk WiFi, AM5', 18990, 20990, 3, 10, 4.5, 24, 0, 1],
-                            ['ASRock B550 Steel Legend', 'Материнская плата ASRock B550 Steel Legend, AM4', 12990, 14990, 3, 18, 4.4, 56, 0, 0],
-                            
-                            // Оперативная память (category_id: 4) - 5 товаров
-                            ['G.Skill Trident Z5 RGB', 'Оперативная память G.Skill Trident Z5 RGB 32GB DDR5-6000 CL36', 12990, 14990, 4, 15, 4.8, 67, 1, 1],
-                            ['Kingston Fury Beast', 'Оперативная память Kingston Fury Beast 32GB DDR5-5600 CL36', 8990, 9990, 4, 18, 4.7, 41, 0, 0],
-                            ['Corsair Vengeance RGB', 'Оперативная память Corsair Vengeance RGB 32GB DDR5-6000 CL30', 14990, 16990, 4, 9, 4.8, 52, 1, 0],
-                            ['Team Group T-Force Delta', 'Оперативная память Team Group T-Force Delta RGB 32GB DDR5-6000', 10990, 12990, 4, 20, 4.6, 38, 0, 1],
-                            ['Crucial Pro DDR5', 'Оперативная память Crucial Pro 32GB DDR5-5600', 7990, 9990, 4, 25, 4.5, 78, 0, 0],
-                            
-                            // Накопители (category_id: 5) - 5 товаров
-                            ['Samsung 990 Pro 2TB', 'SSD накопитель Samsung 990 Pro 2TB NVMe M.2, PCIe 4.0', 15990, 17990, 5, 20, 4.9, 94, 1, 0],
-                            ['WD Black SN850X', 'SSD накопитель WD Black SN850X 2TB NVMe M.2, PCIe 4.0', 14990, 16990, 5, 25, 4.8, 67, 1, 0],
-                            ['Crucial P5 Plus', 'SSD накопитель Crucial P5 Plus 1TB NVMe M.2, PCIe 4.0', 6990, 7990, 5, 30, 4.7, 89, 0, 0],
-                            ['Kingston KC3000', 'SSD накопитель Kingston KC3000 2TB NVMe M.2, PCIe 4.0', 13990, 15990, 5, 12, 4.7, 45, 0, 1],
-                            ['Samsung 980 Pro', 'SSD накопитель Samsung 980 Pro 1TB NVMe M.2, PCIe 4.0', 8990, 10990, 5, 28, 4.8, 156, 0, 0],
-                            
-                            // Блоки питания (category_id: 6) - 5 товаров
-                            ['Corsair RM1000x', 'Блок питания Corsair RM1000x 1000W 80+ Gold, fully modular', 18990, 21990, 6, 9, 4.7, 28, 0, 1],
-                            ['Seasonic Focus GX-850', 'Блок питания Seasonic Focus GX-850 850W 80+ Gold', 12990, 14990, 6, 15, 4.8, 42, 0, 0],
-                            ['be quiet! Straight Power 11', 'Блок питания be quiet! Straight Power 11 750W 80+ Platinum', 15990, 17990, 6, 7, 4.9, 37, 1, 0],
-                            ['ASUS ROG Thor 1200P', 'Блок питания ASUS ROG Thor 1200P 1200W 80+ Platinum', 29990, 34990, 6, 4, 4.6, 19, 1, 1],
-                            ['Corsair RM850x', 'Блок питания Corsair RM850x 850W 80+ Gold', 13990, 16990, 6, 12, 4.7, 56, 0, 0],
-                            
-                            // Корпуса (category_id: 7) - 5 товаров
-                            ['NZXT H9 Flow', 'Корпус NZXT H9 Flow Black, Mid-Tower, стеклянные панели', 15990, 17990, 7, 14, 4.6, 19, 1, 1],
-                            ['Lian Li O11 Dynamic EVO', 'Корпус Lian Li O11 Dynamic EVO, Mid-Tower, двустороннее стекло', 17990, 19990, 7, 8, 4.8, 27, 1, 0],
-                            ['Fractal Design North', 'Корпус Fractal Design North, Mid-Tower, деревянная отделка', 14990, 16990, 7, 11, 4.7, 33, 0, 1],
-                            ['Phanteks Eclipse G360A', 'Корпус Phanteks Eclipse G360A, Mid-Tower, ARGB вентиляторы', 8990, 10990, 7, 22, 4.5, 41, 0, 0],
-                            ['Corsair 4000D Airflow', 'Корпус Corsair 4000D Airflow, Mid-Tower, меш-фасад', 11990, 13990, 7, 18, 4.7, 78, 0, 0],
-                            
-                            // Охлаждение (category_id: 8) - 5 товаров
-                            ['Noctua NH-D15', 'Кулер для процессора Noctua NH-D15, 2 вентилятора NF-A15', 9990, 11990, 8, 15, 4.9, 156, 1, 0],
-                            ['be quiet! Dark Rock Pro 4', 'Кулер для процессора be quiet! Dark Rock Pro 4', 8990, 10990, 8, 18, 4.8, 134, 1, 0],
-                            ['Cooler Master Hyper 212', 'Кулер для процессора Cooler Master Hyper 212 EVO V2', 2990, 3990, 8, 35, 4.5, 189, 0, 0],
-                            ['Arctic Liquid Freezer II 360', 'СЖО Arctic Liquid Freezer II 360, 360мм радиатор', 10990, 12990, 8, 12, 4.8, 89, 0, 1],
-                            ['Corsair iCUE H150i Elite', 'СЖО Corsair iCUE H150i Elite CAPELLIX, 360мм, RGB', 14990, 17990, 8, 10, 4.7, 78, 1, 0]
-                        ];
-                        
-                        const stmt = db.prepare(`INSERT INTO products 
-                            (name, description, price, old_price, category_id, stock, rating, reviews_count, is_featured, is_new) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-                        
-                        products.forEach(product => {
-                            stmt.run(product, (err) => {
-                                if (err) console.error('Ошибка добавления товара:', err.message);
-                            });
-                        });
-                        
-                        stmt.finalize();
-                        console.log('✅ Тестовые товары добавлены');
-                    });
-                } else if (row.count > 0) {
-                    console.log(`✅ В базе уже есть ${row.count} товаров, пропускаем добавление`);
-                } else if (row.count === 0 && !firstRun) {
-                    console.log('⚠️ Таблица товаров пуста, но это не первый запуск. Товары НЕ добавляются.');
-                    console.log('💡 Чтобы добавить тестовые товары, удалите файл .initialized и перезапустите сервер');
-                }
-            });
-        }
+        if (err) console.error('❌ Ошибка создания таблицы products:', err.message);
+        else console.log('✅ Таблица products создана/проверена');
     });
+    
+    // Таблица заказов
+    db.run(`CREATE TABLE IF NOT EXISTS orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        total_amount REAL NOT NULL,
+        status TEXT DEFAULT 'pending',
+        shipping_address TEXT,
+        payment_method TEXT DEFAULT 'card',
+        notes TEXT,
+        order_number TEXT,
+        city TEXT,
+        postal_code TEXT,
+        delivery_method TEXT DEFAULT 'courier',
+        delivery_cost REAL DEFAULT 0,
+        comments TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+    )`, (err) => {
+        if (err) console.error('❌ Ошибка создания таблицы orders:', err.message);
+        else console.log('✅ Таблица orders создана/проверена');
+    });
+    
+    // Таблица элементов заказа
+    db.run(`CREATE TABLE IF NOT EXISTS order_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        quantity INTEGER NOT NULL,
+        price REAL NOT NULL,
+        FOREIGN KEY (order_id) REFERENCES orders (id),
+        FOREIGN KEY (product_id) REFERENCES products (id)
+    )`, (err) => {
+        if (err) console.error('❌ Ошибка создания таблицы order_items:', err.message);
+        else console.log('✅ Таблица order_items создана/проверена');
+    });
+    
+    // Таблица избранного
+    db.run(`CREATE TABLE IF NOT EXISTS favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id),
+        FOREIGN KEY (product_id) REFERENCES products (id),
+        UNIQUE(user_id, product_id)
+    )`, (err) => {
+        if (err) console.error('❌ Ошибка создания таблицы favorites:', err.message);
+        else console.log('✅ Таблица favorites создана/проверена');
+    });
+    
+    console.log('✅ Все таблицы созданы/проверены');
+    
+    // Добавляем недостающие колонки
+    setTimeout(() => {
+        addMissingColumns();
+    }, 500);
+    
+    // ========== ПРОВЕРКА И ДОБАВЛЕНИЕ ТЕСТОВЫХ ПОЛЬЗОВАТЕЛЕЙ (ВСЕГДА) ==========
+    setTimeout(() => {
+        console.log('👥 Проверка тестовых пользователей...');
+        
+        // Администратор
+        db.get('SELECT COUNT(*) as count FROM users WHERE email = ?', ['admin@pcstore.ru'], (err, row) => {
+            if (!err && row.count === 0) {
+                const adminPassword = bcrypt.hashSync('admin123', 10);
+                db.run(`INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`, 
+                    ['admin', 'admin@pcstore.ru', adminPassword, 'admin'],
+                    (err) => {
+                        if (!err) console.log('👑 Администратор создан (admin@pcstore.ru / admin123)');
+                    }
+                );
+            } else {
+                console.log('✅ Администратор уже существует');
+            }
+        });
+        
+        // Второй администратор
+        db.get('SELECT COUNT(*) as count FROM users WHERE email = ?', ['admin2@pcstore.ru'], (err, row) => {
+            if (!err && row.count === 0) {
+                const admin2Password = bcrypt.hashSync('admin456', 10);
+                db.run(`INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`, 
+                    ['admin2', 'admin2@pcstore.ru', admin2Password, 'admin'],
+                    (err) => {
+                        if (!err) console.log('👑 Второй администратор создан (admin2@pcstore.ru / admin456)');
+                    }
+                );
+            }
+        });
+        
+        // Тестовый пользователь
+        db.get('SELECT COUNT(*) as count FROM users WHERE email = ?', ['user@pcstore.ru'], (err, row) => {
+            if (!err && row.count === 0) {
+                const userPassword = bcrypt.hashSync('user123', 10);
+                db.run(`INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`, 
+                    ['user', 'user@pcstore.ru', userPassword, 'user'],
+                    (err) => {
+                        if (!err) console.log('👤 Тестовый пользователь создан (user@pcstore.ru / user123)');
+                    }
+                );
+            }
+        });
+        
+        // Модератор
+        db.get('SELECT COUNT(*) as count FROM users WHERE email = ?', ['moderator@pcstore.ru'], (err, row) => {
+            if (!err && row.count === 0) {
+                const modPassword = bcrypt.hashSync('mod123', 10);
+                db.run(`INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`, 
+                    ['moderator', 'moderator@pcstore.ru', modPassword, 'moderator'],
+                    (err) => {
+                        if (!err) console.log('👤 Модератор создан (moderator@pcstore.ru / mod123)');
+                    }
+                );
+            }
+        });
+    }, 1000);
+    
+    // ========== ПРОВЕРКА И ДОБАВЛЕНИЕ КАТЕГОРИЙ (ВСЕГДА) ==========
+    setTimeout(() => {
+        console.log('📂 Проверка категорий...');
+        
+        db.get('SELECT COUNT(*) as count FROM categories', [], (err, row) => {
+            if (!err && row.count === 0) {
+                console.log('📂 Категории не найдены — создаём...');
+                
+                const categories = [
+                    ['Процессоры', 'processors', 'Процессоры Intel и AMD', 'fas fa-microchip', '#3b82f6'],
+                    ['Видеокарты', 'video-cards', 'Видеокарты NVIDIA и AMD', 'fas fa-gamepad', '#ef4444'],
+                    ['Материнские платы', 'motherboards', 'Материнские платы для ПК', 'fas fa-server', '#10b981'],
+                    ['Оперативная память', 'ram', 'Оперативная память DDR4/DDR5', 'fas fa-memory', '#f59e0b'],
+                    ['Накопители', 'storage', 'SSD и HDD накопители', 'fas fa-hdd', '#8b5cf6'],
+                    ['Блоки питания', 'power-supplies', 'Блоки питания для ПК', 'fas fa-plug', '#6366f1'],
+                    ['Корпуса', 'cases', 'Корпуса для компьютеров', 'fas fa-desktop', '#64748b'],
+                    ['Охлаждение', 'cooling', 'Системы охлаждения', 'fas fa-wind', '#06b6d4']
+                ];
+                
+                const stmt = db.prepare(`INSERT INTO categories (name, slug, description, icon, color) VALUES (?, ?, ?, ?, ?)`);
+                categories.forEach(([name, slug, description, icon, color]) => {
+                    stmt.run([name, slug, description, icon, color]);
+                });
+                stmt.finalize();
+                
+                console.log('✅ Категории созданы (8 шт.)');
+            } else {
+                console.log(`✅ Категории уже существуют (${row ? row.count : '?'} шт.)`);
+            }
+        });
+    }, 1500);
     
     // Отмечаем, что инициализация выполнена
     if (firstRun) {
@@ -1841,6 +1791,18 @@ app.get('/api/admin/products', authenticateToken, requireAdmin, (req, res) => {
     });
 });
 
+// Сброс счётчика AUTOINCREMENT для продуктов
+app.post('/api/admin/products/reset-counter', authenticateToken, requireAdmin, (req, res) => {
+    db.run('DELETE FROM sqlite_sequence WHERE name = "products"', (err) => {
+        if (err) {
+            console.error('❌ Ошибка сброса счётчика:', err.message);
+            return res.status(500).json({ success: false, message: 'Ошибка сервера' });
+        }
+        console.log('✅ Счётчик продуктов сброшен');
+        res.json({ success: true, message: 'Счётчик сброшен' });
+    });
+});
+
 app.post('/api/admin/products', authenticateToken, requireAdmin, (req, res) => {
     const { name, description, price, category_id, stock = 10, image_url, is_active = 1 } = req.body;
     
@@ -1898,7 +1860,7 @@ app.post('/api/admin/products', authenticateToken, requireAdmin, (req, res) => {
         }
         
         const productId = this.lastID;
-        console.log(`✅ Товар создан: ${name} (ID: ${productId})`);
+        console.log(`✅ Товар создан: ${name} (ID: ${productId}, rating: 0)`);
         
         res.json({
             success: true,
