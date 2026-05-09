@@ -1,0 +1,13 @@
+{
+  "orderId": 2,
+  "orderNumber": "ORD-48318529",
+  "userId": 1,
+  "username": "admin",
+  "totalAmount": 27198,
+  "itemsCount": 1,
+  "shippingAddress": "Самовывоз",
+  "deliveryMethod": "pickup",
+  "paymentMethod": "cash",
+  "timestamp": "2026-05-09T17:38:38.537Z",
+  "loggedAt": "2026-05-09 20:38:38"
+}
